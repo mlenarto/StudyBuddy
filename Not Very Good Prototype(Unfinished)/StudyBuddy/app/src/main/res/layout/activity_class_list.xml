@@ -1,91 +1,68 @@
-<!-- A DrawerLayout is intended to be used as the top-level content view using match_parent for both width and height to consume the full space available. -->
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:id="@+id/drawer_layout"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    tools:context="com.cs408.studybuddy.ClassListActivity">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@color/white">
 
-    <!-- As the main content view, the view below consumes the entire
-         space available using match_parent in both dimensions. -->
-    <RelativeLayout android:id="@+id/container" android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"  >
 
-        <Spinner
+        <TextView
+            android:id="@+id/titleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/class1"
-            android:spinnerMode="dropdown"
-            android:dropDownSelector="@drawable/abc_spinner_mtrl_am_alpha"
-            android:clickable="true"
-            android:nestedScrollingEnabled="true"
-            android:entries="@android:color/background_dark"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:gravity="center"
+            android:textSize="20sp"/>
 
-        <Spinner
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/class2"
-            android:spinnerMode="dropdown"
-            android:dropDownSelector="@drawable/abc_spinner_mtrl_am_alpha"
-            android:clickable="true"
-            android:nestedScrollingEnabled="true"
-            android:entries="@android:color/background_dark"
-            android:layout_below="@+id/class1"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+    </android.support.v7.widget.Toolbar>
 
-        <Spinner
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/class3"
-            android:spinnerMode="dropdown"
-            android:dropDownSelector="@drawable/abc_spinner_mtrl_am_alpha"
-            android:clickable="true"
-            android:nestedScrollingEnabled="true"
-            android:entries="@android:color/background_dark"
-            android:layout_below="@+id/class2"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+    <TextView
+        android:id="@+id/toolbar_border"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/toolbar"
+        android:background="@color/grey"/>
 
-        <Spinner
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/class4"
-            android:spinnerMode="dropdown"
-            android:dropDownSelector="@drawable/abc_spinner_mtrl_am_alpha"
-            android:clickable="true"
-            android:nestedScrollingEnabled="true"
-            android:entries="@android:color/background_dark"
-            android:layout_below="@+id/class3"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+    <android.support.v4.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar_border">
 
-        <Spinner
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/class5"
-            android:spinnerMode="dropdown"
-            android:dropDownSelector="@drawable/abc_spinner_mtrl_am_alpha"
-            android:clickable="true"
-            android:nestedScrollingEnabled="true"
-            android:entries="@android:color/background_dark"
-            android:layout_below="@+id/class4"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+        <!-- As the main content view, the view below consumes the entire
+             space available using match_parent in both dimensions. -->
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+        </FrameLayout>
 
-    </RelativeLayout>
+        <!-- android:layout_gravity="start" tells DrawerLayout to treat
+             this as a sliding drawer on the left side for left-to-right
+             languages and on the right side for right-to-left languages.
+             If you're not building against API 17 or higher, use
+             android:layout_gravity="left" instead. -->
+        <!-- The drawer is given a fixed width in dp and extends the full height of
+             the container. -->
+        <ListView
+            android:id="@+id/navigation_drawer"
+            android:layout_width="@dimen/navigation_drawer_width"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:overScrollFooter="@color/white"
+            android:choiceMode="singleChoice"
+            android:divider="@color/dark_grey"
+            android:dividerHeight="1dp"
+            android:headerDividersEnabled="true"
+            android:listSelector="@color/drawer_list_selected"
+            android:cacheColorHint="@color/white"
+            android:background="@color/white"
+            android:name="com.cs408.studybuddy.NavigationDrawerFragment" >
 
-    <!-- android:layout_gravity="start" tells DrawerLayout to treat
-         this as a sliding drawer on the left side for left-to-right
-         languages and on the right side for right-to-left languages.
-         If you're not building against API 17 or higher, use
-         android:layout_gravity="left" instead. -->
-    <!-- The drawer is given a fixed width in dp and extends the full height of
-         the container. -->
-    <fragment android:id="@+id/navigation_drawer"
-        android:layout_width="@dimen/navigation_drawer_width" android:layout_height="match_parent"
-        android:layout_gravity="start" android:name="com.cs408.studybuddy.NavigationDrawerFragment"
-        tools:layout="@layout/fragment_navigation_drawer" />
+        </ListView>
 
-</android.support.v4.widget.DrawerLayout>
+    </android.support.v4.widget.DrawerLayout>
+</RelativeLayout>

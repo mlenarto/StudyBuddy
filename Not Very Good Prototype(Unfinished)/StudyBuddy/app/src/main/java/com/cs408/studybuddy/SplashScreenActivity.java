@@ -1,5 +1,6 @@
 package com.cs408.studybuddy;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -8,7 +9,7 @@ import android.os.Handler;
 import android.view.MenuItem;
 
 
-public class SplashScreenActivity extends ActionBarActivity {
+public class SplashScreenActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
