@@ -1,0 +1,11 @@
+{
+    "applications": {
+        "StudyBuddy": {
+            "applicationId": "JECc6MEvSATzw9e9dM6Vr8F2JRqRPzSgarB1bGQt", 
+            "masterKey": "qOfpjFJdg9ub6OtLZmxIAHlRvmjIsSTKnRGGLLTM"
+        }, 
+        "_default": {
+            "link": "StudyBuddy"
+        }
+    }
+}
