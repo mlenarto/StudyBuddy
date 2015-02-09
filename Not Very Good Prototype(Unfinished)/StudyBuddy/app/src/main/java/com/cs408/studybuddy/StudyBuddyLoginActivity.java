@@ -31,6 +31,18 @@ public class StudyBuddyLoginActivity extends Activity{
 
         Parse.setLogLevel(Parse.LOG_LEVEL_DEBUG);
 
+        // Subscribe to broadcast channel for push notifications
+        ParsePush.subscribeInBackground("", new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    Log.d("com.parse.push", "successfully subscribed to the broadcast channel.");
+                } else {
+                    Log.e("com.parse.push", "failed to subscribe for push", e);
+                }
+            }
+        });
+
         ParseLoginBuilder builder = new ParseLoginBuilder(StudyBuddyLoginActivity.this);
         startActivityForResult(builder.build(), LOGIN_REQUEST);
     }
@@ -43,18 +55,6 @@ public class StudyBuddyLoginActivity extends Activity{
             // Check if the login request was successful
             if (resultCode == RESULT_OK)
             {
-                // register device for push notifications
-                ParsePush.subscribeInBackground("", new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if (e == null) {
-                            Log.d("com.parse.push", "successfully subscribed to the broadcast channel.");
-                        } else {
-                            Log.e("com.parse.push", "failed to subscribe for push", e);
-                        }
-                    }
-                });
-
                 Intent i = new Intent (StudyBuddyLoginActivity.this, DrawerActivity.class);
                 //i.putExtra("User", ParseUser.getCurrentUser().getString("name"));
                 startActivity(i);
