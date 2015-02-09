@@ -14,7 +14,7 @@ android:background="@color/white">
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:layout_centerInParent="true"
             android:textSize="20sp"/>
 
     </android.support.v7.widget.Toolbar>

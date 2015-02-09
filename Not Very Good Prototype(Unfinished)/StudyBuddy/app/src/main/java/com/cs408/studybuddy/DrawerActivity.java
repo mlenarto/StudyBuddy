@@ -2,14 +2,13 @@ package com.cs408.studybuddy;
 
 import android.app.Activity;
 import android.content.res.Configuration;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,7 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class DrawerActivity extends FragmentActivity
+public class DrawerActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
 
@@ -37,40 +36,36 @@ public class DrawerActivity extends FragmentActivity
     private ListView mDrawerList;
 	private ActionBarDrawerToggle mDrawerToggle;
 	private Toolbar mToolbar;
-	private TextView title;
+	private TextView mTitle;
 
-    private CharSequence mTitle;
-
-	int currentFragment = 0;
+	private int topFragment = CLASS_LIST_FRAGMENT;
+	private Fragment currentFragment;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_class_list);
+        setContentView(R.layout.activity_drawer_main);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.navigation_drawer);
 		mToolbar = (Toolbar) findViewById(R.id.toolbar);
-		title = (TextView) findViewById(R.id.titleText);
+		mTitle = (TextView) findViewById(R.id.titleText);
 
-		title.setText("Classes");
+		setSupportActionBar(mToolbar);
+		getSupportActionBar().setDisplayShowTitleEnabled(false);
+
 		//Class list is the default tab to have open at start-up
 		Fragment classList = new ClassListFragment();
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 		transaction.add(R.id.container, classList);
 		transaction.commit();
-		currentFragment = CLASS_LIST_FRAGMENT;
+		topFragment = CLASS_LIST_FRAGMENT;
+		mTitle.setText(R.string.class_list_title);
 
-		mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				displayView(position);
-			}
-		});
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
+                mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
 			@Override
 			public void onDrawerClosed(View view) {
 				super.onDrawerClosed(view);
@@ -82,6 +77,14 @@ public class DrawerActivity extends FragmentActivity
 			}
 
 		};
+
+
+		mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				displayView(position);
+			}
+		});
 
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
@@ -107,17 +110,17 @@ public class DrawerActivity extends FragmentActivity
     }
 
     public void onSectionAttached(int number) {
-        switch (number) {
-            case 1:
-                mTitle = getString(R.string.title_section1);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
-        }
+//        switch (number) {
+//            case 1:
+//                mTitle = getString(R.string.title_section1);
+//                break;
+//            case 2:
+//                mTitle = getString(R.string.title_section2);
+//                break;
+//            case 3:
+//                mTitle = getString(R.string.title_section3);
+//                break;
+//        }
     }
 
     @Override
@@ -154,7 +157,7 @@ public class DrawerActivity extends FragmentActivity
 	private void displayView(int position) {
 		Fragment fragment = null;
 
-		if(position == currentFragment) {
+		if(position == topFragment) {
 			//No need to switch to current fragment
 			mDrawerLayout.closeDrawer(mDrawerList);
 			return;
@@ -163,13 +166,13 @@ public class DrawerActivity extends FragmentActivity
 		switch (position) {
 			case CLASS_LIST_FRAGMENT:
 				fragment = new ClassListFragment();
-				title.setText(R.string.class_list_title);
+				mTitle.setText(R.string.class_list_title);
 				break;
 			case GROUP_FRAGMENT:
 				break;
 			case PROFILE_FRAGMENT:
 				fragment = new ProfileFragment();
-				title.setText(R.string.my_profile_title);
+				mTitle.setText(R.string.my_profile_title);
 				break;
 
 			default:
@@ -180,7 +183,7 @@ public class DrawerActivity extends FragmentActivity
 			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 			transaction.replace(R.id.container, fragment);
 			transaction.commit();
-			currentFragment = position;
+			topFragment = position;
 			mDrawerLayout.closeDrawer(mDrawerList);
 		}
 

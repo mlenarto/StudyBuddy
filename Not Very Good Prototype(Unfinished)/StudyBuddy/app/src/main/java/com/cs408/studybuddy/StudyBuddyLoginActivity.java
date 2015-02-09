@@ -24,7 +24,6 @@ public class StudyBuddyLoginActivity extends Activity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_study_buddy_login);
 
         // Required - Initialize the Parse SDK
         Parse.initialize(this, getString(R.string.parse_app_id),
@@ -59,6 +58,7 @@ public class StudyBuddyLoginActivity extends Activity{
                 Intent i = new Intent (StudyBuddyLoginActivity.this, DrawerActivity.class);
                 //i.putExtra("User", ParseUser.getCurrentUser().getString("name"));
                 startActivity(i);
+				finish();
             }
         }
     }
