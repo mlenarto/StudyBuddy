@@ -1,18 +1,17 @@
 package com.cs408.studybuddy;
 
+import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
-import com.cs408.studybuddy.R;
 
 /**
  * Created by Evan on 2/8/2015.
@@ -24,7 +23,8 @@ public class RequestListActivity extends ActionBarActivity {
 		setContentView(R.layout.activity_request_list);
 
 		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
-		TextView mText = (TextView) findViewById(R.id.titleText);
+		TextView mText = (TextView) findViewById(R.id.title_text);
+		Button newRequest = (Button) findViewById(R.id.newRequest);
 
 		setSupportActionBar(mToolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -44,6 +44,12 @@ public class RequestListActivity extends ActionBarActivity {
 		classList.setAdapter(new ArrayAdapter<>(this,
 				android.R.layout.simple_list_item_1, android.R.id.text1, classes));
 
+		newRequest.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(RequestListActivity.this, NewRequestActivity.class));
+			}
+		});
 
 		mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
 			@Override

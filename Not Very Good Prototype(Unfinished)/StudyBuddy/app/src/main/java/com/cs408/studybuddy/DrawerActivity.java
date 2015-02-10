@@ -50,7 +50,7 @@ public class DrawerActivity extends ActionBarActivity
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.navigation_drawer);
 		mToolbar = (Toolbar) findViewById(R.id.toolbar);
-		mTitle = (TextView) findViewById(R.id.titleText);
+		mTitle = (TextView) findViewById(R.id.title_text);
 
 		setSupportActionBar(mToolbar);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);

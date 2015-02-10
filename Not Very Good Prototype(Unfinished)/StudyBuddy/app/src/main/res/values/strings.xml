@@ -11,6 +11,7 @@
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
     <string name="title_Request_List">Requests</string>
+    <string name="title_New_Request">New Request</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
@@ -24,5 +25,24 @@
     <string name="class_list_title">Classes</string>
     <string name="my_group_title">My Group</string>
     <string name="my_profile_title">My Profile</string>
+
+
+    <string-array name="hours_spinner">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <string-array name="minutes_spinner">
+        <item>0</item>
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>40</item>
+        <item>50</item>
+    </string-array>
 
 </resources>

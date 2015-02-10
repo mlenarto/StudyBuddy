@@ -11,11 +11,23 @@
         android:background="@color/white"  >
 
         <TextView
-            android:id="@+id/titleText"
+            android:id="@+id/title_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:textSize="20sp"/>
+
+        <Button
+            android:id="@+id/newRequest"
+            android:layout_width="60dp"
+            android:layout_height="50dp"
+            android:layout_gravity="right"
+            android:text="+"
+            android:textSize="35sp"
+            android:textColor="@color/common_signin_btn_text_light"
+            android:background="@color/white"
+            android:contentDescription="Create new request"
+            />
 
     </android.support.v7.widget.Toolbar>
 
