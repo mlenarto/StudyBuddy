@@ -42,4 +42,27 @@
         android:layout_alignWithParentIfMissing="false"
         android:hint="@string/class_prompt"
         android:textSize="@dimen/abc_text_size_display_2_material" />
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"  >
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textSize="20sp"
+            android:text="@string/class_add_title" />
+
+        </android.support.v7.widget.Toolbar>
+
+        <TextView
+            android:id="@+id/toolbar_border"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/toolbar"
+            android:background="@color/grey"/>
 </RelativeLayout>

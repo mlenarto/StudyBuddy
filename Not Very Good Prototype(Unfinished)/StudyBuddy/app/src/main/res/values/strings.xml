@@ -27,6 +27,7 @@
     <string name="my_profile_title">My Profile</string>
     <string name="class_add_activity">ClassAddActivity</string>
     <string name="class_prompt">Enter New Classes Here</string>
+    <string name="class_add_title">Add Classes</string>
 
 
     <string-array name="hours_spinner">
