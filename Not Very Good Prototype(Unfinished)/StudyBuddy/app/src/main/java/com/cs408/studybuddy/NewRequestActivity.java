@@ -67,21 +67,10 @@ public class NewRequestActivity extends ActionBarActivity {
 			public void onClick(View v) {
 				String requestTitle = requestTitleEdit.getText().toString();
 				String requestDescription = descriptionTextEdit.getText().toString();
+                String requestLocation = requestLocationEdit.getText().toString();
 				int requestLengthHours = Integer.parseInt(hoursLengthSpinner.getSelectedItem().toString());
 				int requestLengthMinutes = Integer.parseInt(minutesLengthSpinner.getSelectedItem().toString());
 				int requestLengthMillis = requestLengthHours*60*60*1000 + requestLengthMinutes*60*1000;
-
-				//Create the request in Parse server
-                ParseObject request = new ParseObject("HelpRequest");
-                request.put("course", "CS 408"); //TODO: grab the correct course
-                request.put("title", requestTitle);
-                request.put("description", requestDescription);
-                request.put("locationDescription", "Hicks Library, Study Room #15"); //TODO: add Location Description field to GUI
-                ParseGeoPoint point = new ParseGeoPoint(30.0, -20.0);   //TODO: grab the user's actual coordinates
-                request.put("geoLocation", point);
-                request.put("duration", requestLengthMillis);
-                request.put("user", ParseUser.getCurrentUser());
-                request.saveInBackground();
 
 				finish();
 				//Create new help request on Parse
@@ -91,14 +80,19 @@ public class NewRequestActivity extends ActionBarActivity {
                     ParseObject helpRequest = new ParseObject("HelpRequest");
                     String course = extras.getString("selected_class");
                     Log.d("NewRequestActivity", course);
-                    /*
+
                     helpRequest.put("course", course);
-                    helpRequest.put("title", requestTitle);
-                    helpRequest.put("description", requestDescription);
-                    TODO://CHANGE LOCATION DESCRIPTION TO ACTUAL LOCATION DESCRIPTION (AFTER UI UPDATE)
-                    helpRequest.put("locationDescription", requestDescription);
-                    helpRequest.put("user", ParseUser.getCurrentUser());
-                    */
+                    //Create the request in Parse server
+                    ParseObject request = new ParseObject("HelpRequest");
+                    request.put("course", course);
+                    request.put("title", requestTitle);
+                    request.put("description", requestDescription);
+                    request.put("locationDescription", requestLocation);
+                    ParseGeoPoint point = new ParseGeoPoint(30.0, -20.0);   //TODO: grab the user's actual coordinates
+                    request.put("geoLocation", point);
+                    request.put("duration", requestLengthMillis);
+                    request.put("user", ParseUser.getCurrentUser());
+                    request.saveInBackground();
                 }
 			}
 		});
