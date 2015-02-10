@@ -34,22 +34,34 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ClassAddActivity"
+            android:label="@string/class_add_activity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".StudyBuddyLoginActivity"
             android:label="@string/title_activity_study_buddy_login"
             android:windowSoftInputMode="adjustResize|stateVisible"
             android:screenOrientation="portrait">
         </activity>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="portrait" >
         </activity>
+
         <activity
             android:name=".DrawerActivity"
             android:label="@string/title_activity_class_list"
             android:screenOrientation="portrait" >
         </activity>
+
         <activity
             android:name="com.parse.ui.ParseLoginActivity"
             android:label="@string/app_name"

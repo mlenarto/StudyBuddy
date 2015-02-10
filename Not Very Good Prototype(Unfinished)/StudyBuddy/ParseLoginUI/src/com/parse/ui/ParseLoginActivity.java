@@ -168,6 +168,7 @@ public class ParseLoginActivity extends FragmentActivity implements
     // You can change this implementation if you want a different behavior.
   SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
   prefs.edit().putBoolean("Islogin", true).commit();//islogin is a boolean value of your login status
+  prefs.edit().putString("classes","");
   setResult(RESULT_OK);
   finish();
   }

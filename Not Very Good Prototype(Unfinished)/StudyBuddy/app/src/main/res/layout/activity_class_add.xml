@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/classList"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="false"
+        android:background="@color/white"
+        android:divider="@color/black"
+        android:dividerHeight="1dp"
+        android:nestedScrollingEnabled="true"
+        android:layout_above="@+id/newClass" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confirm"
+        android:id="@+id/confirmClasses"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:singleLine="true" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/newClass"
+        android:editable="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@color/grey"
+        android:layout_above="@+id/confirmClasses"
+        android:textAlignment="center"
+        android:textIsSelectable="false"
+        android:inputType="text"
+        android:clickable="true"
+        android:enabled="true"
+        android:layout_alignParentBottom="false"
+        android:layout_alignWithParentIfMissing="false"
+        android:hint="@string/class_prompt"
+        android:textSize="@dimen/abc_text_size_display_2_material" />
+</RelativeLayout>
