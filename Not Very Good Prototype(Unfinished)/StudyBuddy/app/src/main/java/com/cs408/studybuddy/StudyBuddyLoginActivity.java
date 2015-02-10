@@ -28,22 +28,13 @@ public class StudyBuddyLoginActivity extends Activity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean LoggedIn = prefs.getBoolean("Islogin", false);
-        Log.v("login","Boolean value: " + LoggedIn);
-
-        // FIXME: This doesn't work because it doesn't actually log the user into Parse
-        /*if(LoggedIn)           //if the user has already logged in, take them straight to the main page skipping the login screen.
+        if(ParseUser.getCurrentUser() != null)
         {
-            Log.v("login","Skipping Parse");
-            LoginHandler.finishLogIn();
-            Intent i;
-            i = new Intent(StudyBuddyLoginActivity.this, DrawerActivity.class);
-            startActivity(i);
-            finish();
+            // User is already logged in, so don't show a login screen
+            Log.d("StudyBuddyLoginActivity", "Performing automatic login");
+            logIn();
         }
-
-        else*/
+        else
         {
             ParseLoginBuilder builder = new ParseLoginBuilder(StudyBuddyLoginActivity.this);
             startActivityForResult(builder.build(), LOGIN_REQUEST);
@@ -51,20 +42,21 @@ public class StudyBuddyLoginActivity extends Activity{
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        // Check which request we're responding to
-        if (requestCode == LOGIN_REQUEST)
-        {
-            // Check if the login request was successful
-            if (resultCode == RESULT_OK)
-            {
-                LoginHandler.finishLogIn();
-                Intent i = new Intent (StudyBuddyLoginActivity.this, DrawerActivity.class);
-                //i.putExtra("User", ParseUser.getCurrentUser().getString("name"));
-                startActivity(i);
-				finish();
-            }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == LOGIN_REQUEST && resultCode == RESULT_OK) {
+            // Login successful
+            logIn();
         }
+    }
+
+    /**
+     * Logs the user in and opens the main activity.
+     */
+    private void logIn() {
+        LoginHandler.finishLogIn();
+        Intent i = new Intent (StudyBuddyLoginActivity.this, DrawerActivity.class);
+        startActivity(i);
+        finish();
     }
 }
 

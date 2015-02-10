@@ -25,7 +25,6 @@ public final class LoginHandler {
      */
     public static void logOut(Context context) {
         unlinkInstallation();
-        removeUserPrefs(context);
         ParseUser.logOut();
     }
 
@@ -45,15 +44,6 @@ public final class LoginHandler {
         ParseInstallation installation = ParseInstallation.getCurrentInstallation();
         installation.remove("user");
         installation.saveInBackground();
-    }
-
-    /**
-     * Updates shared preferences before a user logs out.
-     * @param context The context to use.
-     */
-    private static void removeUserPrefs(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("Islogin", false).commit();
     }
 
     private LoginHandler() {
