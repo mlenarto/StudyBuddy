@@ -172,7 +172,7 @@ public class DrawerActivity extends ActionBarActivity
 				break;
 			case PROFILE_FRAGMENT:
 				fragment = new ProfileFragment();
-				mTitle.setText(R.string.my_profile_title);
+				mTitle.setText(R.string.title_my_profile);
 				break;
 
 			default:

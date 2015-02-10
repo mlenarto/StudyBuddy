@@ -10,6 +10,8 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.parse.ParseUser;
+
 
 public class ProfileFragment extends Fragment {
     Button logoutButton, addClassesButton;
@@ -31,9 +33,10 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View arg0)
             {
-                //TODO: Add code to log the user out
+                // TODO: Is this all that needs to be done?
+                LoginHandler.logOut(view.getContext());
+                startActivity(new Intent(view.getContext(), StudyBuddyLoginActivity.class));
             }
-
         }
         );
     }

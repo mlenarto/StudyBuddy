@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 
@@ -27,6 +28,8 @@ public class NewRequestActivity extends ActionBarActivity {
 	TextView requestTitleLength;
 	EditText descriptionTextEdit;
 	TextView descriptionLength;
+	EditText requestLocationEdit;
+	TextView requestLocationLength;
 
 
 	public void onCreate(Bundle savedInstanceState ) {
@@ -39,6 +42,8 @@ public class NewRequestActivity extends ActionBarActivity {
 		requestTitleLength = (TextView)findViewById(R.id.request_title_length);
 		descriptionTextEdit = (EditText)findViewById(R.id.description);
 		descriptionLength = (TextView)findViewById(R.id.description_length);
+		requestLocationEdit = (EditText)findViewById(R.id.request_location);
+		requestLocationLength = (TextView)findViewById(R.id.location_length);
 		final Spinner hoursLengthSpinner = (Spinner)findViewById(R.id.request_duration_hours);
 		final Spinner minutesLengthSpinner = (Spinner)findViewById(R.id.request_duration_minutes);
 		Button submit = (Button)findViewById(R.id.submit_button);
@@ -66,6 +71,19 @@ public class NewRequestActivity extends ActionBarActivity {
 				int requestLengthMinutes = Integer.parseInt(minutesLengthSpinner.getSelectedItem().toString());
 				int requestLengthMillis = requestLengthHours*60*60*1000 + requestLengthMinutes*60*1000;
 
+				//Create the request in Parse server
+                ParseObject request = new ParseObject("HelpRequest");
+                request.put("course", "CS 408"); //TODO: grab the correct course
+                request.put("title", requestTitle);
+                request.put("description", requestDescription);
+                request.put("locationDescription", "Hicks Library, Study Room #15"); //TODO: add Location Description field to GUI
+                ParseGeoPoint point = new ParseGeoPoint(30.0, -20.0);   //TODO: grab the user's actual coordinates
+                request.put("geoLocation", point);
+                request.put("duration", requestLengthMillis);
+                request.put("user", ParseUser.getCurrentUser());
+                request.saveInBackground();
+
+				finish();
 				//Create new help request on Parse
                 Bundle extras = getIntent().getExtras();
                 if (extras != null)
@@ -123,6 +141,21 @@ public class NewRequestActivity extends ActionBarActivity {
 			}
 		});
 
+		requestLocationEdit.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				requestLocationLength.setText(requestLocationEdit.length() + "/150");
+			}
+		});
 	}
 }

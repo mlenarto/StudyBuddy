@@ -23,7 +23,8 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:name=".StudyBuddyApplication">
         <activity
             android:name=".SplashScreenActivity"
             android:label="@string/app_name"
@@ -81,6 +82,10 @@
         </activity>
         <activity android:name=".NewRequestActivity"
                   android:label="@string/title_New_Request"
+                  android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name=".RequestInfoActivity"
+                  android:label="@string/title_request_info"
                   android:screenOrientation="portrait" >
         </activity>
 

@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseInstallation;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -31,34 +32,18 @@ public class StudyBuddyLoginActivity extends Activity{
         boolean LoggedIn = prefs.getBoolean("Islogin", false);
         Log.v("login","Boolean value: " + LoggedIn);
 
-        // Required - Initialize the Parse SDK
-        Parse.initialize(this, getString(R.string.parse_app_id),
-                getString(R.string.parse_client_key));
-
-        Parse.setLogLevel(Parse.LOG_LEVEL_DEBUG);
-
-        // Subscribe to broadcast channel for push notifications
-        ParsePush.subscribeInBackground("", new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                if (e == null) {
-                    Log.d("com.parse.push", "successfully subscribed to the broadcast channel.");
-                } else {
-                    Log.e("com.parse.push", "failed to subscribe for push", e);
-                }
-            }
-        });
-
-        if(LoggedIn)           //if the user has already logged in, take them straight to the main page skipping the login screen.
+        // FIXME: This doesn't work because it doesn't actually log the user into Parse
+        /*if(LoggedIn)           //if the user has already logged in, take them straight to the main page skipping the login screen.
         {
             Log.v("login","Skipping Parse");
+            LoginHandler.finishLogIn();
             Intent i;
             i = new Intent(StudyBuddyLoginActivity.this, DrawerActivity.class);
             startActivity(i);
             finish();
         }
 
-        else
+        else*/
         {
             ParseLoginBuilder builder = new ParseLoginBuilder(StudyBuddyLoginActivity.this);
             startActivityForResult(builder.build(), LOGIN_REQUEST);
@@ -73,6 +58,7 @@ public class StudyBuddyLoginActivity extends Activity{
             // Check if the login request was successful
             if (resultCode == RESULT_OK)
             {
+                LoginHandler.finishLogIn();
                 Intent i = new Intent (StudyBuddyLoginActivity.this, DrawerActivity.class);
                 //i.putExtra("User", ParseUser.getCurrentUser().getString("name"));
                 startActivity(i);

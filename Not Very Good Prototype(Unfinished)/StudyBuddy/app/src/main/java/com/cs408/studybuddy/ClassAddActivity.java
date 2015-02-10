@@ -31,6 +31,7 @@ public class ClassAddActivity extends ActionBarActivity
 {
     public EditText newClass;
     public ListView classList;
+    private Toolbar mToolbar;
     public SharedPreferences pref;
     ArrayAdapter<String> arrayAdapter;
     ArrayList<String> classes;
@@ -39,6 +40,10 @@ public class ClassAddActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_class_add);
 
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         classes = new ArrayList<>();
 
@@ -49,6 +54,13 @@ public class ClassAddActivity extends ActionBarActivity
 
         arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, classes);
         classList.setAdapter(arrayAdapter);
+
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
 
         setupConfirmButton();
     }
@@ -74,7 +86,6 @@ public class ClassAddActivity extends ActionBarActivity
                     pref.edit().putString("classes", convertToString(classes));
                     arrayAdapter.notifyDataSetChanged();
                 }
-
             }
         );
     }
