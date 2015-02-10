@@ -11,6 +11,10 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.parse.ParseGeoPoint;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+
 /**
  * Created by Evan on 2/8/2015.
  */
@@ -60,7 +64,19 @@ public class NewRequestActivity extends ActionBarActivity {
 				int requestLengthMinutes = Integer.parseInt(minutesLengthSpinner.getSelectedItem().toString());
 				int requestLengthMillis = requestLengthHours*60*60*1000 + requestLengthMinutes*60*1000;
 
-				//Do server stuff with this
+				//Create the request in Parse server
+                ParseObject request = new ParseObject("HelpRequest");
+                request.put("course", "CS 408"); //TODO: grab the correct course
+                request.put("title", requestTitle);
+                request.put("description", requestDescription);
+                request.put("locationDescription", "Hicks Library, Study Room #15"); //TODO: add Location Description field to GUI
+                ParseGeoPoint point = new ParseGeoPoint(30.0, -20.0);   //TODO: grab the user's actual coordinates
+                request.put("geoLocation", point);
+                request.put("duration", requestLengthMillis);
+                request.put("user", ParseUser.getCurrentUser());
+                request.saveInBackground();
+
+                //TODO: Make app go back to request list
 			}
 		});
 
