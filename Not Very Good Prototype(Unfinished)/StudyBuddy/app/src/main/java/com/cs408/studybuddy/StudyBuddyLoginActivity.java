@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseInstallation;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -73,6 +74,11 @@ public class StudyBuddyLoginActivity extends Activity{
             // Check if the login request was successful
             if (resultCode == RESULT_OK)
             {
+                // Associate the user with the Parse installation
+                ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+                installation.put("user", ParseUser.getCurrentUser());
+                installation.saveInBackground();
+
                 Intent i = new Intent (StudyBuddyLoginActivity.this, DrawerActivity.class);
                 //i.putExtra("User", ParseUser.getCurrentUser().getString("name"));
                 startActivity(i);
