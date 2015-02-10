@@ -5,11 +5,17 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+
+import java.util.ArrayList;
 
 /**
  * Created by Evan on 2/8/2015.
@@ -60,7 +66,22 @@ public class NewRequestActivity extends ActionBarActivity {
 				int requestLengthMinutes = Integer.parseInt(minutesLengthSpinner.getSelectedItem().toString());
 				int requestLengthMillis = requestLengthHours*60*60*1000 + requestLengthMinutes*60*1000;
 
-				//Do server stuff with this
+				//Create new help request on Parse
+                Bundle extras = getIntent().getExtras();
+                if (extras != null)
+                {
+                    ParseObject helpRequest = new ParseObject("HelpRequest");
+                    String course = extras.getString("selected_class");
+                    Log.d("NewRequestActivity", course);
+                    /*
+                    helpRequest.put("course", course);
+                    helpRequest.put("title", requestTitle);
+                    helpRequest.put("description", requestDescription);
+                    TODO://CHANGE LOCATION DESCRIPTION TO ACTUAL LOCATION DESCRIPTION (AFTER UI UPDATE)
+                    helpRequest.put("locationDescription", requestDescription);
+                    helpRequest.put("user", ParseUser.getCurrentUser());
+                    */
+                }
 			}
 		});
 

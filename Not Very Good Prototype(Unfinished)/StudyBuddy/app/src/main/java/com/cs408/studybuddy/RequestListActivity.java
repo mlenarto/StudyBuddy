@@ -13,10 +13,16 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+
+import java.util.ArrayList;
+
 /**
  * Created by Evan on 2/8/2015.
  */
 public class RequestListActivity extends ActionBarActivity {
+    private static String course;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -29,8 +35,16 @@ public class RequestListActivity extends ActionBarActivity {
 		setSupportActionBar(mToolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
-
 		mText.setText(R.string.title_Request_List);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null)
+        {
+            course = extras.getString("selected_class");
+            /*ArrayList<ParseObject> helpRequestList = (ArrayList<ParseObject>) ParseUser.getCurrentUser().get("helpRequests");
+
+             */
+        }
 
 		ListView classList = (ListView) findViewById(R.id.class_list);
 
@@ -47,7 +61,9 @@ public class RequestListActivity extends ActionBarActivity {
 		newRequest.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				startActivity(new Intent(RequestListActivity.this, NewRequestActivity.class));
+                Intent i = new Intent(RequestListActivity.this, NewRequestActivity.class);
+                i.putExtra("class_selected", course);
+                startActivity(i);
 			}
 		});
 
