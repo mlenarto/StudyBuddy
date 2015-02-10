@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
@@ -72,31 +73,71 @@ public class NewRequestActivity extends ActionBarActivity {
 				int requestLengthMinutes = Integer.parseInt(minutesLengthSpinner.getSelectedItem().toString());
 				int requestLengthMillis = requestLengthHours*60*60*1000 + requestLengthMinutes*60*1000;
 
+				/* Create new help request on Parse */
 
-				//Create new help request on Parse
-                Bundle extras = getIntent().getExtras();
-                if (extras != null)
-                {
-                    ParseObject helpRequest = new ParseObject("HelpRequest");
-                    String course = extras.getString("selected_class");
-                    Log.d("NewRequestActivity", course);
-                    helpRequest.put("course", course);
-                    //Create the request in Parse server
-                    ParseObject request = new ParseObject("HelpRequest");
-                    request.put("course", course);
-                    request.put("title", requestTitle);
-                    request.put("description", requestDescription);
-                    request.put("locationDescription", requestLocation);
-                    ParseGeoPoint point = new ParseGeoPoint(30.0, -20.0);   //TODO: grab the user's actual coordinates
-                    request.put("geoLocation", point);
-                    request.put("duration", requestLengthMillis);
-                    request.put("user", ParseUser.getCurrentUser());
-                    request.saveInBackground();
+                //Check that bundle information was retrieved properly
+                Bundle extras = getIntent().getExtras(); //grabs the bundle
+                if(extras == null){
+                    Toast.makeText(getApplicationContext(), "Error: Cannot find extras bundle.",
+                            Toast.LENGTH_LONG).show();
                     finish();
                 }
-                else
-                {
+                String course = extras.getString("selected_class"); //grabs the selected class
+                if(course == null){
+                    Toast.makeText(getApplicationContext(), "Error: Cannot find selected class.",
+                            Toast.LENGTH_LONG).show();
+                    finish();
                 }
+                Log.d("NewRequestActivity", "Course: " + course);
+
+                //Check that Parse user was resolved properly
+                ParseUser user = ParseUser.getCurrentUser(); //grabs current Parse user
+                if(user == null){
+                    Toast.makeText(getApplicationContext(), "Error: Cannot find Parse user.",
+                            Toast.LENGTH_LONG).show();
+                    finish();
+                }
+
+                //Check that all fields were entered correctly
+                if(requestTitle.isEmpty()){
+                    Toast.makeText(getApplicationContext(), "Please enter a title.",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                else if(requestLengthMillis <= 0){
+                    Toast.makeText(getApplicationContext(), "Please enter a valid duration.",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                else if(requestLocation.isEmpty()){
+                    Toast.makeText(getApplicationContext(), "Please enter your location.",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                else if(requestDescription.isEmpty()){
+                    Toast.makeText(getApplicationContext(), "Please enter a task description.",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //Create the HelpRequest object in Parse
+                ParseObject request = new ParseObject("HelpRequest");
+                request.put("course", course);
+                request.put("title", requestTitle);
+                request.put("description", requestDescription);
+                request.put("locationDescription", requestLocation);
+                ParseGeoPoint point = new ParseGeoPoint(30.0, -20.0);   //TODO: grab the user's actual coordinates
+                request.put("geoLocation", point);
+                request.put("duration", requestLengthMillis);
+                request.put("user", user);
+                request.saveInBackground();
+
+                //TODO: Actually check if the request was successfully created in Parse
+                Toast.makeText(getApplicationContext(), "Your request was created!",
+                        Toast.LENGTH_SHORT).show();
+
+                finish();
+
 			}
 		});
 
