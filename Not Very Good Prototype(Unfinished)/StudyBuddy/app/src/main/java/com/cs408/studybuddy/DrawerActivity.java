@@ -27,6 +27,9 @@ public class DrawerActivity extends ActionBarActivity
 	private static final int CLASS_LIST_FRAGMENT = 0;
 	private static final int GROUP_FRAGMENT = 1;
 	private static final int PROFILE_FRAGMENT = 2;
+    private static final int MESSAGES_FRAGMENT = 3;
+
+
 
 
     /**
@@ -93,7 +96,8 @@ public class DrawerActivity extends ActionBarActivity
 		String[] drawerItems = new String[] {
 		getResources().getString(R.string.classes),
 		getResources().getString(R.string.group),
-		getResources().getString(R.string.profile)};
+		getResources().getString(R.string.profile),
+        "Messages"};
 
         mDrawerList.setAdapter(new ArrayAdapter<>(this,
 				R.layout.drawer_item_fragment, R.id.drawer_text, drawerItems));
@@ -174,7 +178,9 @@ public class DrawerActivity extends ActionBarActivity
 				fragment = new ProfileFragment();
 				mTitle.setText(R.string.title_my_profile);
 				break;
-
+            case MESSAGES_FRAGMENT:
+                fragment = new MessagesFragment();
+                break;
 			default:
 				break;
 		}
