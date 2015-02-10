@@ -1,10 +1,7 @@
 package com.cs408.studybuddy;
 
-import android.app.DownloadManager;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,52 +11,65 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.parse.FindCallback;
+import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.parse.ParseRelation;
-import com.parse.ParseUser;
+import com.parse.ParseQuery;
 
-import java.net.PasswordAuthentication;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Evan on 2/6/2015.
  */
 public class ClassListFragment extends Fragment {
-	private View view;
 
-    private ArrayList<String> classes;
-    public SharedPreferences prefs;
+	private View view;
+    private List<String> courses = new ArrayList<>();
+
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		view = inflater.inflate(R.layout.fragment_class_list, container, false);
-		ListView classList = (ListView) view.findViewById(R.id.class_list);
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
 
         //Retrieve courseList from Parse
-        /*ArrayList<ParseObject> courseList = (ArrayList<ParseObject>)ParseUser.getCurrentUser().get("courseList");
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> courseList, ParseException e)
+            {
+                if (e == null)
+                {
+                    for (ParseObject course : courseList)
+                    {
+                        courses.add(course.getString("courseNumber"));
+                        Log.d("ClassListFragment" , "Course Number: "+ course.getString(("courseNumber")));
+                    }
+                    Log.d("ClassListFragment", "Retrieved " + courseList.size() + " courses");
 
-         */
+                    ListView classList = (ListView) view.findViewById(R.id.class_list);
+                    if (!courses.isEmpty())
+                    {
+                        classList.setAdapter(new ArrayAdapter<>(view.getContext(),
+                                android.R.layout.simple_list_item_1, android.R.id.text1, courses));
 
-        //Grab the class list from shared prefs and convert it back into an array
-       // classes = ClassAddActivity.convertToArray(prefs.getString("classes", "No Classes"));
-		final String[] classes = new String[] {
-			"CS 408",
-			"CS 381",
-			"PHYS 221",
-			"SPAN 480"
-		};
-
-		classList.setAdapter(new ArrayAdapter<>(view.getContext(),
-				android.R.layout.simple_list_item_1, android.R.id.text1, classes));
-
-		classList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent i = new Intent(getActivity(), RequestListActivity.class);
-                i.putExtra("class_selected", "CS 408");
-				startActivity(i);
-			}
-		});
+                        classList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                Intent i = new Intent(getActivity(), RequestListActivity.class);
+                                i.putExtra("selected_class", courses.get(position));
+                                startActivity(i);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        Log.d("ClassListFragment", "Courses ArrayList is empty.");
+                    }
+                }
+                else
+                {
+                    Log.d("ClassListFragment", "Error: " + e.getMessage());
+                }
+            }
+        });
 
 		return view;
 	}

@@ -96,7 +96,6 @@ public class NewRequestActivity extends ActionBarActivity {
                 }
                 else
                 {
-
                 }
 			}
 		});

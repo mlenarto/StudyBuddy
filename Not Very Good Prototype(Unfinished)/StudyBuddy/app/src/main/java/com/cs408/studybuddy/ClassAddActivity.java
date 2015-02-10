@@ -47,8 +47,6 @@ public class ClassAddActivity extends ActionBarActivity
 
         classes = new ArrayList<>();
 
-
-
         classList = (ListView) findViewById(R.id.classList);
         newClass = (EditText) findViewById(R.id.newClass);
 
