@@ -72,7 +72,7 @@ public class NewRequestActivity extends ActionBarActivity {
 				int requestLengthMinutes = Integer.parseInt(minutesLengthSpinner.getSelectedItem().toString());
 				int requestLengthMillis = requestLengthHours*60*60*1000 + requestLengthMinutes*60*1000;
 
-				finish();
+
 				//Create new help request on Parse
                 Bundle extras = getIntent().getExtras();
                 if (extras != null)
@@ -80,7 +80,6 @@ public class NewRequestActivity extends ActionBarActivity {
                     ParseObject helpRequest = new ParseObject("HelpRequest");
                     String course = extras.getString("selected_class");
                     Log.d("NewRequestActivity", course);
-
                     helpRequest.put("course", course);
                     //Create the request in Parse server
                     ParseObject request = new ParseObject("HelpRequest");
@@ -93,6 +92,11 @@ public class NewRequestActivity extends ActionBarActivity {
                     request.put("duration", requestLengthMillis);
                     request.put("user", ParseUser.getCurrentUser());
                     request.saveInBackground();
+                    finish();
+                }
+                else
+                {
+
                 }
 			}
 		});
