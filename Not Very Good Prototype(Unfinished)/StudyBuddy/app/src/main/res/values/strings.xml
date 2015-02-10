@@ -12,6 +12,9 @@
     <string name="title_section3">Section 3</string>
     <string name="title_Request_List">Requests</string>
     <string name="title_New_Request">New Request</string>
+    <string name="title_request_info">Request Info</string>
+    <string name="title_my_group">My Group</string>
+    <string name="title_my_profile">My Profile</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
@@ -27,8 +30,8 @@
     <string name="my_profile_title">My Profile</string>
     <string name="class_add_activity">ClassAddActivity</string>
     <string name="class_prompt">Enter New Classes Here</string>
+    <string name="app_preferences">com.cs408.studybuddy</string>
     <string name="class_add_title">Add Classes</string>
-
 
     <string-array name="hours_spinner">
         <item>0</item>

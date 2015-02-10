@@ -25,6 +25,8 @@ public class NewRequestActivity extends ActionBarActivity {
 	TextView requestTitleLength;
 	EditText descriptionTextEdit;
 	TextView descriptionLength;
+	EditText requestLocationEdit;
+	TextView requestLocationLength;
 
 
 	public void onCreate(Bundle savedInstanceState ) {
@@ -37,6 +39,8 @@ public class NewRequestActivity extends ActionBarActivity {
 		requestTitleLength = (TextView)findViewById(R.id.request_title_length);
 		descriptionTextEdit = (EditText)findViewById(R.id.description);
 		descriptionLength = (TextView)findViewById(R.id.description_length);
+		requestLocationEdit = (EditText)findViewById(R.id.request_location);
+		requestLocationLength = (TextView)findViewById(R.id.location_length);
 		final Spinner hoursLengthSpinner = (Spinner)findViewById(R.id.request_duration_hours);
 		final Spinner minutesLengthSpinner = (Spinner)findViewById(R.id.request_duration_minutes);
 		Button submit = (Button)findViewById(R.id.submit_button);
@@ -59,6 +63,7 @@ public class NewRequestActivity extends ActionBarActivity {
 			@Override
 			public void onClick(View v) {
 				String requestTitle = requestTitleEdit.getText().toString();
+				String requestLocation = requestLocationEdit.getText().toString();
 				String requestDescription = descriptionTextEdit.getText().toString();
 				int requestLengthHours = Integer.parseInt(hoursLengthSpinner.getSelectedItem().toString());
 				int requestLengthMinutes = Integer.parseInt(minutesLengthSpinner.getSelectedItem().toString());
@@ -76,7 +81,7 @@ public class NewRequestActivity extends ActionBarActivity {
                 request.put("user", ParseUser.getCurrentUser());
                 request.saveInBackground();
 
-                //TODO: Make app go back to request list
+				finish();
 			}
 		});
 
@@ -118,6 +123,21 @@ public class NewRequestActivity extends ActionBarActivity {
 			}
 		});
 
+		requestLocationEdit.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				requestLocationLength.setText(requestLocationEdit.length() + "/150");
+			}
+		});
 	}
 }

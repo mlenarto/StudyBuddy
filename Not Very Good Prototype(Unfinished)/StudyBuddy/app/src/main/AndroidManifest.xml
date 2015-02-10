@@ -83,6 +83,10 @@
                   android:label="@string/title_New_Request"
                   android:screenOrientation="portrait" >
         </activity>
+        <activity android:name=".RequestInfoActivity"
+                  android:label="@string/title_request_info"
+                  android:screenOrientation="portrait" >
+        </activity>
 
         <service android:name="com.parse.PushService" />
         <receiver android:name="com.parse.ParseBroadcastReceiver">
