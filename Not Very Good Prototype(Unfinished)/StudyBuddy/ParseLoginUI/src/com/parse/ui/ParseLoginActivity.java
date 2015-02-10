@@ -29,10 +29,12 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Window;
+import android.content.SharedPreferences;
 
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
@@ -164,8 +166,10 @@ public class ParseLoginActivity extends FragmentActivity implements
     // This default implementation returns to the parent activity with
     // RESULT_OK.
     // You can change this implementation if you want a different behavior.
-    setResult(RESULT_OK);
-    finish();
+  SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+  prefs.edit().putBoolean("Islogin", true).commit();//islogin is a boolean value of your login status
+  setResult(RESULT_OK);
+  finish();
   }
 
   /**

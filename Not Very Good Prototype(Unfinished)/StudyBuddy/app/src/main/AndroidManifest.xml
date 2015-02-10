@@ -10,13 +10,9 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
-    <!--
-      IMPORTANT: Change "com.parse.tutorials.pushnotifications.permission.C2D_MESSAGE" in the lines below
-      to match your app's package name + ".permission.C2D_MESSAGE".
-    -->
     <permission android:protectionLevel="signature"
-        android:name="com.parse.tutorials.pushnotifications.permission.C2D_MESSAGE" />
-    <uses-permission android:name="com.cs408.studybuddy.pushnotifications.permission.C2D_MESSAGE" />
+        android:name="com.cs408.studybuddy.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.cs408.studybuddy.permission.C2D_MESSAGE" />
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -88,11 +84,7 @@
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-
-                <!--
-                  IMPORTANT: Change "com.parse.tutorials.pushnotifications" to match your app's package name.
-                -->
-                <category android:name="com.parse.tutorials.pushnotifications" />
+                <category android:name="com.cs408.studybuddy" />
             </intent-filter>
         </receiver>
         <receiver android:name="com.parse.ParsePushBroadcastReceiver" android:exported="false">
