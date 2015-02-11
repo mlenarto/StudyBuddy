@@ -17,6 +17,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,6 +43,7 @@ public class ClassListFragment extends Fragment {
                         courses.add(course.getString("courseNumber"));
                         Log.d("ClassListFragment" , "Course Number: "+ course.getString(("courseNumber")));
                     }
+                    Collections.sort(courses);
                     Log.d("ClassListFragment", "Retrieved " + courseList.size() + " courses");
 
                     ListView classList = (ListView) view.findViewById(R.id.class_list);
