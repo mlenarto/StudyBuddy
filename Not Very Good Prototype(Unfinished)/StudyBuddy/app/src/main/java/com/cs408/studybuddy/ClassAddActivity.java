@@ -24,6 +24,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,7 @@ public class ClassAddActivity extends ActionBarActivity
     public SharedPreferences prefs;
     classAdapter arrayAdapter;
     List<String> classes;
+    String newCourse;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,22 +92,22 @@ public class ClassAddActivity extends ActionBarActivity
                 public void onClick(View arg0)
                 {
                     //TODO: Select class from a drop-down, rather than typing it in.
-                    String insert = newClass.getText().toString();
+                    newCourse = newClass.getText().toString();
 
 					String classString = prefs.getString("class_list", null);
 					SharedPreferences.Editor edit = prefs.edit();
 
 					if(classString != null && !classString.isEmpty()) {
-						classString += "," + insert;
+						classString += "," + newCourse;
 						edit.putString("class_list", classString);
 					} else {
-						edit.putString("class_list", insert);
+						edit.putString("class_list", newCourse);
 					}
 					edit.commit();
 
                     //TODO: Handle the case where we fail to add the course on the server, so we don't add it locally.
 
-					classes.add(insert);
+					classes.add(newCourse);
 					Collections.sort(classes);
 					arrayAdapter.notifyDataSetChanged();
 
@@ -114,7 +116,7 @@ public class ClassAddActivity extends ActionBarActivity
                     /* Add class to the user's course list on database */
                     //Grab class object from database
                     ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
-                    query.whereContains("courseNumber", insert);
+                    query.whereContains("courseNumber", newCourse);
                     query.getFirstInBackground(new GetCallback<ParseObject>() {
                         public void done(ParseObject classObj, ParseException e) {
                             if (e == null) {
@@ -125,10 +127,23 @@ public class ClassAddActivity extends ActionBarActivity
                                 ParseUser userObj = ParseUser.getCurrentUser();
                                 ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
                                 relation.add(classObj);
-                                userObj.saveInBackground();
-                                //TODO: Actually check if the class was successfully added in Parse
-                                Toast.makeText(getApplicationContext(), classObj.getString("courseNumber") + " was added!",
-                                        Toast.LENGTH_SHORT).show();
+                                userObj.saveInBackground(new SaveCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+                                        if(e == null){
+                                            //user saved properly.
+                                            Toast.makeText(getApplicationContext(), newCourse + " was added!",
+                                                    Toast.LENGTH_SHORT).show();
+                                        } else{
+                                            //course was not saved properly.
+                                            e.printStackTrace();
+                                            Toast.makeText(getApplicationContext(), "Error: Cannot save user in database.",
+                                                    Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+                                    }
+                                });
+
                             } else {
                                 //didn't find the class (should never happen once we pick classes from a drop-down)
                                 Log.d("ClassAddActivity", "Error: " + e.getMessage());
