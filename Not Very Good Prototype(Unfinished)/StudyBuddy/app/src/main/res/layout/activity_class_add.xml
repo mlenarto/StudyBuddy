@@ -1,47 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/classList"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="false"
-        android:background="@color/white"
-        android:divider="@color/black"
-        android:dividerHeight="1dp"
-        android:nestedScrollingEnabled="true"
-        android:layout_above="@+id/newClass" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Confirm"
-        android:id="@+id/confirmClasses"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:singleLine="true" />
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/newClass"
-        android:editable="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:background="@color/grey"
-        android:layout_above="@+id/confirmClasses"
-        android:textAlignment="center"
-        android:textIsSelectable="false"
-        android:inputType="text"
-        android:clickable="true"
-        android:enabled="true"
-        android:layout_alignParentBottom="false"
-        android:layout_alignWithParentIfMissing="false"
-        android:hint="@string/class_prompt"
-        android:textSize="@dimen/abc_text_size_display_2_material" />
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -57,12 +18,71 @@
             android:textSize="20sp"
             android:text="@string/class_add_title" />
 
-        </android.support.v7.widget.Toolbar>
+    </android.support.v7.widget.Toolbar>
 
-        <TextView
-            android:id="@+id/toolbar_border"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@id/toolbar"
-            android:background="@color/grey"/>
+    <TextView
+        android:id="@+id/toolbar_border"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/toolbar"
+        android:background="@color/grey"/>
+
+
+
+    <!--android:background="@color/grey"-->
+    <EditText
+        android:id="@+id/newClass"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:editable="true"
+        android:layout_alignParentBottom="true"
+        android:hint="@string/class_prompt"
+        android:maxLength="10"
+        android:maxLines="1"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/confirmClasses"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="20dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="+"
+        android:textColor="@color/common_signin_btn_text_light"
+        android:background="@color/white"
+        android:textSize="35dp"
+        android:singleLine="true" />
+
+    <TextView
+        android:id="@+id/new_class_border"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@id/newClass"
+        android:background="@color/grey"/>
+
+    <ListView
+        android:id="@+id/classList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/toolbar_border"
+        android:layout_above="@id/new_class_border"
+        android:focusable="true"
+        android:clickable="false"
+        android:overScrollFooter="@color/white"
+        android:background="@color/white"
+        android:divider="@color/black"
+        android:dividerHeight="1dp"
+        android:nestedScrollingEnabled="true" />
+
+    <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_above="@id/new_class_border"-->
+        <!--android:layout_below="@id/classList"-->
+        <!--android:background="@color/white"/>-->
+
 </RelativeLayout>
