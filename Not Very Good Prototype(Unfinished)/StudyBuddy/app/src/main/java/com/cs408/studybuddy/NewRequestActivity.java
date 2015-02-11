@@ -13,9 +13,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.GetCallback;
+import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseRelation;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 
@@ -31,6 +36,8 @@ public class NewRequestActivity extends ActionBarActivity {
 	TextView descriptionLength;
 	EditText requestLocationEdit;
 	TextView requestLocationLength;
+    ParseObject request, courseObj;
+    ParseUser user;
 
 
 	public void onCreate(Bundle savedInstanceState ) {
@@ -91,7 +98,7 @@ public class NewRequestActivity extends ActionBarActivity {
                 Log.d("NewRequestActivity", "Course: " + course);
 
                 //Check that Parse user was resolved properly
-                ParseUser user = ParseUser.getCurrentUser(); //grabs current Parse user
+                user = ParseUser.getCurrentUser(); //grabs current Parse user
                 if(user == null){
                     Toast.makeText(getApplicationContext(), "Error: Cannot find Parse user.",
                             Toast.LENGTH_LONG).show();
@@ -120,21 +127,84 @@ public class NewRequestActivity extends ActionBarActivity {
                     return;
                 }
 
+                //Grab class object from database
+                //ParseObject courseObj = null;
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
+                query.whereContains("courseNumber", course);
+                try {
+                    courseObj = query.getFirst();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Error: Cannot get class from database.",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 //Create the HelpRequest object in Parse
-                ParseObject request = new ParseObject("HelpRequest");
-                request.put("course", course);
+                request = new ParseObject("HelpRequest");
+                request.put("course", courseObj);
                 request.put("title", requestTitle);
                 request.put("description", requestDescription);
                 request.put("locationDescription", requestLocation);
                 ParseGeoPoint point = new ParseGeoPoint(30.0, -20.0);   //TODO: grab the user's actual coordinates
                 request.put("geoLocation", point);
                 request.put("duration", requestLengthMillis);
-                request.put("user", user);
-                request.saveInBackground();
+                ParseRelation<ParseUser> members = request.getRelation("members");
+                members.add(user);
+                //request.put("user", user);
+                request.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if(e == null){
+                            //request saved properly
+                            /*add the HelpRequest to the course's object*/
+                            ParseRelation<ParseObject> requests = courseObj.getRelation("requests");
+                            requests.add(request);
+                            courseObj.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if(e == null){
+                                        //course saved properly.
+                                        //no toast here because one appears when below save is complete
+                                    } else{
+                                        //course was not saved properly.
+                                        e.printStackTrace();
+                                        Toast.makeText(getApplicationContext(), "Error: Cannot save course in database.",
+                                                Toast.LENGTH_SHORT).show();
+                                        return;
+                                    }
+                                }
+                            });
 
-                //TODO: Actually check if the request was successfully created in Parse
-                Toast.makeText(getApplicationContext(), "Your request was created!",
-                        Toast.LENGTH_SHORT).show();
+                            /*add the HelpRequest to the user's object*/
+                            user.put("currentRequest", request);
+                            user.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if(e == null){
+                                        //user saved properly.
+                                        Toast.makeText(getApplicationContext(), "Your request was created!",
+                                                Toast.LENGTH_SHORT).show();
+                                    } else{
+                                        //user was not saved properly.
+                                        e.printStackTrace();
+                                        Toast.makeText(getApplicationContext(), "Error: Cannot save user in database.",
+                                                Toast.LENGTH_SHORT).show();
+                                        return;
+                                    }
+                                }
+                            });
+
+                        }else{
+                            //request didn't save properly
+                            e.printStackTrace();
+                            Toast.makeText(getApplicationContext(), "Error: Cannot save request in database.",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+                });
+
 
                 finish();
 
