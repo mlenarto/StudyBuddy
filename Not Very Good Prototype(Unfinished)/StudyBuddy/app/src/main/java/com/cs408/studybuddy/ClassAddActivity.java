@@ -50,8 +50,8 @@ public class ClassAddActivity extends ActionBarActivity
         classList = (ListView) findViewById(R.id.classList);
         newClass = (EditText) findViewById(R.id.newClass);
 
-        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, classes);
-        classList.setAdapter(arrayAdapter);
+//        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, classes);
+//        classList.setAdapter(arrayAdapter);
 
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,7 +66,7 @@ public class ClassAddActivity extends ActionBarActivity
     public void setupConfirmButton()
     {
 
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        pref = getSharedPreferences(getResources().getString(R.string.app_preferences), 0);
         Button confirm = (Button) findViewById(R.id.confirmClasses);
 
         confirm.setOnClickListener(new View.OnClickListener()
@@ -79,10 +79,23 @@ public class ClassAddActivity extends ActionBarActivity
                     String insert;
                     insert = newClass.getText().toString();
 
-                    arrayAdapter.add(insert);
-                    classes.add(insert);
-                    pref.edit().putString("classes", convertToString(classes));
-                    arrayAdapter.notifyDataSetChanged();
+//                    arrayAdapter.add(insert);
+//                    classes.add(insert);
+//                    pref.edit().putString("classes", convertToString(classes)).commit();
+//                    arrayAdapter.notifyDataSetChanged();
+					String classList = pref.getString("class_list", null);
+					SharedPreferences.Editor edit = pref.edit();
+
+					if(classList != null && !classList.isEmpty()) {
+						classList += "," + insert;
+						edit.putString("class_list", classList);
+					} else {
+						edit.putString("class_list", insert);
+					}
+					edit.commit();
+
+
+					//TODO: Add this class to the server as well
                 }
             }
         );
