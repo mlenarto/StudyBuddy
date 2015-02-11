@@ -16,6 +16,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseRelation;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,7 +89,7 @@ public class ClassAddActivity extends ActionBarActivity
                 //Hopefully will dynamically add elements to the list view, no checks for phony classes yet
                 public void onClick(View arg0)
                 {
-                    //TODO: Checks for phony classes
+                    //TODO: Select class from a drop-down, rather than typing it in.
                     String insert = newClass.getText().toString();
 
 					String classString = prefs.getString("class_list", null);
@@ -95,6 +103,7 @@ public class ClassAddActivity extends ActionBarActivity
 					}
 					edit.commit();
 
+                    //TODO: Handle the case where we fail to add the course on the server, so we don't add it locally.
 
 					classes.add(insert);
 					Collections.sort(classes);
@@ -102,7 +111,32 @@ public class ClassAddActivity extends ActionBarActivity
 
 					newClass.setText("");
 
-					//TODO: Add this class to the server as well
+                    /* Add class to the user's course list on database */
+                    //Grab class object from database
+                    ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
+                    query.whereContains("courseNumber", insert);
+                    query.getFirstInBackground(new GetCallback<ParseObject>() {
+                        public void done(ParseObject classObj, ParseException e) {
+                            if (e == null) {
+                                //found the class
+                                Log.d("ClassAddActivity", "Class: " + classObj.getString("courseName"));
+                                //TODO: Check if the user already has this course in their courseList
+                                //add it to the user's course list
+                                ParseUser userObj = ParseUser.getCurrentUser();
+                                ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
+                                relation.add(classObj);
+                                userObj.saveInBackground();
+                                //TODO: Actually check if the class was successfully added in Parse
+                                Toast.makeText(getApplicationContext(), classObj.getString("courseNumber") + " was added!",
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                //didn't find the class (should never happen once we pick classes from a drop-down)
+                                Log.d("ClassAddActivity", "Error: " + e.getMessage());
+                                Toast.makeText(getApplicationContext(), "Error: Class not found.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
                 }
             }
         );
