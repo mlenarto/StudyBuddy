@@ -13,9 +13,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.parse.FindCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseRelation;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +43,22 @@ public class ClassListFragment extends Fragment {
 
 		//If a preference should be available in the entire app, open it like this
 		prefs = getActivity().getSharedPreferences(getResources().getString(R.string.app_preferences), 0);
+/*
+        ParseRelation<ParseObject> courseListRelation = ParseUser.getCurrentUser().getRelation("courseList");
+        courseListRelation.getQuery().findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> courseList, ParseException e) {
+                if (e != null) {
+                    // There was an error
+                    Log.d("ClassListFragment" , "Error retrieving course list for user");
+
+                } else
+                {
+                    // courseList contains all Course objects related to user
+                    Log.d("ClassListFragment" , "Success retrieving course list");
+                }
+            }
+        });
+*/
 
 		//Retrieve courseList from Parse
 		ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
