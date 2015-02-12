@@ -1,32 +1,38 @@
 package com.cs408.studybuddy;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Created by Evan on 2/8/2015.
  */
 public class RequestListActivity extends ActionBarActivity {
-    private static String course;
+    private static String course = new String();
     private List<String> requests = new ArrayList<>();
+    private static String course_obj_id = new String();
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -53,17 +59,14 @@ public class RequestListActivity extends ActionBarActivity {
             Log.d("RequestListActivity", "EXTRAS IS NULL :(");
         }
 
-		String[] classes = new String[] {
-				"First homework assignment",
-				"First quiz",
-				"Help with first homework",
-				"Problem 3?"
-		};
+        // Inner query to grab course pointer so we pull help requests for the specific course
+        ParseQuery innerQuery = new ParseQuery("Course");
+        innerQuery.whereEqualTo("courseNumber", course);
 
         //Retrieve helpRequest list from Parse
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
-        query.whereContains("course", course);
-        query.findInBackground(new FindCallback<ParseObject>() {
+        ParseQuery<ParseObject> request_query = ParseQuery.getQuery("HelpRequest");
+        request_query.whereMatchesQuery("course", innerQuery);
+        request_query.findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> requestList, ParseException e)
             {
                 if (e == null)
@@ -77,11 +80,10 @@ public class RequestListActivity extends ActionBarActivity {
                     if (!requests.isEmpty())
                     {
                         ListView classList = (ListView) findViewById(R.id.class_list);
-                        //TODO: Can someone take a look at the code below (commented out), I can't resolve the error
-                        /*
-                        classList.setAdapter(new ArrayAdapter<>(this,
+
+                        classList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
                                 android.R.layout.simple_list_item_1, android.R.id.text1, requests));
-*/
+
                         classList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -91,16 +93,21 @@ public class RequestListActivity extends ActionBarActivity {
                     }
                     else
                     {
+                        Toast toast = Toast.makeText(getApplicationContext(), "No help requests for this course.", Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.CENTER,0,0);
+                        toast.show();
                         Log.d("RequestListActivity", "Requests ArrayList is empty.");
                     }
                 }
                 else
                 {
+                    Toast toast = Toast.makeText(getApplicationContext(), "An error occurred when retrieving the help requests for this course.", Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.CENTER,0,0);
+                    toast.show();
                     Log.d("RequestListActivity", "Error: " + e.getMessage());
                 }
             }
         });
-
 
 		newRequest.setOnClickListener(new View.OnClickListener() {
 			@Override
