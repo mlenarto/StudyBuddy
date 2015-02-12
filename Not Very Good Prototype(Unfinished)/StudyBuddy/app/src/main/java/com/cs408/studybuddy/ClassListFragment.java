@@ -43,7 +43,7 @@ public class ClassListFragment extends Fragment {
 
 		//If a preference should be available in the entire app, open it like this
 		prefs = getActivity().getSharedPreferences(getResources().getString(R.string.app_preferences), 0);
-/*
+
         ParseRelation<ParseObject> courseListRelation = ParseUser.getCurrentUser().getRelation("courseList");
         courseListRelation.getQuery().findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> courseList, ParseException e) {
@@ -54,63 +54,47 @@ public class ClassListFragment extends Fragment {
                 } else
                 {
                     // courseList contains all Course objects related to user
-                    Log.d("ClassListFragment" , "Success retrieving course list");
+                    courses.clear();
+                    classesString = "";
+                    for (ParseObject course : courseList)
+                    {
+                        courses.add(course.getString("courseNumber"));
+//						Log.d("ClassListFragment" , "Course Number: "+ course.getString(("courseNumber")));
+                        classesString += course.getString("courseNumber") + ",";
+                    }
+                    Log.d("ClassListFragment", "Retrieved " + courseList.size() + " courses");
+
+                    if (!courses.isEmpty())
+                    {
+                        Collections.sort(courses);
+                        classAdapter = new ArrayAdapter<>(view.getContext(),
+                                android.R.layout.simple_list_item_1, android.R.id.text1, courses);
+
+                        classList.setAdapter(classAdapter);
+
+                        classList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                Intent i = new Intent(getActivity(), RequestListActivity.class);
+                                i.putExtra("selected_class", classAdapter.getItem(position));
+                                Log.d("class", "opened " + classAdapter.getItem(position) + ", class = " + classAdapter.getItem(position).getClass());
+                                startActivity(i);
+                            }
+                        });
+
+                        classesString = classesString.substring(0, classesString.length()-1);	//Remove end comma
+                        SharedPreferences.Editor edit = prefs.edit();
+                        edit.putString("class_list", classesString);
+                        edit.commit();
+                    }
+                    else
+                    {
+                        Log.d("ClassListFragment", "Courses ArrayList is empty.");
+                    }
+
                 }
             }
         });
-*/
-
-		//Retrieve courseList from Parse
-		ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
-		query.findInBackground(new FindCallback<ParseObject>() {
-			public void done(List<ParseObject> courseList, ParseException e)
-			{
-				if (e == null)
-				{
-					courses.clear();
-					classesString = "";
-					for (ParseObject course : courseList)
-					{
-						courses.add(course.getString("courseNumber"));
-//						Log.d("ClassListFragment" , "Course Number: "+ course.getString(("courseNumber")));
-						classesString += course.getString("courseNumber") + ",";
-					}
-					Log.d("ClassListFragment", "Retrieved " + courseList.size() + " courses");
-
-					if (!courses.isEmpty())
-					{
-						Collections.sort(courses);
-						classAdapter = new ArrayAdapter<>(view.getContext(),
-								android.R.layout.simple_list_item_1, android.R.id.text1, courses);
-
-						classList.setAdapter(classAdapter);
-
-						classList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-							@Override
-							public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-								Intent i = new Intent(getActivity(), RequestListActivity.class);
-								i.putExtra("selected_class", classAdapter.getItem(position));
-								Log.d("class", "opened " + classAdapter.getItem(position) + ", class = " + classAdapter.getItem(position).getClass());
-								startActivity(i);
-							}
-						});
-
-						classesString = classesString.substring(0, classesString.length()-1);	//Remove end comma
-						SharedPreferences.Editor edit = prefs.edit();
-						edit.putString("class_list", classesString);
-						edit.commit();
-					}
-					else
-					{
-						Log.d("ClassListFragment", "Courses ArrayList is empty.");
-					}
-				}
-				else
-				{
-					Log.d("ClassListFragment", "Error: " + e.getMessage());
-				}
-			}
-		});
 
 		return view;
 	}
