@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
@@ -19,17 +21,20 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseRelation;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,35 +48,28 @@ import java.util.Scanner;
 
 public class ClassAddActivity extends ActionBarActivity
 {
-    public AutoCompleteTextView newClass;
-    public ListView classList;
+    private AutoCompleteTextView newClass;
+    private ListView classList;
     private Toolbar mToolbar;
-    public SharedPreferences prefs;
-    classAdapter arrayAdapter;
+    private SharedPreferences prefs;
+    private classAdapter arrayAdapter;
     private List<String> classes;
-    private List<String> allClasses;
+
     private Boolean is_valid;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_class_add);
+
         is_valid = false;
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		classList = (ListView) findViewById(R.id.classList);
 		newClass = (AutoCompleteTextView) findViewById(R.id.newClass);
 
 
-        allClasses = readInMasterClassList();
-        setupClassSelecter();
+		ReadMasterClassTask read = new ReadMasterClassTask();
+		read.execute();
 
-       /* for(String s : allClasses)
-        {
-            Log.v("masterclasslist",s);
-        }*/
-
-        //Adapter used for the autocomplete window
-        ArrayAdapter completeAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,allClasses);
-        newClass.setAdapter(completeAdapter);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -99,71 +97,89 @@ public class ClassAddActivity extends ActionBarActivity
         setupConfirmButton();
     }
 
-    //This makes sure that the user picks from the list given in the autocomplete.  Keeps a variable that sets to null if the user does not select a correct class
-    private void setupClassSelecter()
-    {
-        newClass.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                Log.v("add class error", "Clicked on option");
-                is_valid = true;
-            }
-        });
-
-        newClass.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count)
-            {
-                Toast toast;
-                Log.v("add class error", "Should not add...");
-                is_valid = false;
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-    }
 
 
-    //This reads in from a .txt file the master class list and returns it as an ArrayList (kinda crappy but it should only have to do this when a user wants to change classes)
-    private ArrayList<String> readInMasterClassList()
-    {
-        List<String> c;
-        c = new ArrayList<>();
-        Scanner in;
-        Resources res = getResources();
-        InputStream in_s = res.openRawResource(R.raw.classes);
 
-        InputStreamReader inputreader = new InputStreamReader(in_s);
+	private class ReadMasterClassTask extends AsyncTask<Void, Void, ArrayList<String>> {
 
-        in = new Scanner(in_s);
-        in.useDelimiter("=");
+		//This reads in from a .txt file the master class list and returns it as an ArrayList (kinda crappy but it should only have to do this when a user wants to change classes)
+		protected ArrayList<String> doInBackground(Void... v) {
+			List<String> c;
+			c = new ArrayList<>();
+			Scanner in;
+			Resources res = getResources();
+			InputStream in_s = res.openRawResource(R.raw.classes);
 
-        String line;
-        StringBuilder text = new StringBuilder();
+			in = new Scanner(in_s);
+			in.useDelimiter("=");
 
-        while (in.hasNextLine())
-        {
-            c.add(in.next());
-            in.nextLine();
-        }
+			while (in.hasNextLine())
+			{
+				c.add(in.next());
+				in.nextLine();
+			}
 
-        in.close();
-        try
-        {
-            in_s.close();
-        }
+			in.close();
+			try
+			{
+				in_s.close();
+			}
 
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        return (ArrayList<String>)c;
-    }
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			return (ArrayList<String>)c;
+		}
+
+		//Set up the fancy EditText with listeners and an adapter
+		//This makes sure that the user picks from the list given in the autocomplete.  Keeps a variable that sets to null if the user does not select a correct class
+		protected void onPostExecute(ArrayList<String> classList) {
+			ArrayAdapter completeAdapter = new ArrayAdapter<String>(ClassAddActivity.this
+					, android.R.layout.simple_list_item_1, classList);
+			newClass.setAdapter(completeAdapter);
+
+
+			newClass.setEnabled(true);
+			newClass.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+			newClass.setHint(getResources().getString(R.string.class_prompt));
+
+			newClass.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+				{
+					Log.v("add class error", "Clicked on option");
+					is_valid = true;
+				}
+			});
+
+			newClass.addTextChangedListener(new TextWatcher() {
+				@Override
+				public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+				@Override
+				public void onTextChanged(CharSequence s, int start, int before, int count)
+				{
+//                Toast toast;
+					Log.v("add class error", "Should not add...");
+					is_valid = false;
+				}
+
+				@Override
+				public void afterTextChanged(Editable s) {}
+			});
+
+			newClass.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					if(newClass.getText().toString().length() > 0)
+						newClass.showDropDown();
+				}
+			});
+		}
+	}
+
+
 
 
 
@@ -185,57 +201,80 @@ public class ClassAddActivity extends ActionBarActivity
                         return;
                     }
 
-                    String insert = newClass.getText().toString();
+					final String newCourse = newClass.getText().toString();
 
 					String classString = prefs.getString("class_list", null);
 					SharedPreferences.Editor edit = prefs.edit();
 
 					if(classString != null && !classString.isEmpty())
                     {
-						classString += "," + insert;
+						classString += "," + newCourse;
 						edit.putString("class_list", classString);
 					}
 
                     else
                     {
-						edit.putString("class_list", insert);
+						edit.putString("class_list", newCourse);
 					}
 
 					edit.commit();
 
+                    //TODO: Handle the case where we fail to add the course on the server, so we don't add it locally.
 
-					classes.add(insert);
+					classes.add(newCourse);
 					Collections.sort(classes);
 					arrayAdapter.notifyDataSetChanged();
 
 					newClass.setText("");
 
-					//TODO: Add this class to the server as well
+                    /* Add class to the user's course list on database */
+                    //Grab class object from database
+                    ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
+                    query.whereContains("courseNumber", newCourse);
+                    query.getFirstInBackground(new GetCallback<ParseObject>() {
+                        public void done(ParseObject classObj, ParseException e) {
+                            if (e == null) {
+                                //found the class
+                                Log.d("ClassAddActivity", "Class: " + classObj.getString("courseName"));
+                                //TODO: Check if the user already has this course in their courseList
+                                //add it to the user's course list
+                                ParseUser userObj = ParseUser.getCurrentUser();
+                                ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
+                                relation.add(classObj);
+                                userObj.saveInBackground(new SaveCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+                                        if(e == null){
+                                            //user saved properly.
+                                            Toast.makeText(getApplicationContext(), newCourse + " was added!",
+                                                    Toast.LENGTH_SHORT).show();
+                                        } else{
+                                            //course was not saved properly.
+                                            e.printStackTrace();
+                                            Toast.makeText(getApplicationContext(), "Error: Cannot save user in database.",
+                                                    Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+                                    }
+                                });
+
+                            } else {
+                                //didn't find the class (should never happen once we pick classes from a drop-down)
+                                Log.d("ClassAddActivity", "Error: " + e.getMessage());
+                                Toast.makeText(getApplicationContext(), "Error: Class not found.",
+                                        Toast.LENGTH_SHORT).show();
+								removeClassFromPrefs(newCourse);
+                            }
+                        }
+                    });
                 }
             }
         );
     }
 
-    //This will convert any array into a string seperated by commas
-    public static String convertToString(ArrayList<String> list)
-    {
-        StringBuilder sb = new StringBuilder();
-        String delim = "";
-        for (String s : list)
-        {
-            sb.append(delim);
-            sb.append(s);
-            delim = ",";
-        }
-        return sb.toString();
-    }
 
-    //USE THIS TO CONVERT FROM SHARED PREFS BACK INTO THE ARRAYLIST
-    public static ArrayList<String> convertToArray(String string)
-    {
-        ArrayList<String> list = new ArrayList<String>(Arrays.asList(string.split(",")));
-        return list;
-    }
+
+
 
 	private class classAdapter extends ArrayAdapter<String> {
 
@@ -278,29 +317,9 @@ public class ClassAddActivity extends ActionBarActivity
 					builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							String classesString = prefs.getString("class_list", null);
-							SharedPreferences.Editor edit = prefs.edit();
 
-							int start = classesString.indexOf(className);
+							removeClassFromPrefs(className);
 
-							if(classes.size() == 1) {
-								edit.putString("class_list", "");
-							} else if(start == 0) {		//Name is at the start of the array
-								classesString = classesString.substring(className.length()+1, classesString.length());
-								edit.putString("class_list", classesString);
-							} else if((start + className.length()) == classesString.length()) {
-								classesString = classesString.substring(0, start-1);
-								edit.putString("class_list", classesString);
-							} else {
-								classesString = classesString.substring(0, start-1) +
-										classesString.substring(start + className.length(), classesString.length());
-								edit.putString("class_list", classesString);
-							}
-							edit.commit();
-
-							classes.remove(className);
-							Collections.sort(classes);
-							arrayAdapter.notifyDataSetChanged();
 
 							//TODO: remove class on server side
 						}
@@ -319,5 +338,55 @@ public class ClassAddActivity extends ActionBarActivity
 
 			return v;
 		}
+	}
+
+
+	private void removeClassFromPrefs(String className) {
+		String classesString = prefs.getString("class_list", null);
+		SharedPreferences.Editor edit = prefs.edit();
+
+		int start = classesString.indexOf(className);
+
+		if(classes.size() == 1) {
+			edit.putString("class_list", "");
+		} else if(start == 0) {		//Name is at the start of the array
+			classesString = classesString.substring(className.length()+1, classesString.length());
+			edit.putString("class_list", classesString);
+		} else if((start + className.length()) == classesString.length()) {
+			classesString = classesString.substring(0, start-1);
+			edit.putString("class_list", classesString);
+		} else {
+			classesString = classesString.substring(0, start-1) +
+					classesString.substring(start + className.length(), classesString.length());
+			edit.putString("class_list", classesString);
+		}
+		edit.commit();
+
+		classes.remove(className);
+		Collections.sort(classes);
+		arrayAdapter.notifyDataSetChanged();
+	}
+
+
+
+	//This will convert any array into a string seperated by commas
+	public static String convertToString(ArrayList<String> list)
+	{
+		StringBuilder sb = new StringBuilder();
+		String delim = "";
+		for (String s : list)
+		{
+			sb.append(delim);
+			sb.append(s);
+			delim = ",";
+		}
+		return sb.toString();
+	}
+
+	//USE THIS TO CONVERT FROM SHARED PREFS BACK INTO THE ARRAYLIST
+	public static ArrayList<String> convertToArray(String string)
+	{
+		ArrayList<String> list = new ArrayList<String>(Arrays.asList(string.split(",")));
+		return list;
 	}
 }
