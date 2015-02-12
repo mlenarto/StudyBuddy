@@ -78,10 +78,10 @@ public class RequestListActivity extends ActionBarActivity {
                     {
                         ListView classList = (ListView) findViewById(R.id.class_list);
                         //TODO: Can someone take a look at the code below (commented out), I can't resolve the error
-                        /*
-                        classList.setAdapter(new ArrayAdapter<>(this,
+
+                        classList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
                                 android.R.layout.simple_list_item_1, android.R.id.text1, requests));
-*/
+
                         classList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
