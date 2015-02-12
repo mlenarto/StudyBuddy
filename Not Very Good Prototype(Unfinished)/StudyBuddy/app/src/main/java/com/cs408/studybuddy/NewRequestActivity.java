@@ -1,5 +1,6 @@
 package com.cs408.studybuddy;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -35,6 +36,7 @@ public class NewRequestActivity extends ActionBarActivity {
 	TextView requestLocationLength;
     ParseObject request, courseObj;
     ParseUser user;
+	private SharedPreferences prefs;
 
 
 	public void onCreate(Bundle savedInstanceState ) {
@@ -59,6 +61,7 @@ public class NewRequestActivity extends ActionBarActivity {
 
 		mTitle.setText("New Request");
 
+		prefs = getSharedPreferences(getResources().getString(R.string.app_preferences), 0);
 
 		mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
 			@Override
@@ -178,13 +181,20 @@ public class NewRequestActivity extends ActionBarActivity {
 
                             /*add the HelpRequest to the user's object*/
                             user.put("currentRequest", request);
+
                             user.saveInBackground(new SaveCallback() {
                                 @Override
                                 public void done(ParseException e) {
                                     if(e == null){
                                         //user saved properly.
-                                        Toast.makeText(getApplicationContext(), "Your request was created!",
-                                                Toast.LENGTH_SHORT).show();
+										SharedPreferences.Editor edit = prefs.edit();
+
+										edit.putString(getString(R.string.my_request_id), request.getObjectId());
+
+										edit.apply();
+
+										Toast.makeText(getApplicationContext(), "Your request was created!",
+												Toast.LENGTH_SHORT).show();
                                     } else{
                                         //user was not saved properly.
                                         e.printStackTrace();

@@ -111,6 +111,17 @@
             android:text="Description"
             android:textSize="18sp"
             />
+
+        <Button
+            android:id="@+id/request_join_leave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/request_description"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="20dp"
+            android:text="@string/request_join"
+            android:visibility="gone"/>
     </RelativeLayout>
 
 </ScrollView>

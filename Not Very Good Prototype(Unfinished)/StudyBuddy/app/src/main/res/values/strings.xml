@@ -33,6 +33,11 @@
     <string name="class_prompt">Enter New Classes</string>
     <string name="app_preferences">com.cs408.studybuddy</string>
     <string name="class_add_title">Add Classes</string>
+    <string name="request_join">Join Group</string>
+    <string name="request_leave">Leave Group</string>
+
+
+    <string name="my_request_id">currentRequestID</string>
 
     <string-array name="hours_spinner">
         <item>0</item>
