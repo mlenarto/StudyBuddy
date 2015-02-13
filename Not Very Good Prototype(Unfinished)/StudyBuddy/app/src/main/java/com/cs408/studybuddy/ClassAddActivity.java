@@ -94,7 +94,6 @@ public class ClassAddActivity extends ActionBarActivity
 			}
 		});
 
-        setupConfirmButton();
     }
 
 
@@ -149,24 +148,8 @@ public class ClassAddActivity extends ActionBarActivity
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 				{
 					Log.v("add class error", "Clicked on option");
-					is_valid = true;
+					addClass();
 				}
-			});
-
-			newClass.addTextChangedListener(new TextWatcher() {
-				@Override
-				public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-				@Override
-				public void onTextChanged(CharSequence s, int start, int before, int count)
-				{
-//                Toast toast;
-					Log.v("add class error", "Should not add...");
-					is_valid = false;
-				}
-
-				@Override
-				public void afterTextChanged(Editable s) {}
 			});
 
 			newClass.setOnClickListener(new View.OnClickListener() {
@@ -183,93 +166,82 @@ public class ClassAddActivity extends ActionBarActivity
 
 
 
-    public void setupConfirmButton()
+    private void addClass()
     {
-        Button confirm = (Button) findViewById(R.id.confirmClasses);
+		final String newCourse = newClass.getText().toString();
 
-        confirm.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View arg0)
-                {
-                    if(!is_valid)
-                    {
-                        Toast toast = Toast.makeText(getApplicationContext(), "Please select from the drop down", Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.CENTER,0,0);
-                        toast.show();
-                        newClass.setText("");
-                        return;
-                    }
+		if(classes.contains(newCourse)) {
+			newClass.setText("");
+			Toast.makeText(getApplicationContext(), getString(R.string.duplicate_class),
+					Toast.LENGTH_SHORT).show();
+			return;
+		}
 
-					final String newCourse = newClass.getText().toString();
+		String classString = prefs.getString("class_list", null);
+		SharedPreferences.Editor edit = prefs.edit();
 
-					String classString = prefs.getString("class_list", null);
-					SharedPreferences.Editor edit = prefs.edit();
+		if(classString != null && !classString.isEmpty())
+		{
+			classString += "," + newCourse;
+			edit.putString("class_list", classString);
+		}
 
-					if(classString != null && !classString.isEmpty())
-                    {
-						classString += "," + newCourse;
-						edit.putString("class_list", classString);
-					}
+		else
+		{
+			edit.putString("class_list", newCourse);
+		}
 
-                    else
-                    {
-						edit.putString("class_list", newCourse);
-					}
+		edit.commit();
 
-					edit.commit();
+		//TODO: Handle the case where we fail to add the course on the server, so we don't add it locally.
 
-                    //TODO: Handle the case where we fail to add the course on the server, so we don't add it locally.
+		classes.add(newCourse);
+		Collections.sort(classes);
+		arrayAdapter.notifyDataSetChanged();
 
-					classes.add(newCourse);
-					Collections.sort(classes);
-					arrayAdapter.notifyDataSetChanged();
 
-					newClass.setText("");
 
-                    /* Add class to the user's course list on database */
-                    //Grab class object from database
-                    ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
-                    query.whereContains("courseNumber", newCourse);
-                    query.getFirstInBackground(new GetCallback<ParseObject>() {
-                        public void done(ParseObject classObj, ParseException e) {
-                            if (e == null) {
-                                //found the class
-                                Log.d("ClassAddActivity", "Class: " + classObj.getString("courseName"));
-                                //TODO: Check if the user already has this course in their courseList
-                                //add it to the user's course list
-                                ParseUser userObj = ParseUser.getCurrentUser();
-                                ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
-                                relation.add(classObj);
-                                userObj.saveInBackground(new SaveCallback() {
-                                    @Override
-                                    public void done(ParseException e) {
-                                        if(e == null){
-                                            //user saved properly.
-                                            Toast.makeText(getApplicationContext(), newCourse + " was added!",
-                                                    Toast.LENGTH_SHORT).show();
-                                        } else{
-                                            //course was not saved properly.
-                                            e.printStackTrace();
-                                            Toast.makeText(getApplicationContext(), "Error: Cannot save user in database.",
-                                                    Toast.LENGTH_SHORT).show();
-                                            return;
-                                        }
-                                    }
-                                });
+		/* Add class to the user's course list on database */
+		//Grab class object from database
+		ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
+		query.whereContains("courseNumber", newCourse);
+		query.getFirstInBackground(new GetCallback<ParseObject>() {
+			public void done(ParseObject classObj, ParseException e) {
+				if (e == null) {
+					//found the class
+					Log.d("ClassAddActivity", "Class: " + classObj.getString("courseName"));
+					//TODO: Check if the user already has this course in their courseList
+					//add it to the user's course list
+					ParseUser userObj = ParseUser.getCurrentUser();
+					ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
+					relation.add(classObj);
+					userObj.saveInBackground(new SaveCallback() {
+						@Override
+						public void done(ParseException e) {
+							if(e == null){
+								//user saved properly.
+								newClass.setText("");
+								Toast.makeText(getApplicationContext(), newCourse + " was added!",
+										Toast.LENGTH_SHORT).show();
+							} else{
+								//course was not saved properly.
+								e.printStackTrace();
+								Toast.makeText(getApplicationContext(), "Error: Cannot save user in database.",
+										Toast.LENGTH_SHORT).show();
+								return;
+							}
+						}
+					});
 
-                            } else {
-                                //didn't find the class (should never happen once we pick classes from a drop-down)
-                                Log.d("ClassAddActivity", "Error: " + e.getMessage());
-                                Toast.makeText(getApplicationContext(), "Error: Class not found.",
-                                        Toast.LENGTH_SHORT).show();
-								removeClassFromPrefs(newCourse);
-                            }
-                        }
-                    });
-                }
-            }
-        );
+				} else {
+					//didn't find the class (should never happen once we pick classes from a drop-down)
+					Log.d("ClassAddActivity", "Error: " + e.getMessage());
+					Toast.makeText(getApplicationContext(), "Error: Class not found.",
+							Toast.LENGTH_SHORT).show();
+					removeClassFromPrefs(newCourse);
+				}
+			}
+		});
     }
 
 

@@ -21,6 +21,7 @@
     <string name="app_preferences">com.cs408.studybuddy</string>
     <string name="confirm_option">Yes</string>
     <string name="cancel_option">Cancel</string>
+    <string name="duplicate_class">You\'re already in that class</string>
 
 
     <string name="request_join">Join Group</string>
