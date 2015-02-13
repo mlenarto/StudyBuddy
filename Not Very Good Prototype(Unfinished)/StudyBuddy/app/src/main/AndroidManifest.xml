@@ -60,7 +60,7 @@
 
         <activity
             android:name=".DrawerActivity"
-            android:label="@string/title_activity_class_list"
+            android:label="@string/title_class_list"
             android:screenOrientation="portrait" >
         </activity>
 

@@ -62,7 +62,7 @@ public class RequestInfoActivity extends ActionBarActivity {
 					"Example Title",
 					"6600000",	//Time assigned to request in milliseconds (Total time, not remaining)
 					"5",		//number of helpers
-					"8",		//number of leachers
+					"8",		//total group members
 					"Lawson Commons, round table under the TVs.",	//Location
 					"This is an example of a somewhat long description that takes multiple lines.", //Description
 					"12315645613", //Make this a timestamp of the creation time please"
@@ -82,17 +82,17 @@ public class RequestInfoActivity extends ActionBarActivity {
 			int timeMillis = Integer.parseInt(result[1]);
 			int timeHours = timeMillis / 3600000;		//Milliseconds in an hour
 			int timeMinutes = (timeMillis - timeHours * 3600000) / 60000;
-			String h = timeHours == 1 ? "hour" : "hours";
-			String m = timeMinutes == 1 ? "minute" : "minutes";
+			String h = getResources().getQuantityString(R.plurals.hours, timeHours);
+			String m = getResources().getQuantityString(R.plurals.minutes, timeMinutes);
 
 			int helperCount = Integer.parseInt(result[2]);
-			int leachCount = Integer.parseInt(result[3]);
-			String help = helperCount == 1 ? "helper" : "helpers";
-			String leach = leachCount == 1 ? "leach" : "leaches";	//TODO: this needs a better name =/
+			int membersTotal = Integer.parseInt(result[3]);
+			String help = getResources().getQuantityString(R.plurals.helpers, helperCount);
+			String members = getResources().getQuantityString(R.plurals.members, membersTotal);
 
 			requestTitle.setText(result[0]);
 			timeRemaining.setText(timeHours + " " + h + ", " + timeMinutes + " " + m);
-			memberCount.setText(helperCount + " " + help + ", " + leachCount + " " + leach);
+			memberCount.setText(helperCount + " " + help + ", " + membersTotal + " " + members);
 			requestLocation.setText(result[4]);
 			requestDescription.setText(result[5]);
 
@@ -114,10 +114,10 @@ public class RequestInfoActivity extends ActionBarActivity {
 					if(isInGroup) {		//Always confirm for leaving the group
 						AlertDialog.Builder builder = new AlertDialog.Builder(RequestInfoActivity.this);
 
-						builder.setMessage("Are you sure you want to leave this group?")
-								.setTitle("Leave " + result[0] + "?");
+						builder.setMessage(getString(R.string.request_leave_generic_warning))
+								.setTitle(getString(R.string.request_leave_with_name, result[0]));
 
-						builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+						builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								//TODO: Leave group on server
@@ -125,7 +125,7 @@ public class RequestInfoActivity extends ActionBarActivity {
 							}
 						});
 
-						builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+						builder.setNegativeButton(getString(R.string.cancel_option), new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								//Do nothing
@@ -138,10 +138,10 @@ public class RequestInfoActivity extends ActionBarActivity {
 						if(prefs.contains(getString(R.string.my_request_id))) {
 							AlertDialog.Builder builder = new AlertDialog.Builder(RequestInfoActivity.this);
 
-							builder.setMessage("Are you sure you want to leave " + result[0] + "?")  //Change this to the other group's title
-									.setTitle("Already in another group");
+							builder.setMessage(getString(R.string.request_leave_other_group_with_name, result[0]))  //Change this to the other group's title
+									.setTitle(getString(R.string.request_already_in_group_warning));
 
-							builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+							builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									//TODO: join group on server
@@ -149,7 +149,7 @@ public class RequestInfoActivity extends ActionBarActivity {
 								}
 							});
 
-							builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+							builder.setNegativeButton(getString(R.string.cancel_option), new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									//Do nothing

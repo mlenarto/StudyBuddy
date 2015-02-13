@@ -20,8 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class DrawerActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class DrawerActivity extends ActionBarActivity {
 
 
 	private static final int CLASS_LIST_FRAGMENT = 0;
@@ -64,7 +63,7 @@ public class DrawerActivity extends ActionBarActivity
 		transaction.add(R.id.container, classList);
 		transaction.commit();
 		topFragment = CLASS_LIST_FRAGMENT;
-		mTitle.setText(R.string.class_list_title);
+		mTitle.setText(R.string.title_class_list);
 
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
@@ -93,51 +92,10 @@ public class DrawerActivity extends ActionBarActivity
 
 		mDrawerToggle.syncState();
 
-		String[] drawerItems = new String[] {
-		getResources().getString(R.string.classes),
-		getResources().getString(R.string.group),
-		getResources().getString(R.string.profile),
-        "Messages"};
+		String[] drawerItems = getResources().getStringArray(R.array.drawer_class_list);
 
         mDrawerList.setAdapter(new ArrayAdapter<>(this,
 				R.layout.drawer_item_fragment, R.id.drawer_text, drawerItems));
-    }
-
-
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
-    }
-
-    public void onSectionAttached(int number) {
-//        switch (number) {
-//            case 1:
-//                mTitle = getString(R.string.title_section1);
-//                break;
-//            case 2:
-//                mTitle = getString(R.string.title_section2);
-//                break;
-//            case 3:
-//                mTitle = getString(R.string.title_section3);
-//                break;
-//        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-//        if (!mNavigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-//            getMenuInflater().inflate(R.menu.class_list, menu);
-//            restoreActionBar();
-//            return true;
-//        }
-        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -170,7 +128,7 @@ public class DrawerActivity extends ActionBarActivity
 		switch (position) {
 			case CLASS_LIST_FRAGMENT:
 				fragment = new ClassListFragment();
-				mTitle.setText(R.string.class_list_title);
+				mTitle.setText(R.string.title_class_list);
 				break;
 			case GROUP_FRAGMENT:
 				break;
@@ -180,6 +138,7 @@ public class DrawerActivity extends ActionBarActivity
 				break;
             case MESSAGES_FRAGMENT:
                 fragment = new MessagesFragment();
+				mTitle.setText(R.string.title_messages);
                 break;
 			default:
 				break;
@@ -206,45 +165,5 @@ public class DrawerActivity extends ActionBarActivity
 		super.onConfigurationChanged(newConfig);
 		mDrawerToggle.onConfigurationChanged(newConfig);
 	}
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_class_list, container, false);
-            return rootView;
-        }
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((DrawerActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
-    }
 
 }
