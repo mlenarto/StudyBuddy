@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:background="@color/white">
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
 
 
         <android.support.v7.widget.Toolbar
@@ -31,153 +27,161 @@
             android:layout_below="@id/toolbar"
             android:background="@color/grey"/>
 
-        <TextView
-            android:id="@+id/request_title_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/toolbar_border"
-            android:layout_marginTop="15dp"
-            android:layout_marginLeft="20dp"
-            android:text="Title"
-            android:textSize="24sp"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/request_title_length"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignRight="@+id/request_title"
-            android:layout_alignBottom="@id/request_title_label"
-            android:layout_marginLeft="35dp"
-            android:text="0/20"
-            android:textSize="20sp"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/request_title"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/request_title_label"
-            android:layout_marginLeft="20dp"
-            android:textSize="18sp"
-            android:maxLines="1"
-            android:maxLength="20" />
+            <TextView
+                android:id="@+id/request_title_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="20dp"
+                android:text="Title"
+                android:textSize="24sp"/>
 
-        <TextView
-            android:id="@+id/duration_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/request_title"
-            android:layout_marginTop="30dp"
-            android:layout_marginLeft="20dp"
-            android:text="Duration"
-            android:textSize="24sp" />
+            <TextView
+                android:id="@+id/request_title_length"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignRight="@+id/request_title"
+                android:layout_alignBottom="@id/request_title_label"
+                android:layout_marginLeft="35dp"
+                android:text="0/20"
+                android:textSize="20sp"/>
 
-        <TextView
-            android:id="@+id/duration_hours_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/duration_label"
-            android:layout_marginTop="15dp"
-            android:layout_marginLeft="20dp"
-            android:text="Hours:"
-            android:textSize="20dp" />
+            <EditText
+                android:id="@+id/request_title"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/request_title_label"
+                android:layout_marginLeft="20dp"
+                android:textSize="18sp"
+                android:maxLines="1"
+                android:maxLength="20" />
 
-        <Spinner
-            android:id="@+id/request_duration_hours"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/duration_hours_label"
-            android:layout_alignBottom="@id/duration_hours_label"
-            android:layout_marginLeft="10dp"
-            android:entries="@array/hours_spinner"/>
+            <TextView
+                android:id="@+id/duration_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/request_title"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="20dp"
+                android:text="Duration"
+                android:textSize="24sp" />
 
-        <TextView
-            android:id="@+id/duration_minutes_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/request_duration_hours"
-            android:layout_alignBottom="@id/duration_hours_label"
-            android:layout_marginLeft="15dp"
-            android:text="Minutes:"
-            android:textSize="20dp" />
+            <TextView
+                android:id="@+id/duration_hours_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/duration_label"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="20dp"
+                android:text="Hours:"
+                android:textSize="20dp" />
 
-        <Spinner
-            android:id="@+id/request_duration_minutes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/duration_minutes_label"
-            android:layout_alignBottom="@id/request_duration_hours"
-            android:layout_marginLeft="10dp"
-            android:entries="@array/minutes_spinner"/>
+            <Spinner
+                android:id="@+id/request_duration_hours"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/duration_hours_label"
+                android:layout_alignBottom="@id/duration_hours_label"
+                android:layout_marginLeft="10dp"
+                android:entries="@array/hours_spinner"/>
 
-        <TextView
-            android:id="@+id/request_location_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/duration_hours_label"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="30dp"
-            android:text="Location"
-            android:textSize="24sp"/>
+            <TextView
+                android:id="@+id/duration_minutes_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/request_duration_hours"
+                android:layout_alignBottom="@id/duration_hours_label"
+                android:layout_marginLeft="15dp"
+                android:text="Minutes:"
+                android:textSize="20dp" />
 
-        <TextView
-            android:id="@+id/location_length"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignRight="@+id/request_location"
-            android:layout_alignBottom="@id/request_location_label"
-            android:text="0/150"
-            android:maxLines="5"
-            android:maxLength="150"
-            android:textSize="20sp" />
+            <Spinner
+                android:id="@+id/request_duration_minutes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/duration_minutes_label"
+                android:layout_alignBottom="@id/request_duration_hours"
+                android:layout_marginLeft="10dp"
+                android:entries="@array/minutes_spinner"/>
 
-        <EditText
-            android:id="@+id/request_location"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_below="@id/request_location_label"
-            android:textSize="18sp"
-            android:maxLength="150"
-            />
+            <TextView
+                android:id="@+id/request_location_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/duration_hours_label"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="30dp"
+                android:text="Location"
+                android:textSize="24sp"/>
 
-        <TextView
-            android:id="@+id/description_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/request_location"
-            android:layout_marginTop="30dp"
-            android:layout_marginLeft="20dp"
-            android:text="Task Description"
-            android:textSize="24sp"/>
+            <TextView
+                android:id="@+id/location_length"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignRight="@+id/request_location"
+                android:layout_alignBottom="@id/request_location_label"
+                android:text="0/150"
+                android:maxLines="5"
+                android:maxLength="150"
+                android:textSize="20sp" />
 
-        <TextView
-            android:id="@+id/description_length"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignRight="@+id/description"
-            android:layout_alignBottom="@id/description_label"
-            android:text="0/200"
-            android:textSize="20sp" />
+            <EditText
+                android:id="@+id/request_location"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_below="@id/request_location_label"
+                android:textSize="18sp"
+                android:maxLength="150"
+                />
 
-        <EditText
-            android:id="@+id/description"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_below="@id/description_label"
-            android:textSize="18sp"
-            android:maxLength="200" />
+            <TextView
+                android:id="@+id/description_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/request_location"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="20dp"
+                android:text="Task Description"
+                android:textSize="24sp"/>
 
-        <Button
-            android:id="@+id/submit_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/description"
-            android:layout_marginTop="30dp"
-            android:layout_centerHorizontal="true"
-            android:text="Create"
-            android:textSize="18sp" />
+            <TextView
+                android:id="@+id/description_length"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignRight="@+id/description"
+                android:layout_alignBottom="@id/description_label"
+                android:text="0/200"
+                android:textSize="20sp" />
 
-    </RelativeLayout>
+            <EditText
+                android:id="@+id/description"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_below="@id/description_label"
+                android:textSize="18sp"
+                android:maxLength="200" />
 
-</ScrollView>
+            <Button
+                android:id="@+id/submit_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/description"
+                android:layout_marginTop="30dp"
+                android:layout_centerHorizontal="true"
+                android:text="Create"
+                android:textSize="18sp" />
+
+        </RelativeLayout>
+    </ScrollView>
+
+</LinearLayout>

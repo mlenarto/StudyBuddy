@@ -193,7 +193,7 @@ public class NewRequestActivity extends ActionBarActivity {
 
 										edit.apply();
 
-										Toast.makeText(getApplicationContext(), "Your request was created!",
+										Toast.makeText(getApplicationContext(), R.string.new_request_success,
 												Toast.LENGTH_SHORT).show();
                                     } else{
                                         //user was not saved properly.

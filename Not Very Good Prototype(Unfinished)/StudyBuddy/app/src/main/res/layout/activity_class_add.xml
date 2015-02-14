@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:textSize="20sp"
-            android:text="@string/class_add_title" />
+            android:text="@string/title_class_add" />
 
     </android.support.v7.widget.Toolbar>
 
@@ -32,10 +32,11 @@
     <!--android:background="@color/grey"-->
     <AutoCompleteTextView
         android:id="@+id/newClass"
-        android:layout_width="250dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:inputType="none"
         android:hint="Loading..."
         android:editable="false"
@@ -45,25 +46,11 @@
         android:textSize="18sp"
         android:layout_below="@+id/toolbar_border" />
 
-    <Button
-        android:id="@+id/confirmClasses"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="20dp"
-        android:text="+"
-        android:textColor="@color/common_signin_btn_text_light"
-        android:background="@color/white"
-        android:textSize="35dp"
-        android:singleLine="true"
-        android:layout_below="@+id/toolbar_border"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
     <TextView
         android:id="@+id/new_class_border"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@id/confirmClasses"
+        android:layout_below="@id/newClass"
         android:background="@color/grey"/>
 
     <ListView
