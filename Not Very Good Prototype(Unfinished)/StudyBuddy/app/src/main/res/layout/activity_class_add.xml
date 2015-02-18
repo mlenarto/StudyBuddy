@@ -29,7 +29,6 @@
 
 
 
-    <!--android:background="@color/grey"-->
     <AutoCompleteTextView
         android:id="@+id/newClass"
         android:layout_width="match_parent"
@@ -67,12 +66,5 @@
         android:layout_below="@+id/new_class_border"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
-
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_above="@id/new_class_border"-->
-        <!--android:layout_below="@id/classList"-->
-        <!--android:background="@color/white"/>-->
 
 </RelativeLayout>

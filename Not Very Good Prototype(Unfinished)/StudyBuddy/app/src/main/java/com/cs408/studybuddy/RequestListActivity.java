@@ -1,7 +1,7 @@
 package com.cs408.studybuddy;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,14 +16,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
-import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-import com.parse.ParseUser;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,6 +30,8 @@ public class RequestListActivity extends ActionBarActivity {
     private static String course = new String();
     private List<String> requests = new ArrayList<>();
     private static String course_obj_id = new String();
+	private LocationService gps;
+	private Location mLocation;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -46,6 +45,12 @@ public class RequestListActivity extends ActionBarActivity {
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
 		mText.setText(R.string.title_Request_List);
+
+		gps = LocationService.getInstance(this);
+		gps.startGPS(10*1000, 5);
+
+		//This can return null, include checks
+		mLocation = gps.getLocation();
 
         Bundle extras = getIntent().getExtras();
         if (extras != null)
@@ -124,5 +129,11 @@ public class RequestListActivity extends ActionBarActivity {
 				onBackPressed();
 			}
 		});
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		gps.stopGPS();
 	}
 }
