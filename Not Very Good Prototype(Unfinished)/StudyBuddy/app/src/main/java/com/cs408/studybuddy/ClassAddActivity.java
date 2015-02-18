@@ -226,7 +226,7 @@ public class ClassAddActivity extends ActionBarActivity
 							} else{
 								//course was not saved properly.
 								e.printStackTrace();
-								Toast.makeText(getApplicationContext(), "Error: Cannot save user in database.",
+								Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
 										Toast.LENGTH_SHORT).show();
 								return;
 							}

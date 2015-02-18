@@ -86,13 +86,13 @@ public class NewRequestActivity extends ActionBarActivity {
                 Bundle extras = getIntent().getExtras(); //grabs the bundle
                 if(extras == null){
                     Toast.makeText(getApplicationContext(), "Error: Cannot find extras bundle.",
-                            Toast.LENGTH_LONG).show();
+                            Toast.LENGTH_LONG).show(); //this should never happen
                     finish();
                 }
                 String course = extras.getString("selected_class"); //grabs the selected class
                 if(course == null){
                     Toast.makeText(getApplicationContext(), "Error: Cannot find selected class.",
-                            Toast.LENGTH_LONG).show();
+                            Toast.LENGTH_LONG).show(); //this should never happen
                     finish();
                 }
                 Log.d("NewRequestActivity", "Course: " + course);
@@ -100,7 +100,7 @@ public class NewRequestActivity extends ActionBarActivity {
                 //Check that Parse user was resolved properly
                 user = ParseUser.getCurrentUser(); //grabs current Parse user
                 if(user == null){
-                    Toast.makeText(getApplicationContext(), "Error: Cannot find Parse user.",
+                    Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
                             Toast.LENGTH_LONG).show();
                     finish();
                 }
@@ -135,7 +135,7 @@ public class NewRequestActivity extends ActionBarActivity {
                     courseObj = query.getFirst();
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "Error: Cannot get class from database.",
+                    Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -149,12 +149,8 @@ public class NewRequestActivity extends ActionBarActivity {
                 ParseGeoPoint point = new ParseGeoPoint(30.0, -20.0);   //TODO: grab the user's actual coordinates
                 request.put("geoLocation", point);
                 request.put("duration", requestLengthMillis);
-                ParseRelation<ParseUser> members = request.getRelation("members");
-                members.add(user);
-                //request.put("user", user);
 
 				Log.d("request", "request = " + request.toString());
-				Log.d("request", "member = " + user.toString());
                 request.saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {
@@ -168,47 +164,43 @@ public class NewRequestActivity extends ActionBarActivity {
                                 public void done(ParseException e) {
                                     if(e == null){
                                         //course saved properly.
-                                        //no toast here because one appears when below save is complete
+                                         /*add the HelpRequest to the user's object*/
+                                        user.put("currentRequest", request);
+                                        user.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                if(e == null){
+                                                    //user saved properly.
+                                                    SharedPreferences.Editor edit = prefs.edit();
+
+                                                    edit.putString(getString(R.string.my_request_id), request.getObjectId());
+
+                                                    edit.apply();
+
+                                                    Toast.makeText(getApplicationContext(), R.string.new_request_success,
+                                                            Toast.LENGTH_SHORT).show();
+                                                } else{
+                                                    //user was not saved properly.
+                                                    e.printStackTrace();
+                                                    Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
+                                                            Toast.LENGTH_SHORT).show();
+                                                    return;
+                                                }
+                                            }
+                                        });
                                     } else{
                                         //course was not saved properly.
                                         e.printStackTrace();
-                                        Toast.makeText(getApplicationContext(), "Error: Cannot save course in database.",
+                                        Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
                                                 Toast.LENGTH_SHORT).show();
                                         return;
                                     }
                                 }
                             });
-
-                            /*add the HelpRequest to the user's object*/
-                            user.put("currentRequest", request);
-
-                            user.saveInBackground(new SaveCallback() {
-                                @Override
-                                public void done(ParseException e) {
-                                    if(e == null){
-                                        //user saved properly.
-										SharedPreferences.Editor edit = prefs.edit();
-
-										edit.putString(getString(R.string.my_request_id), request.getObjectId());
-
-										edit.apply();
-
-										Toast.makeText(getApplicationContext(), R.string.new_request_success,
-												Toast.LENGTH_SHORT).show();
-                                    } else{
-                                        //user was not saved properly.
-                                        e.printStackTrace();
-                                        Toast.makeText(getApplicationContext(), "Error: Cannot save user in database.",
-                                                Toast.LENGTH_SHORT).show();
-                                        return;
-                                    }
-                                }
-                            });
-
                         }else{
                             //request didn't save properly
                             e.printStackTrace();
-                            Toast.makeText(getApplicationContext(), "Error: Cannot save request in database.",
+                            Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
                                     Toast.LENGTH_SHORT).show();
                             return;
                         }
