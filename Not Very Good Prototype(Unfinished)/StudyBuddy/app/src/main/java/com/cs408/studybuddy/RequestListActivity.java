@@ -72,29 +72,29 @@ public class RequestListActivity extends ActionBarActivity {
         ParseQuery<ParseObject> request_query = ParseQuery.getQuery("HelpRequest");
         request_query.whereMatchesQuery("course", innerQuery);
         request_query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> requestList, ParseException e)
+            public void done(List<ParseObject> requests, ParseException e)
             {
                 if (e == null)
                 {
-                    for (ParseObject request : requestList)
+                    for (ParseObject request : requests)
                     {
-                        requests.add(request.getString("title"));
+                        RequestListActivity.this.requests.add(request.getString("title"));
                     }
-                    Log.d("RequestListActivity", "Retrieved " + requestList.size() + " help requests");
+                    Log.d("RequestListActivity", "Retrieved " + requests.size() + " help requests");
 
-                    if (!requests.isEmpty())
+                    if (!RequestListActivity.this.requests.isEmpty())
                     {
-                        ListView classList = (ListView) findViewById(R.id.class_list);
+                        ListView requestList = (ListView) findViewById(R.id.class_list);
 
-                        classList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
-                                android.R.layout.simple_list_item_1, android.R.id.text1, requests));
+                        requestList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
+								android.R.layout.simple_list_item_1, android.R.id.text1, RequestListActivity.this.requests));
 
-                        classList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                startActivity(new Intent(RequestListActivity.this, RequestInfoActivity.class));
-                            }
-                        });
+                        requestList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+							@Override
+							public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+								startActivity(new Intent(RequestListActivity.this, RequestInfoActivity.class));
+							}
+						});
                     }
                     else
                     {

@@ -27,15 +27,15 @@ import com.parse.SaveCallback;
  */
 public class NewRequestActivity extends ActionBarActivity {
 
-	Toolbar mToolbar;
-	EditText requestTitleEdit;
-	TextView requestTitleLength;
-	EditText descriptionTextEdit;
-	TextView descriptionLength;
-	EditText requestLocationEdit;
-	TextView requestLocationLength;
-    ParseObject request, courseObj;
-    ParseUser user;
+	private Toolbar mToolbar;
+	private EditText requestTitleEdit;
+	private TextView requestTitleLength;
+	private EditText descriptionTextEdit;
+	private TextView descriptionLength;
+	private EditText requestLocationEdit;
+	private TextView requestLocationLength;
+    private ParseObject request, courseObj;
+    private ParseUser user;
 	private SharedPreferences prefs;
 
 
@@ -85,13 +85,13 @@ public class NewRequestActivity extends ActionBarActivity {
                 //Check that bundle information was retrieved properly
                 Bundle extras = getIntent().getExtras(); //grabs the bundle
                 if(extras == null){
-                    Toast.makeText(getApplicationContext(), "Error: Cannot find extras bundle.",
+                    Toast.makeText(getApplicationContext(), getString(R.string.bundle_error),
                             Toast.LENGTH_LONG).show(); //this should never happen
                     finish();
                 }
                 String course = extras.getString("selected_class"); //grabs the selected class
                 if(course == null){
-                    Toast.makeText(getApplicationContext(), "Error: Cannot find selected class.",
+                    Toast.makeText(getApplicationContext(), getString(R.string.error_no_class),
                             Toast.LENGTH_LONG).show(); //this should never happen
                     finish();
                 }
@@ -100,29 +100,29 @@ public class NewRequestActivity extends ActionBarActivity {
                 //Check that Parse user was resolved properly
                 user = ParseUser.getCurrentUser(); //grabs current Parse user
                 if(user == null){
-                    Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
+                    Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                             Toast.LENGTH_LONG).show();
                     finish();
                 }
 
                 //Check that all fields were entered correctly
                 if(requestTitle.isEmpty()){
-                    Toast.makeText(getApplicationContext(), "Please enter a title.",
+                    Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_title),
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
                 else if(requestLengthMillis <= 0){
-                    Toast.makeText(getApplicationContext(), "Please enter a valid duration.",
+                    Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_zero_time),
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
                 else if(requestLocation.isEmpty()){
-                    Toast.makeText(getApplicationContext(), "Please enter your location.",
+                    Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_location),
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
                 else if(requestDescription.isEmpty()){
-                    Toast.makeText(getApplicationContext(), "Please enter a task description.",
+                    Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_description),
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -135,7 +135,7 @@ public class NewRequestActivity extends ActionBarActivity {
                     courseObj = query.getFirst();
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
+                    Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -182,7 +182,7 @@ public class NewRequestActivity extends ActionBarActivity {
                                                 } else{
                                                     //user was not saved properly.
                                                     e.printStackTrace();
-                                                    Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
+                                                    Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                                                             Toast.LENGTH_SHORT).show();
                                                     return;
                                                 }
@@ -191,7 +191,7 @@ public class NewRequestActivity extends ActionBarActivity {
                                     } else{
                                         //course was not saved properly.
                                         e.printStackTrace();
-                                        Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
+                                        Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                                                 Toast.LENGTH_SHORT).show();
                                         return;
                                     }
@@ -200,7 +200,7 @@ public class NewRequestActivity extends ActionBarActivity {
                         }else{
                             //request didn't save properly
                             e.printStackTrace();
-                            Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
+                            Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                                     Toast.LENGTH_SHORT).show();
                             return;
                         }

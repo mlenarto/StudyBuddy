@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -117,6 +118,9 @@ public class DrawerActivity extends ActionBarActivity {
     }
 
 	private void displayView(int position) {
+		FrameLayout frame = (FrameLayout) findViewById(R.id.container);
+		frame.removeAllViews();
+
 		Fragment fragment = null;
 
 		if(position == topFragment) {

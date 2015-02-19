@@ -42,7 +42,7 @@ public class ClassListFragment extends Fragment {
 		classList = (ListView) view.findViewById(R.id.class_list);
 
 		//If a preference should be available in the entire app, open it like this
-		prefs = getActivity().getSharedPreferences(getResources().getString(R.string.app_preferences), 0);
+		prefs = getActivity().getSharedPreferences(getString(R.string.app_preferences), 0);
 
         ParseRelation<ParseObject> courseListRelation = ParseUser.getCurrentUser().getRelation("courseList");
         courseListRelation.getQuery().findInBackground(new FindCallback<ParseObject>() {

@@ -22,6 +22,9 @@
     <string name="confirm_option">Yes</string>
     <string name="cancel_option">Cancel</string>
     <string name="duplicate_class">You\'re already in that class</string>
+    <string name="network_error">Error: Check your network connection.</string>
+    <string name="bundle_error">Error: Cannot find extras bundle.</string>
+    <string name="error_no_class">Error: Cannot find selected class.</string>
 
 
     <string name="request_join">Join Group</string>
@@ -34,7 +37,10 @@
 
     <string name="new_request_success">Your request was created!</string>
     <string name="new_request_error">Failed to create request, please try again</string>
-
+    <string name="new_request_error_title">Please enter a title.</string>
+    <string name="new_request_error_zero_time">Please enter a valid duration.</string>
+    <string name="new_request_error_location">Please enter your location.</string>
+    <string name="new_request_error_description">Please enter a task description.</string>
 
 
 
