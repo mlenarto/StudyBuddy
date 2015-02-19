@@ -40,6 +40,7 @@ public class RequestListActivity extends ActionBarActivity {
 		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		TextView mText = (TextView) findViewById(R.id.title_text);
 		Button newRequest = (Button) findViewById(R.id.newRequest);
+		final TextView noRequestText = (TextView) findViewById(R.id.no_requests);
 
 		setSupportActionBar(mToolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -52,6 +53,8 @@ public class RequestListActivity extends ActionBarActivity {
 		//This can return null, include checks
 		mLocation = gps.getLocation();
 
+
+		noRequestText.setVisibility(View.GONE);
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
@@ -98,9 +101,7 @@ public class RequestListActivity extends ActionBarActivity {
                     }
                     else
                     {
-                        Toast toast = Toast.makeText(getApplicationContext(), "No help requests for this course.", Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.CENTER,0,0);
-                        toast.show();
+						noRequestText.setVisibility(View.VISIBLE);
                         Log.d("RequestListActivity", "Requests ArrayList is empty.");
                     }
                 }
