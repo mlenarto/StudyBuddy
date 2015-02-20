@@ -44,6 +44,8 @@ public class LocationService extends Service implements LocationListener
 	 */
 	public Location getLocation()
 	{
+		if(locationManager == null)
+			return null;
 		if(currentLocation != null)
 			return currentLocation;
 		else if(networkEnabled)
@@ -110,6 +112,7 @@ public class LocationService extends Service implements LocationListener
 		{
 			locationManager.removeUpdates(LocationService.this);
 		}
+		isConnected = true;
 		locationManager = null;
 	}
 	

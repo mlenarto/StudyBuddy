@@ -48,10 +48,10 @@ public class RequestListActivity extends ActionBarActivity {
 		mText.setText(R.string.title_Request_List);
 
 		gps = LocationService.getInstance(this);
-		gps.startGPS(10*1000, 5);
+//		gps.startGPS(10*1000, 5);
 
 		//This can return null, include checks
-		mLocation = gps.getLocation();
+//		mLocation = gps.getLocation();
 
 
 		noRequestText.setVisibility(View.GONE);
@@ -135,6 +135,6 @@ public class RequestListActivity extends ActionBarActivity {
 	@Override
 	public void onPause() {
 		super.onPause();
-		gps.stopGPS();
+//		gps.stopGPS();
 	}
 }
