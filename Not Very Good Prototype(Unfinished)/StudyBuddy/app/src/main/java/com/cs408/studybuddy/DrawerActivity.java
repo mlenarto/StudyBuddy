@@ -118,9 +118,6 @@ public class DrawerActivity extends ActionBarActivity {
     }
 
 	private void displayView(int position) {
-		FrameLayout frame = (FrameLayout) findViewById(R.id.container);
-		frame.removeAllViews();
-
 		Fragment fragment = null;
 
 		if(position == topFragment) {
@@ -128,6 +125,9 @@ public class DrawerActivity extends ActionBarActivity {
 			mDrawerLayout.closeDrawer(mDrawerList);
 			return;
 		}
+
+		FrameLayout frame = (FrameLayout) findViewById(R.id.container);
+		frame.removeAllViews();
 
 		switch (position) {
 			case CLASS_LIST_FRAGMENT:
