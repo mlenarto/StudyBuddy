@@ -292,8 +292,47 @@ public class ClassAddActivity extends ActionBarActivity
 
 							removeClassFromPrefs(className);
 
+                            /* Remove class to the user's course list on database */
+                            //Grab class object from database
+                            ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
+                            query.whereContains("courseNumber", className);
+                            query.getFirstInBackground(new GetCallback<ParseObject>() {
+                                public void done(ParseObject classObj, ParseException e) {
+                                    if (e == null) {
+                                        //found the class
+                                        Log.d("ClassAddActivity", "Class: " + classObj.getString("courseName"));
+                                        //TODO: Check if the user doesn't have this course in their courseList (not super important)
+                                        //TODO: Check if the user is in a study group for this class. If they are, prompt them that it will remove them.
+                                        //remove it from the user's course list
+                                        ParseUser userObj = ParseUser.getCurrentUser();
+                                        ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
+                                        relation.remove(classObj);
+                                        userObj.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                if(e == null){
+                                                    //user saved properly.
+                                                    Toast.makeText(getApplicationContext(), className + " was removed.",
+                                                            Toast.LENGTH_SHORT).show();
+                                                } else{
+                                                    //course was not saved properly.
+                                                    e.printStackTrace();
+                                                    Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
+                                                            Toast.LENGTH_SHORT).show();
+                                                    return;
+                                                }
+                                            }
+                                        });
 
-							//TODO: remove class on server side
+                                    } else {
+                                        //didn't find the class (should never happen once we pick classes from a drop-down)
+                                        Log.d("ClassAddActivity", "Error: " + e.getMessage());
+                                        Toast.makeText(getApplicationContext(), "Error: Class not found.",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+
 						}
 					});
 
