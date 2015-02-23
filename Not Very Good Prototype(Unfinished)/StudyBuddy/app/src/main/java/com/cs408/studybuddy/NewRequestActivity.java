@@ -166,6 +166,7 @@ public class NewRequestActivity extends ActionBarActivity {
                                         //course saved properly.
                                          /*add the HelpRequest to the user's object*/
                                         user.put("currentRequest", request);
+                                        user.put("isHelper", false);    //assume if creating a request, they are not a helper.
                                         user.saveInBackground(new SaveCallback() {
                                             @Override
                                             public void done(ParseException e) {

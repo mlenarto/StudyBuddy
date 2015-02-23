@@ -9,6 +9,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 /**
  * Created by Evan on 2/9/2015.
@@ -17,6 +24,7 @@ public class RequestInfoActivity extends ActionBarActivity {
 
 	private Button joinOrLeaveRequest;
 	private SharedPreferences prefs;
+    private ParseObject requestObj;
 
 	boolean isInGroup;
 
@@ -51,10 +59,35 @@ public class RequestInfoActivity extends ActionBarActivity {
 
 
 	private void setupInfo() {
-		//TODO: Do Network Stuff here to retrieve the request info
+        //get all request info from server
+        Bundle extras = getIntent().getExtras(); //grabs the bundle
+        String request_title = extras.getString("request_title"); //grabs the selected request title
+        String request_id = extras.getString("request_id"); //grabs the selected request object id
 
+        //fetch request object from server
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
+        //TODO: Add loading indicator while the request is fetched
+        try {
+            requestObj = query.get(request_id);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+                    Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
-		final String[] result = new String[]{
+        final String[] result = new String[]{
+                requestObj.getString("title"),
+                "" + requestObj.getNumber("duration"),	//Time assigned to request in milliseconds (Total time, not remaining)
+                "5",		//number of helpers     //TODO: add this functionality to accepting requests
+                "8",		//total group members   //TODO: make a query to find total members
+                requestObj.getString("locationDescription"),	//Location
+                requestObj.getString("description"), //Description
+                "" + requestObj.getCreatedAt(), //Make this a timestamp of the creation time please"
+                request_id	//ID of the request object
+        };
+/*
+        final String[] result = new String[]{
 				"Example Title",
 				"6600000",	//Time assigned to request in milliseconds (Total time, not remaining)
 				"5",		//number of helpers
@@ -64,7 +97,7 @@ public class RequestInfoActivity extends ActionBarActivity {
 				"12315645613", //Make this a timestamp of the creation time please"
 				"gi32kln"	//ID of the request object
 		};
-
+*/
 
 		TextView requestTitle = (TextView) findViewById(R.id.request_title);
 		TextView timeRemaining = (TextView) findViewById(R.id.request_time);
@@ -113,8 +146,33 @@ public class RequestInfoActivity extends ActionBarActivity {
 					builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							//TODO: Leave group on server
-							leaveGroup();
+							//Leave group on server
+                            ParseUser.getCurrentUser().remove("currentRequest");
+                            ParseUser.getCurrentUser().put("isHelper", false);
+                            ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    if(e == null){
+                                        //user saved properly.
+                                        SharedPreferences.Editor edit = prefs.edit();
+                                        edit.putString(getString(R.string.my_request_id), "");  //TODO: is it okay that this is an empty string?
+                                        edit.apply();
+
+                                        leaveGroup();
+
+                                        Toast.makeText(getApplicationContext(), R.string.leave_group_success,
+                                                Toast.LENGTH_SHORT).show();
+                                    } else{
+                                        //user was not saved properly.
+                                        e.printStackTrace();
+                                        Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+                                                Toast.LENGTH_SHORT).show();
+                                        return;
+                                    }
+
+                                }
+                            });
+							//leaveGroup();
 						}
 					});
 
@@ -137,8 +195,33 @@ public class RequestInfoActivity extends ActionBarActivity {
 						builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
-								//TODO: join group on server
-								joinGroup(result[7]);
+								//join group on server
+                                ParseUser.getCurrentUser().put("currentRequest", requestObj);
+                                ParseUser.getCurrentUser().put("isHelper", true); //TODO: add UI option to be or not to be a helper
+                                ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+                                        if(e == null){
+                                            //user saved properly.
+                                            SharedPreferences.Editor edit = prefs.edit();
+                                            edit.putString(getString(R.string.my_request_id), requestObj.getObjectId());
+                                            edit.apply();
+
+                                            joinGroup(result[7]);
+
+                                            Toast.makeText(getApplicationContext(), R.string.join_group_success,
+                                                    Toast.LENGTH_SHORT).show();
+                                        } else{
+                                            //user was not saved properly.
+                                            e.printStackTrace();
+                                            Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+                                                    Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+
+                                    }
+                                });
+								//joinGroup(result[7]);
 							}
 						});
 
@@ -151,8 +234,33 @@ public class RequestInfoActivity extends ActionBarActivity {
 
 						builder.create().show();
 					} else {
-						//TODO: join group on server
-						joinGroup(result[7]);
+						//join group on server
+                        ParseUser.getCurrentUser().put("currentRequest", requestObj);
+                        ParseUser.getCurrentUser().put("isHelper", true); //TODO: add UI option to be or not to be a helper
+                        ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                if(e == null){
+                                    //user saved properly.
+                                    SharedPreferences.Editor edit = prefs.edit();
+                                    edit.putString(getString(R.string.my_request_id), requestObj.getObjectId());
+                                    edit.apply();
+
+                                    joinGroup(result[7]);
+
+                                    Toast.makeText(getApplicationContext(), R.string.join_group_success,
+                                            Toast.LENGTH_SHORT).show();
+                                } else{
+                                    //user was not saved properly.
+                                    e.printStackTrace();
+                                    Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+                                            Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+                            }
+                        });
+						//joinGroup(result[7]);
 					}
 				}
 			}

@@ -43,6 +43,8 @@
     <string name="new_request_error_location">Please enter your location.</string>
     <string name="new_request_error_description">Please enter a task description.</string>
 
+    <string name="join_group_success">You joined the study group!</string>
+    <string name="leave_group_success">You left the study group.</string>
 
 
     <string name="title_activity_main">MainActivity</string>

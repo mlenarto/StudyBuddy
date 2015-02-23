@@ -29,6 +29,8 @@ import java.util.List;
 public class RequestListActivity extends ActionBarActivity {
     private static String course = new String();
     private List<String> requests = new ArrayList<>();
+    private List<String> requests_id = new ArrayList<>(); //Parse object ID for requests
+
     private static String course_obj_id = new String();
 	private LocationService gps;
 	private Location mLocation;
@@ -81,7 +83,8 @@ public class RequestListActivity extends ActionBarActivity {
                 {
                     for (ParseObject request : requests)
                     {
-                        RequestListActivity.this.requests.add(request.getString("title"));
+                        RequestListActivity.this.requests.add(request.getString("title"));  //save request title
+                        RequestListActivity.this.requests_id.add(request.getObjectId());    //save object ID
                     }
                     Log.d("RequestListActivity", "Retrieved " + requests.size() + " help requests");
 
@@ -95,7 +98,12 @@ public class RequestListActivity extends ActionBarActivity {
                         requestList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 							@Override
 							public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-								startActivity(new Intent(RequestListActivity.this, RequestInfoActivity.class));
+                                Intent i = new Intent(RequestListActivity.this, RequestInfoActivity.class);
+                                i.putExtra("request_title", RequestListActivity.this.requests.get(position));
+                                i.putExtra("request_id", RequestListActivity.this.requests_id.get(position));
+                                Log.d("RequestListActivity", "opened: " + RequestListActivity.this.requests.get(position));
+                                startActivity(i);
+								//startActivity(new Intent(RequestListActivity.this, RequestInfoActivity.class));
 							}
 						});
                     }
