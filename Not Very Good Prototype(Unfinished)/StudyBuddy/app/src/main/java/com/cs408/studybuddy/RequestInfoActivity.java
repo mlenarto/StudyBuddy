@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -66,9 +67,40 @@ public class RequestInfoActivity extends ActionBarActivity {
 
         //fetch request object from server
         ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
-        //TODO: Add loading indicator while the request is fetched
+        //TODO: Add loading indicator while this occurs
         try {
             requestObj = query.get(request_id);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+                    Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        //fetch number of group members from server
+        int numMembers = 0;
+        ParseQuery<ParseUser> memberQuery = ParseUser.getQuery();
+        memberQuery.whereEqualTo("currentRequest", requestObj);
+        //TODO: Add loading indicator while this occurs
+        try {
+            numMembers = memberQuery.count();
+            Log.d("RequestInfoActivity", "There are " + numMembers + " members.");
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+                    Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        //fetch number of helper group members from server
+        int numHelpers = 0;
+        ParseQuery<ParseUser> helperQuery = ParseUser.getQuery();
+        helperQuery.whereEqualTo("currentRequest", requestObj);
+        helperQuery.whereEqualTo("isHelper", true);
+        //TODO: Add loading indicator while this occurs
+        try {
+            numHelpers = helperQuery.count();
+            Log.d("RequestInfoActivity", "There are " + numHelpers + " helpers.");
         } catch (ParseException e) {
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), getString(R.string.network_error),
@@ -79,8 +111,8 @@ public class RequestInfoActivity extends ActionBarActivity {
         final String[] result = new String[]{
                 requestObj.getString("title"),
                 "" + requestObj.getNumber("duration"),	//Time assigned to request in milliseconds (Total time, not remaining)
-                "5",		//number of helpers     //TODO: add this functionality to accepting requests
-                "8",		//total group members   //TODO: make a query to find total members
+                "" + numHelpers,		//number of helpers
+                "" + numMembers,		//total group members
                 requestObj.getString("locationDescription"),	//Location
                 requestObj.getString("description"), //Description
                 "" + requestObj.getCreatedAt(), //Make this a timestamp of the creation time please"
