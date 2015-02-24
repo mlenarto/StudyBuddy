@@ -63,7 +63,6 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
         if (sinch != null) {
             sinch.removeMessageClientListener(this);
-            sinch.stopClient();
         }
         super.onDestroy();
     }
@@ -101,12 +100,12 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
     @Override
     public void onIncomingMessage(MessageClient client, Message message) {
-        mMessageAdapter.addMessage(message, MessageAdapter.DIRECTION_INCOMING);
+        addMessageInBackground(message, MessageAdapter.DIRECTION_INCOMING);
     }
 
     @Override
     public void onMessageSent(MessageClient client, Message message, String recipientId) {
-        mMessageAdapter.addMessage(message, MessageAdapter.DIRECTION_OUTGOING);
+        addMessageInBackground(message, MessageAdapter.DIRECTION_OUTGOING);
     }
 
     @Override
@@ -128,5 +127,21 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     @Override
     public void onMessageDelivered(MessageClient client, MessageDeliveryInfo deliveryInfo) {
         Log.d(TAG, "onDelivered");
+    }
+
+    private void addMessageInBackground(final Message message, final int direction) {
+        ParseQuery<ParseUser> query = ParseUser.getQuery();
+        query.whereEqualTo("objectId", message.getSenderId());
+        query.selectKeys(Arrays.asList("name"));
+        query.findInBackground(new FindCallback<ParseUser>() {
+            @Override
+            public void done(List<ParseUser> parseUsers, ParseException e) {
+                if (e != null || parseUsers.size() == 0) {
+                    return; // Ignore errors...
+                }
+                String username = parseUsers.get(0).getString("name");
+                mMessageAdapter.addMessage(message, direction, username);
+            }
+        });
     }
 }
