@@ -115,6 +115,7 @@
                 <action android:name="com.parse.push.intent.OPEN" />
             </intent-filter>
         </receiver>
+        <service android:name=".SinchService" />
     </application>
 
 </manifest>
