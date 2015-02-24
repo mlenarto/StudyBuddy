@@ -44,7 +44,7 @@ public final class LoginHandler {
      */
     private static void logIntoSinch() {
         SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
-        sinch.startClient(ParseUser.getCurrentUser().getEmail());
+        sinch.startClient(ParseUser.getCurrentUser().getObjectId());
     }
 
     /**

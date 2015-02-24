@@ -3,34 +3,13 @@
                 android:layout_height="match_parent"
                 >
 
-    <RelativeLayout
-            android:id="@+id/relRecipient"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:background="@android:color/white"
-            android:paddingLeft="10dp">
-
-        <EditText
-                android:id="@+id/txtRecipient"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:hint="Recipient"
-                android:background="@android:color/white"
-                android:textColor="@color/sinch_purple"
-                android:inputType="textPersonName">
-
-            <requestFocus/>
-        </EditText>
-    </RelativeLayout>
-
     <ListView
             android:id="@+id/lstMessages"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:transcriptMode="alwaysScroll"
             android:layout_above="@+id/relSendMessage"
-            android:layout_below="@+id/relRecipient"
-            android:background="@drawable/bg_shadow"
+        android:background="@drawable/bg_shadow"
             android:padding="0dip"
             android:divider="@null"
             android:dividerHeight="0dp" android:stackFromBottom="true" tools:listitem="@layout/message_left"/>

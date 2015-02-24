@@ -1,5 +1,9 @@
 package com.cs408.studybuddy;
 
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.messaging.Message;
 import com.sinch.android.rtc.messaging.MessageClient;
@@ -16,7 +20,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class MessagesFragment extends Fragment implements MessageClientListener {
@@ -25,7 +31,6 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
     private View view;
     private MessageAdapter mMessageAdapter;
-    private EditText mTxtRecipient;
     private EditText mTxtTextBody;
     private Button mBtnSend;
 
@@ -33,7 +38,6 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.messaging, container, false);
 
-        mTxtRecipient = (EditText) view.findViewById(R.id.txtRecipient);
         mTxtTextBody = (EditText) view.findViewById(R.id.txtTextBody);
 
         mMessageAdapter = new MessageAdapter(inflater);
@@ -65,20 +69,29 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     }
 
     private void sendMessage() {
-        String recipient = mTxtRecipient.getText().toString();
-        String textBody = mTxtTextBody.getText().toString();
-        if (recipient.isEmpty()) {
-            //Toast.makeText(this, "No recipient added", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        final String textBody = mTxtTextBody.getText().toString();
         if (textBody.isEmpty()) {
-            //Toast.makeText(this, "No text message", Toast.LENGTH_SHORT).show();
+            Toast.makeText(view.getContext(), "No text message", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
-        sinch.sendMessage(recipient, textBody);
-        mTxtTextBody.setText("");
+        ParseQuery<ParseUser> query = ParseUser.getQuery();
+        query.selectKeys(Arrays.asList("objectId"));
+        query.findInBackground(new FindCallback<ParseUser>() {
+            @Override
+            public void done(List<ParseUser> parseUsers, ParseException e) {
+                if (e != null) {
+                    Toast.makeText(view.getContext(), getString(R.string.network_error), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
+                for (ParseUser user : parseUsers) {
+                    Log.d("MessagesFragment", "Sending message to " + user.getObjectId());
+                    sinch.sendMessage(user.getObjectId(), textBody);
+                }
+                mTxtTextBody.setText("");
+            }
+        });
     }
 
     private void setButtonEnabled(boolean enabled) {
