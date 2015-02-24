@@ -27,7 +27,9 @@ import android.widget.Toast;
 
 import com.parse.GetCallback;
 import com.parse.ParseException;
+import com.parse.ParseInstallation;
 import com.parse.ParseObject;
+import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.parse.ParseUser;
@@ -143,14 +145,13 @@ public class ClassAddActivity extends ActionBarActivity
 			newClass.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
 			newClass.setHint(getResources().getString(R.string.class_prompt));
 
-			newClass.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-				{
-					Log.v("add class error", "Clicked on option");
-					addClass();
-				}
-			});
+			newClass.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Log.v("add class error", "Clicked on option");
+                    addClass();
+                }
+            });
 
 			newClass.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -172,8 +173,8 @@ public class ClassAddActivity extends ActionBarActivity
 
 		if(classes.contains(newCourse)) {
 			newClass.setText("");
-			Toast.makeText(getApplicationContext(), getString(R.string.duplicate_class),
-					Toast.LENGTH_SHORT).show();
+			//TODO: fix error immediately below.
+            //Toast.makeText(getApplicationContext(), getString(R.string.duplicate_class), Toast.LENGTH_SHORT).show();
 			return;
 		}
 
@@ -215,15 +216,23 @@ public class ClassAddActivity extends ActionBarActivity
 					ParseUser userObj = ParseUser.getCurrentUser();
 					ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
 					relation.add(classObj);
+                    /*
+                    // When users indicate they are in a certain class, we subscribe them to that channel.
+                    ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+                    installation.addAllUnique("channels", Arrays.asList(newCourse));
+                    installation.saveInBackground();
+                    */
+                    ParsePush.subscribeInBackground(newCourse);
+
 					userObj.saveInBackground(new SaveCallback() {
 						@Override
 						public void done(ParseException e) {
 							if(e == null){
-								//user saved properly.
+								//course saved properly.
 								newClass.setText("");
 								Toast.makeText(getApplicationContext(), newCourse + " was added!",
 										Toast.LENGTH_SHORT).show();
-							} else{
+                            } else{
 								//course was not saved properly.
 								e.printStackTrace();
 								Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
@@ -307,6 +316,10 @@ public class ClassAddActivity extends ActionBarActivity
                                         ParseUser userObj = ParseUser.getCurrentUser();
                                         ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
                                         relation.remove(classObj);
+
+                                        // Unsubcribe user from the channel for that class
+                                        ParsePush.unsubscribeInBackground(className);
+
                                         userObj.saveInBackground(new SaveCallback() {
                                             @Override
                                             public void done(ParseException e) {
