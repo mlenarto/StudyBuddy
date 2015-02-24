@@ -76,6 +76,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         }
 
         ParseQuery<ParseUser> query = ParseUser.getQuery();
+        query.whereNotEqualTo("objectId", ParseUser.getCurrentUser().getObjectId());
         query.selectKeys(Arrays.asList("objectId"));
         query.findInBackground(new FindCallback<ParseUser>() {
             @Override
