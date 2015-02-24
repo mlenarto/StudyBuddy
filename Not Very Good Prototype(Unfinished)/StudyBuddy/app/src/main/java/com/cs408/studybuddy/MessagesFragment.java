@@ -1,7 +1,9 @@
 package com.cs408.studybuddy;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.sinch.android.rtc.PushPair;
@@ -10,6 +12,7 @@ import com.sinch.android.rtc.messaging.MessageClient;
 import com.sinch.android.rtc.messaging.MessageClientListener;
 import com.sinch.android.rtc.messaging.MessageDeliveryInfo;
 import com.sinch.android.rtc.messaging.MessageFailureInfo;
+import com.sinch.android.rtc.messaging.WritableMessage;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,6 +26,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class MessagesFragment extends Fragment implements MessageClientListener {
@@ -55,6 +59,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
         sinch.addMessageClientListener(this);
         setButtonEnabled(true);
+        loadMessageHistory();
         return view;
     }
 
@@ -106,6 +111,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     @Override
     public void onMessageSent(MessageClient client, Message message, String recipientId) {
         addMessageInBackground(message, MessageAdapter.DIRECTION_OUTGOING);
+        storeMessage(message);
     }
 
     @Override
@@ -140,7 +146,61 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                     return; // Ignore errors...
                 }
                 String username = parseUsers.get(0).getString("name");
-                mMessageAdapter.addMessage(message, direction, username);
+                mMessageAdapter.addMessage(new WritableMessage(message), direction, username, message.getTimestamp());
+            }
+        });
+    }
+
+    private void storeMessage(final Message message) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
+        query.whereEqualTo("sinchId", message.getMessageId());
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> parseObjects, ParseException e) {
+                if (e != null) {
+                    return; // TODO: Error handling?
+                }
+                if (parseObjects.size() != 0) {
+                    return; // Don't store messages twice
+                }
+                ParseObject savedMessage = new ParseObject("SavedMessages");
+                savedMessage.put("text", message.getTextBody());
+                savedMessage.put("sender", ParseUser.getCurrentUser());
+                savedMessage.put("date", message.getTimestamp());
+                savedMessage.put("sinchId", message.getMessageId());
+                savedMessage.saveInBackground();
+            }
+        });
+    }
+
+    private void loadMessageHistory() {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
+        query.orderByAscending("date");
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> parseObjects, ParseException e) {
+                if (e != null) {
+                    return; // TODO: Error handling?
+                }
+                for (final ParseObject savedMessage : parseObjects) {
+                    final ParseUser sender = savedMessage.getParseUser("sender");
+                    sender.fetchIfNeededInBackground(new GetCallback<ParseObject>() {
+                        @Override
+                        public void done(ParseObject parseObject, ParseException e) {
+                            if (e != null) {
+                                return; // TODO: Error handling?
+                            }
+                            String username = parseObject.getString("name");
+                            String text = savedMessage.getString("text");
+                            Date date = savedMessage.getDate("date");
+                            WritableMessage message = new WritableMessage(username, text);
+                            int direction = (parseObject.getObjectId().equals(ParseUser.getCurrentUser().getObjectId()))
+                                    ? MessageAdapter.DIRECTION_OUTGOING
+                                    : MessageAdapter.DIRECTION_INCOMING;
+                            mMessageAdapter.addMessage(message, direction, username, date);
+                        }
+                    });
+                }
             }
         });
     }

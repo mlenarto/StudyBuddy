@@ -13,10 +13,12 @@ import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.sinch.android.rtc.messaging.Message;
+import com.sinch.android.rtc.messaging.WritableMessage;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class MessageAdapter extends BaseAdapter {
@@ -37,8 +39,8 @@ public class MessageAdapter extends BaseAdapter {
         mFormatter = new SimpleDateFormat("HH:mm");
     }
 
-    public void addMessage(Message message, int direction, String username) {
-        mMessages.add(new MessageInfo(message, direction, username));
+    public void addMessage(WritableMessage message, int direction, String username, Date date) {
+        mMessages.add(new MessageInfo(message, direction, username, date));
         notifyDataSetChanged();
     }
 
@@ -81,7 +83,7 @@ public class MessageAdapter extends BaseAdapter {
             convertView = mInflater.inflate(res, viewGroup, false);
         }
 
-        Message message = mMessages.get(i).getMessage();
+        WritableMessage message = mMessages.get(i).getMessage();
         String name = mMessages.get(i).getUsername();
 
         TextView txtSender = (TextView) convertView.findViewById(R.id.txtSender);
@@ -90,23 +92,25 @@ public class MessageAdapter extends BaseAdapter {
 
         txtSender.setText(name);
         txtMessage.setText(message.getTextBody());
-        txtDate.setText(mFormatter.format(message.getTimestamp()));
+        txtDate.setText(mFormatter.format(mMessages.get(i).getDate()));
 
         return convertView;
     }
 
     private class MessageInfo {
-        private Message message;
+        private WritableMessage message;
         private int direction;
         private String username;
+        private Date date;
 
-        public MessageInfo(Message message, int direction, String username) {
+        public MessageInfo(WritableMessage message, int direction, String username, Date date) {
             this.message = message;
             this.direction = direction;
             this.username = username;
+            this.date = date;
         }
 
-        public Message getMessage() {
+        public WritableMessage getMessage() {
             return message;
         }
 
@@ -116,6 +120,10 @@ public class MessageAdapter extends BaseAdapter {
 
         public String getUsername() {
             return username;
+        }
+
+        public Date getDate() {
+            return date;
         }
     }
 }
