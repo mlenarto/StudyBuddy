@@ -119,16 +119,34 @@
                 android:textSize="18sp"
                 />
 
+            <TextView
+                android:id="@+id/center"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"/>
+
+            <Button
+                android:id="@+id/request_join_helper"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:layout_marginRight="10dp"
+                android:layout_below="@id/request_description"
+                android:layout_toLeftOf="@id/center"
+                android:text="@string/request_join_as_helper"/>
+
             <Button
                 android:id="@+id/request_join_leave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/request_description"
-                android:layout_centerHorizontal="true"
                 android:layout_marginTop="30dp"
-                android:layout_marginBottom="20dp"
+                android:layout_marginLeft="10dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/request_description"
+                android:layout_toRightOf="@id/center"
                 android:text="@string/request_join"
-                android:visibility="gone"/>
+                />
+
         </RelativeLayout>
     </ScrollView>
 

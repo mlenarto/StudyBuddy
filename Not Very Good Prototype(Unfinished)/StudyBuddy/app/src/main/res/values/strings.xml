@@ -30,6 +30,7 @@
 
     <string name="request_join">Join Group</string>
     <string name="request_leave">Leave Group</string>
+    <string name="request_join_as_helper">Help Group</string>
     <string name="request_leave_generic_warning">Are you sure you want to leave this group?</string>
     <string name="request_leave_with_name">Leave %s?</string>
     <string name="request_already_in_group_warning">Already in another group</string>
