@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/white" >
+
+
+    <ScrollView
+        android:id="@+id/info_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <TextView
+                android:id="@+id/request_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="20dp"
+                android:text="Title"
+                android:textSize="26sp"/>
+
+            <TextView
+                android:id="@+id/duration_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/request_title"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="20dp"
+                android:text="Time Remaining: "
+                android:textSize="22sp" />
+
+            <TextView
+                android:id="@+id/request_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/duration_label"
+                android:layout_marginLeft="20dp"
+                android:text="- hours, - minutes"
+                android:textSize="18sp"
+                />
+
+            <TextView
+                android:id="@+id/member_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/request_time"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="20dp"
+                android:text="5 members"
+                android:textSize="20sp"
+                />
+
+            <TextView
+                android:id="@+id/request_location_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/member_count"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="20dp"
+                android:text="Location"
+                android:textSize="22sp"/>
+
+            <TextView
+                android:id="@+id/request_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/request_location_label"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:text="Location description"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/request_description_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/request_location"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="20dp"
+                android:text="Task Description"
+                android:textSize="22sp"/>
+
+            <TextView
+                android:id="@+id/request_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/request_description_label"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:text="Description"
+                android:textSize="18sp"
+                />
+
+            <TextView
+                android:id="@+id/center"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"/>
+
+            <Button
+                android:id="@+id/request_join_helper"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:layout_marginRight="10dp"
+                android:layout_below="@id/request_description"
+                android:layout_toLeftOf="@id/center"
+                android:text="@string/request_join_as_helper"/>
+
+            <Button
+                android:id="@+id/request_join_leave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:layout_marginLeft="10dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/request_description"
+                android:layout_toRightOf="@id/center"
+                android:text="@string/request_join"
+                />
+
+        </RelativeLayout>
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/no_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/text_border"
+        android:gravity="center_horizontal"
+        android:textColor="@color/common_signin_btn_text_light"
+        android:textSize="20sp"
+        android:visibility="gone" />
+
+</RelativeLayout>

@@ -1,19 +1,14 @@
 package com.cs408.studybuddy;
 
-import android.app.Activity;
 import android.content.res.Configuration;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,18 +26,15 @@ public class DrawerActivity extends ActionBarActivity {
 
 
 
-
     /**
      * Activity managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
 	private ActionBarDrawerToggle mDrawerToggle;
-	private Toolbar mToolbar;
 	private TextView mTitle;
 
 	private int topFragment = CLASS_LIST_FRAGMENT;
-	private Fragment currentFragment;
 
 
     @Override
@@ -52,7 +44,7 @@ public class DrawerActivity extends ActionBarActivity {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.navigation_drawer);
-		mToolbar = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		mTitle = (TextView) findViewById(R.id.title_text);
 
 		setSupportActionBar(mToolbar);
@@ -68,7 +60,7 @@ public class DrawerActivity extends ActionBarActivity {
 
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+				mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
 			@Override
 			public void onDrawerClosed(View view) {
 				super.onDrawerClosed(view);
@@ -135,6 +127,8 @@ public class DrawerActivity extends ActionBarActivity {
 				mTitle.setText(R.string.title_class_list);
 				break;
 			case GROUP_FRAGMENT:
+				fragment = new RequestInfoFragment();
+				mTitle.setText(getString(R.string.title_my_group));
 				break;
 			case PROFILE_FRAGMENT:
 				fragment = new ProfileFragment();
@@ -152,9 +146,9 @@ public class DrawerActivity extends ActionBarActivity {
 			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 			transaction.replace(R.id.container, fragment);
 			transaction.commit();
-			topFragment = position;
-			mDrawerLayout.closeDrawer(mDrawerList);
 		}
+		topFragment = position;
+		mDrawerLayout.closeDrawer(mDrawerList);
 
 	}
 

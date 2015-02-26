@@ -57,9 +57,7 @@ android:background="@color/white">
             android:divider="@color/dark_grey"
             android:dividerHeight="1dp"
             android:headerDividersEnabled="true"
-            android:listSelector="@color/drawer_list_selected"
-            android:cacheColorHint="@color/white"
-            android:background="@color/white"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:name="com.cs408.studybuddy.NavigationDrawerFragment" >
 
         </ListView>
