@@ -3,9 +3,13 @@ package com.cs408.studybuddy;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
+import com.parse.ParseException;
 import com.parse.ParseInstallation;
+import com.parse.ParsePush;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 /**
  * Handles user login and logout.

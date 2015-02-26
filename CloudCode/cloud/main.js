@@ -1,11 +1,12 @@
 Parse.Cloud.afterSave("HelpRequest", function(request) {
 	
 	var query = new Parse.Query(Parse.Installation);
-	query.equalTo('channels', request.object.get("course").title);
+	var string = request.object.get("course").title;
+	query.equalTo('channels', 'CS18000');
 
 	Parse.Push.send({
 		where: query,
-		data: { alert: "Someone in " + course.title + " needs your help!" }
+		data: { alert: "Someone in CS18000 needs your help!" }
 	},
 	{
 		success: function() {

@@ -216,13 +216,9 @@ public class ClassAddActivity extends ActionBarActivity
 					ParseUser userObj = ParseUser.getCurrentUser();
 					ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
 					relation.add(classObj);
-                    /*
-                    // When users indicate they are in a certain class, we subscribe them to that channel.
-                    ParseInstallation installation = ParseInstallation.getCurrentInstallation();
-                    installation.addAllUnique("channels", Arrays.asList(newCourse));
-                    installation.saveInBackground();
-                    */
-                    ParsePush.subscribeInBackground(newCourse);
+
+                    String spaceless_className = newCourse.replaceAll("\\s","");
+                    ParsePush.subscribeInBackground(spaceless_className);
 
 					userObj.saveInBackground(new SaveCallback() {
 						@Override
@@ -317,8 +313,9 @@ public class ClassAddActivity extends ActionBarActivity
                                         ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
                                         relation.remove(classObj);
 
-                                        // Unsubcribe user from the channel for that class
-                                        ParsePush.unsubscribeInBackground(className);
+                                        // Unsubscribe user from the channel for that class
+                                        String spaceless_className = className.replaceAll("\\s","");
+                                        ParsePush.unsubscribeInBackground(spaceless_className);
 
                                         userObj.saveInBackground(new SaveCallback() {
                                             @Override
