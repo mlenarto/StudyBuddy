@@ -16,11 +16,15 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+
+import java.util.List;
 
 /**
  * Created by Evan on 2/9/2015.
@@ -38,6 +42,8 @@ public class RequestInfoFragment extends Fragment {
 	private RelativeLayout.LayoutParams groupJoinedParams;
 	private int marginSize = 0;
 	boolean isInGroup;
+    private int numHelpers;
+    private int numMembers;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		root = inflater.inflate(R.layout.fragment_request_info, container, false);
@@ -91,7 +97,7 @@ public class RequestInfoFragment extends Fragment {
 			}
 
 			//fetch number of group members from server
-			int numMembers = 0;
+			numMembers = 0;
 			ParseQuery<ParseUser> memberQuery = ParseUser.getQuery();
 			memberQuery.whereEqualTo("currentRequest", requestObj);
 			//TODO: Add loading indicator while this occurs
@@ -106,7 +112,7 @@ public class RequestInfoFragment extends Fragment {
 			}
 
 			//fetch number of helper group members from server
-			int numHelpers = 0;
+			numHelpers = 0;
 			ParseQuery<ParseUser> helperQuery = ParseUser.getQuery();
 			helperQuery.whereEqualTo("currentRequest", requestObj);
 			helperQuery.whereEqualTo("isHelper", true);
@@ -136,13 +142,40 @@ public class RequestInfoFragment extends Fragment {
 			currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
 			if(currentGroup != null) {
 				try {
-					currentGroup.fetchIfNeeded();
 
-					return new String[]{
+                    //TODO: Add loading indicator while this all occurs
+
+                    currentGroup.fetchIfNeeded();
+
+                    /* attempt to fetch member/helper counts from server.
+                        if it fails, use the cached numbers.
+                     */
+
+                    //TODO: If no internet connection, why does this cause the app to crash..? Exception is handled...
+                    try {
+                        //fetch number of group members from server
+                        ParseQuery<ParseUser> memberQuery = ParseUser.getQuery();
+                        memberQuery.whereEqualTo("currentRequest", currentGroup);
+                        numMembers = memberQuery.count();
+                        Log.d("RequestInfoActivity", "There are " + numMembers + " members.");
+
+                        //fetch number of helper group members from server
+                        ParseQuery<ParseUser> helperQuery = ParseUser.getQuery();
+                        helperQuery.whereEqualTo("currentRequest", currentGroup);
+                        helperQuery.whereEqualTo("isHelper", true);
+                        numHelpers = helperQuery.count();
+                        Log.d("RequestInfoActivity", "There are " + numHelpers + " helpers.");
+                    } catch(ParseException e){
+                        //get helper/member count from cache
+                        numMembers = ParseUser.getCurrentUser().getInt("cacheMembers");
+                        numHelpers = ParseUser.getCurrentUser().getInt("cacheHelpers");
+                    }
+
+                    return new String[]{
 							currentGroup.getString("title"),
 							"" + currentGroup.getNumber("duration"),
-							"" + 0,		//Need find a local save of this
-							"" + 0,
+							"" + numHelpers,
+                            "" + numMembers,
 							currentGroup.getString("locationDescription"),
 							currentGroup.getString("description"),
 							"" + currentGroup.getCreatedAt(),
@@ -315,7 +348,7 @@ public class RequestInfoFragment extends Fragment {
 	}
 
 
-	private void joinGroup(boolean isHelper) {
+	private void joinGroup(final boolean isHelper) {
 		ParseUser.getCurrentUser().put("currentRequest", requestObj);
 		ParseUser.getCurrentUser().put("isHelper", isHelper);
 		ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
@@ -325,6 +358,16 @@ public class RequestInfoFragment extends Fragment {
 					//user saved properly.
 					isInGroup = true;
 					currentGroup = requestObj;
+
+                    //cache current group info
+                    numMembers++;       //update member & helper count
+                    if(isHelper) {
+                        numHelpers++;
+                    }
+                    ParseUser.getCurrentUser().put("cacheHelpers", numHelpers);
+                    ParseUser.getCurrentUser().put("cacheMembers", numMembers);
+                    ParseUser.getCurrentUser().pinInBackground();     //cache current group info, assume happens almost immediately.
+
 					setupButtonLayout();
 					Toast.makeText(getActivity().getApplicationContext(), R.string.join_group_success,
 							Toast.LENGTH_SHORT).show();

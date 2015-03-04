@@ -14,6 +14,9 @@ import com.parse.SaveCallback;
 public class StudyBuddyApplication extends Application {
     @Override
     public void onCreate() {
+        // Enable local datastore for caching stuff
+        Parse.enableLocalDatastore(this);
+
         // Required - Initialize the Parse SDK
         Parse.initialize(this, getString(R.string.parse_app_id),
                 getString(R.string.parse_client_key));
