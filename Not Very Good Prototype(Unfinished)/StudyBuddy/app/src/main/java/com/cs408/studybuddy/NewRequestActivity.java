@@ -1,6 +1,6 @@
 package com.cs408.studybuddy;
 
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -37,7 +37,6 @@ public class NewRequestActivity extends ActionBarActivity {
 	private TextView requestLocationLength;
     private ParseObject request, courseObj;
     private ParseUser user;
-	private SharedPreferences prefs;
 	private LocationService gps;
 
 
@@ -62,8 +61,6 @@ public class NewRequestActivity extends ActionBarActivity {
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
 
 		mTitle.setText("New Request");
-
-		prefs = getSharedPreferences(getResources().getString(R.string.app_preferences), 0);
 
 		mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
 			@Override
@@ -182,20 +179,19 @@ public class NewRequestActivity extends ActionBarActivity {
                                             public void done(ParseException e) {
                                                 if(e == null){
                                                     //user saved properly.
-                                                    SharedPreferences.Editor edit = prefs.edit();
-
-                                                    edit.putString(getString(R.string.my_request_id), request.getObjectId());
-
-                                                    edit.apply();
+													Intent result = new Intent();
+													result.putExtra(RequestListActivity.CREATED_NEW_REQUEST, true);
+													setResult(RESULT_OK, result);
 
                                                     Toast.makeText(getApplicationContext(), R.string.new_request_success,
                                                             Toast.LENGTH_SHORT).show();
+													finish();
                                                 } else{
                                                     //user was not saved properly.
                                                     e.printStackTrace();
                                                     Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                                                             Toast.LENGTH_SHORT).show();
-                                                    return;
+													finish();
                                                 }
                                             }
                                         });
@@ -204,7 +200,7 @@ public class NewRequestActivity extends ActionBarActivity {
                                         e.printStackTrace();
                                         Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                                                 Toast.LENGTH_SHORT).show();
-                                        return;
+										finish();
                                     }
                                 }
                             });
@@ -213,14 +209,10 @@ public class NewRequestActivity extends ActionBarActivity {
                             e.printStackTrace();
                             Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                                     Toast.LENGTH_SHORT).show();
-                            return;
+							finish();
                         }
                     }
                 });
-
-
-                finish();
-
 			}
 		});
 

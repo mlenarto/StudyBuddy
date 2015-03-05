@@ -3,6 +3,7 @@ package com.cs408.studybuddy;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -27,6 +28,11 @@ import java.util.List;
  * Created by Evan on 2/8/2015.
  */
 public class RequestListActivity extends ActionBarActivity {
+	TextView noRequestText;
+
+	private static final int NEW_REQUEST_INTENT = 1;
+	public static final String CREATED_NEW_REQUEST = "created_new_request";
+
     private static String course = new String();
     private List<String> requests = new ArrayList<>();
     private List<String> requests_id = new ArrayList<>(); //Parse object ID for requests
@@ -34,6 +40,8 @@ public class RequestListActivity extends ActionBarActivity {
     private static String course_obj_id = new String();
 	private LocationService gps;
 	private Location mLocation;
+	private Handler handler;
+	Runnable runnable;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -42,7 +50,7 @@ public class RequestListActivity extends ActionBarActivity {
 		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		TextView mText = (TextView) findViewById(R.id.title_text);
 		Button newRequest = (Button) findViewById(R.id.newRequest);
-		final TextView noRequestText = (TextView) findViewById(R.id.no_requests);
+		noRequestText = (TextView) findViewById(R.id.no_requests);
 
 		setSupportActionBar(mToolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -65,36 +73,60 @@ public class RequestListActivity extends ActionBarActivity {
             Log.d("RequestListActivity", "EXTRAS IS NULL :(");
         }
 
-        // Inner query to grab course pointer so we pull help requests for the specific course
-        ParseQuery innerQuery = new ParseQuery("Course");
-        innerQuery.whereEqualTo("courseNumber", course);
+		handler = new Handler(getMainLooper());
 
-        //Retrieve helpRequest list from Parse
-        ParseQuery<ParseObject> request_query = ParseQuery.getQuery("HelpRequest");
-        request_query.whereMatchesQuery("course", innerQuery);
-        request_query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> requests, ParseException e)
-            {
-                if (e == null)
-                {
-                    for (ParseObject request : requests)
-                    {
-                        RequestListActivity.this.requests.add(request.getString("title"));  //save request title
-                        RequestListActivity.this.requests_id.add(request.getObjectId());    //save object ID
-                    }
-                    Log.d("RequestListActivity", "Retrieved " + requests.size() + " help requests");
+		updateList();
 
-                    if (!RequestListActivity.this.requests.isEmpty())
-                    {
-                        ListView requestList = (ListView) findViewById(R.id.class_list);
+		newRequest.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(RequestListActivity.this, NewRequestActivity.class);
+				i.putExtra("selected_class", course);
+				startActivityForResult(i, NEW_REQUEST_INTENT);
+			}
+		});
+
+		mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onBackPressed();
+			}
+		});
+	}
+
+	private void updateList() {
+		// Inner query to grab course pointer so we pull help requests for the specific course
+		ParseQuery innerQuery = new ParseQuery("Course");
+		innerQuery.whereEqualTo("courseNumber", course);
+
+		//Retrieve helpRequest list from Parse
+		ParseQuery<ParseObject> request_query = ParseQuery.getQuery("HelpRequest");
+		request_query.whereMatchesQuery("course", innerQuery);
+		request_query.findInBackground(new FindCallback<ParseObject>() {
+			public void done(List<ParseObject> requests, ParseException e)
+			{
+				if (e == null)
+				{
+					RequestListActivity.this.requests.clear();
+					for (ParseObject request : requests)
+					{
+						RequestListActivity.this.requests.add(request.getString("title"));  //save request title
+						RequestListActivity.this.requests_id.add(request.getObjectId());    //save object ID
+					}
+					Log.d("RequestListActivity", "Retrieved " + requests.size() + " help requests");
+
+					if (!RequestListActivity.this.requests.isEmpty())
+					{
+						noRequestText.setVisibility(View.GONE);
+						ListView requestList = (ListView) findViewById(R.id.class_list);
 						//TODO: sort list by location (gps class has a distance method)
-						Location loc = gps.getLocation();
+						mLocation = gps.getLocation();
 
 
                         requestList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
 								android.R.layout.simple_list_item_1, android.R.id.text1, RequestListActivity.this.requests));
 
-                        requestList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+						requestList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 							@Override
 							public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                 Intent i = new Intent(RequestListActivity.this, RequestInfoActivity.class);
@@ -109,39 +141,48 @@ public class RequestListActivity extends ActionBarActivity {
                     else
                     {
 						noRequestText.setVisibility(View.VISIBLE);
-                        Log.d("RequestListActivity", "Requests ArrayList is empty.");
-                    }
-                }
-                else
-                {
-                    Toast toast = Toast.makeText(getApplicationContext(), "An error occurred when retrieving the help requests for this course.", Toast.LENGTH_LONG);
-                    toast.setGravity(Gravity.CENTER,0,0);
-                    toast.show();
-                    Log.d("RequestListActivity", "Error: " + e.getMessage());
-                }
-            }
-        });
-
-		newRequest.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-                Intent i = new Intent(RequestListActivity.this, NewRequestActivity.class);
-                i.putExtra("selected_class", course);
-                startActivity(i);
+						Log.d("RequestListActivity", "Requests ArrayList is empty.");
+					}
+				}
+				else
+				{
+					Toast toast = Toast.makeText(getApplicationContext(), "An error occurred when retrieving the help requests for this course.", Toast.LENGTH_LONG);
+					toast.setGravity(Gravity.CENTER,0,0);
+					toast.show();
+					Log.d("RequestListActivity", "Error: " + e.getMessage());
+				}
 			}
 		});
+	}
 
-		mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onBackPressed();
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		runnable = new Runnable() {
+			public void run() {
+				updateList();
+				handler.postDelayed(this, 30 * 1000);
 			}
-		});
+		};
+
+		handler.postDelayed(runnable, 30 * 1000);
+
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
 		gps.stopGPS();
+		handler.removeCallbacks(runnable);
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if(requestCode == NEW_REQUEST_INTENT && resultCode == RESULT_OK) {
+			if(data.getBooleanExtra(CREATED_NEW_REQUEST, false))
+				updateList();
+		}
 	}
 }
