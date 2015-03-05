@@ -28,6 +28,7 @@
     <string name="no_requests">No requests for this\n class right now.</string>
     <string name="no_group">You are not currently\n in a group</string>
     <string name="group_error">Error displaying group</string>
+    <string name="location_error">An error occurred while getting your location.</string>
 
 
     <string name="request_join">Join Group</string>

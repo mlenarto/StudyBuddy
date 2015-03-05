@@ -4,6 +4,7 @@ import android.content.*;
 import android.location.*;
 import android.app.*;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 
 public class LocationService extends Service implements LocationListener
@@ -42,16 +43,100 @@ public class LocationService extends Service implements LocationListener
 	 */
 	public Location getLocation()
 	{
-		if(locationManager == null)
+		if(locationManager == null || !isConnected) {
 			return null;
-		if(currentLocation != null)
+		} if(currentLocation != null) {
 			return currentLocation;
-		else if(networkEnabled)
-			return locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		}
+
+		Location loc1 = null;
+		Location loc2 = null;
+		if(networkEnabled)
+			loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 		else if(gpsEnabled)
-			return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			loc2 =  locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+		if(loc1 != null)
+			return loc1;
+		else if (loc2 != null)
+			return loc2;
 		else
 			return null;
+
+	}
+
+
+	/**
+	 * Returns the location of the user through the callback method. This will return null if
+	 * the LocationManager has not been set or if the location has not been found after waiting
+	 * for the given timeout period
+	 *
+	 * @param timeout	time to wait in seconds
+	 * @param listener	callback to retrieve the user's location
+	 */
+	public void getLocationInBackground(final int timeout, final locationUpdateListener listener) {
+		final Handler startThread = new Handler();
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				if(locationManager == null || !isConnected) {	//startGPS hasn't been called yet or it returned false due to an error
+					startThread.post(new Runnable() {
+						@Override
+						public void run() {
+							listener.onLocationObtained(null);
+						}
+					});
+					return;
+				} if(currentLocation != null) {					//Already have a location saved, return it
+					startThread.post(new Runnable() {
+						@Override
+						public void run() {
+							listener.onLocationObtained(currentLocation);
+						}
+					});
+					return;
+				}
+
+
+				if(networkEnabled) {
+					final Location loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+					if(loc1 != null) {
+						startThread.post(new Runnable() {
+							@Override
+							public void run() {
+								listener.onLocationObtained(loc1);		//Network provider has a known previous location
+							}
+						});
+					}
+				} else if(gpsEnabled) {
+					final Location loc2 = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+					if(loc2 != null) {
+						startThread.post(new Runnable() {
+							@Override
+							public void run() {
+								listener.onLocationObtained(loc2);		//GPS provider has a known previous location
+							}
+						});
+					}
+				}
+
+				for(int i = 0; i < timeout && currentLocation == null; i++) {	//Wait for the given amount of time
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				startThread.post(new Runnable() {
+					@Override
+					public void run() {
+						listener.onLocationObtained(currentLocation);			//Return whatever is in the currentLocation
+					}
+				});
+			}
+		}).start();
+
 	}
 
 
@@ -209,5 +294,9 @@ public class LocationService extends Service implements LocationListener
     public IBinder onBind(Intent arg0) {
         return null;
     }
+
+	public interface locationUpdateListener {
+		public void onLocationObtained(Location loc);
+	}
 
 }

@@ -137,7 +137,7 @@ public class NewRequestActivity extends ActionBarActivity {
                     courseObj = query.getFirst();
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+                    Toast.makeText(getApplicationContext(), getString(R.string.location_error),
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -150,10 +150,13 @@ public class NewRequestActivity extends ActionBarActivity {
                 request.put("locationDescription", requestLocation);
 				Location loc = gps.getLocation();
 				ParseGeoPoint point;
-				if(loc != null)
+				if(loc != null) {
 					point = new ParseGeoPoint(loc.getLatitude(), loc.getLongitude());
-				else
-					point = new ParseGeoPoint(30.0, -20.0);   //TODO: What to do if the location can't be obtained
+				} else {
+					Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+							Toast.LENGTH_SHORT).show();
+					return;
+				}
                 request.put("geoLocation", point);
                 request.put("duration", requestLengthMillis);
 

@@ -95,65 +95,69 @@ public class RequestListActivity extends ActionBarActivity {
 	}
 
 	private void updateList() {
-		// Inner query to grab course pointer so we pull help requests for the specific course
-		ParseQuery innerQuery = new ParseQuery("Course");
-		innerQuery.whereEqualTo("courseNumber", course);
+		gps.getLocationInBackground(20, new LocationService.locationUpdateListener() {
+			@Override
+			public void onLocationObtained(final Location loc) {
 
-		//Retrieve helpRequest list from Parse
-		ParseQuery<ParseObject> request_query = ParseQuery.getQuery("HelpRequest");
-		request_query.whereMatchesQuery("course", innerQuery);
-		request_query.findInBackground(new FindCallback<ParseObject>() {
-			public void done(List<ParseObject> requests, ParseException e)
-			{
-				if (e == null)
-				{
-                    Location loc = gps.getLocation();
-					RequestListActivity.this.requests.clear();
-					for (ParseObject request : requests)
-					{
-                        ClassRequest nextReq = new ClassRequest(request.getString("title"), request.getObjectId());
-                        double distance = gps.distance(loc.getLatitude(), loc.getLongitude(),
-                                request.getParseGeoPoint("geoLocation").getLatitude(), request.getParseGeoPoint("geoLocation").getLongitude());
-                        nextReq.setDistance(distance);
-                        RequestListActivity.this.requests.add(nextReq);
-					}
-					Log.d("RequestListActivity", "Retrieved " + requests.size() + " help requests");
+				if (loc != null) {
+					// Inner query to grab course pointer so we pull help requests for the specific course
+					ParseQuery innerQuery = new ParseQuery("Course");
+					innerQuery.whereEqualTo("courseNumber", course);
 
-					if (!RequestListActivity.this.requests.isEmpty())
-					{
-						noRequestText.setVisibility(View.GONE);
-						ListView requestList = (ListView) findViewById(R.id.class_list);
+					//Retrieve helpRequest list from Parse
+					ParseQuery<ParseObject> request_query = ParseQuery.getQuery("HelpRequest");
+					request_query.whereMatchesQuery("course", innerQuery);
+					request_query.findInBackground(new FindCallback<ParseObject>() {
+						public void done(List<ParseObject> requests, ParseException e) {
+							if (e == null) {
+								RequestListActivity.this.requests.clear();
+								for (ParseObject request : requests) {
+									ClassRequest nextReq = new ClassRequest(request.getString("title"), request.getObjectId());
+									double distance = gps.distance(loc.getLatitude(), loc.getLongitude(),
+											request.getParseGeoPoint("geoLocation").getLatitude(), request.getParseGeoPoint("geoLocation").getLongitude());
+									nextReq.setDistance(distance);
+									RequestListActivity.this.requests.add(nextReq);
+								}
+								Log.d("RequestListActivity", "Retrieved " + requests.size() + " help requests");
 
-                        //sort list by location
-                        Collections.sort(RequestListActivity.this.requests);
+								if (!RequestListActivity.this.requests.isEmpty()) {
+									noRequestText.setVisibility(View.GONE);
+									ListView requestList = (ListView) findViewById(R.id.class_list);
 
-                        requestList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
-								android.R.layout.simple_list_item_1, android.R.id.text1, RequestListActivity.this.requests));
+									//sort list by location
+									Collections.sort(RequestListActivity.this.requests);
 
-						requestList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-							@Override
-							public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                Intent i = new Intent(RequestListActivity.this, RequestInfoActivity.class);
-                                i.putExtra("request_title", RequestListActivity.this.requests.get(position).title);
-                                i.putExtra("request_id", RequestListActivity.this.requests.get(position).id);
-                                Log.d("RequestListActivity", "opened: " + RequestListActivity.this.requests.get(position));
-                                startActivity(i);
-								//startActivity(new Intent(RequestListActivity.this, RequestInfoActivity.class));
+									requestList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
+											android.R.layout.simple_list_item_1, android.R.id.text1, RequestListActivity.this.requests));
+
+									requestList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+										@Override
+										public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+											Intent i = new Intent(RequestListActivity.this, RequestInfoActivity.class);
+											i.putExtra("request_title", RequestListActivity.this.requests.get(position).title);
+											i.putExtra("request_id", RequestListActivity.this.requests.get(position).id);
+											Log.d("RequestListActivity", "opened: " + RequestListActivity.this.requests.get(position));
+											startActivity(i);
+											//startActivity(new Intent(RequestListActivity.this, RequestInfoActivity.class));
+										}
+									});
+								} else {
+									noRequestText.setVisibility(View.VISIBLE);
+									Log.d("RequestListActivity", "Requests ArrayList is empty.");
+								}
+							} else {
+								Toast toast = Toast.makeText(getApplicationContext(), "An error occurred when retrieving the help requests for this course.", Toast.LENGTH_LONG);
+								toast.setGravity(Gravity.CENTER, 0, 0);
+								toast.show();
+								Log.d("RequestListActivity", "Error: " + e.getMessage());
 							}
-						});
-                    }
-                    else
-                    {
-						noRequestText.setVisibility(View.VISIBLE);
-						Log.d("RequestListActivity", "Requests ArrayList is empty.");
-					}
-				}
-				else
-				{
-					Toast toast = Toast.makeText(getApplicationContext(), "An error occurred when retrieving the help requests for this course.", Toast.LENGTH_LONG);
-					toast.setGravity(Gravity.CENTER,0,0);
+						}
+					});
+				} else {
+					Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.location_error), Toast.LENGTH_LONG);
+					toast.setGravity(Gravity.CENTER, 0, 0);
 					toast.show();
-					Log.d("RequestListActivity", "Error: " + e.getMessage());
+					Log.d("RequestListActivity", "Error obtaining Location");
 				}
 			}
 		});
