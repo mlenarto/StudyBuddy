@@ -34,7 +34,11 @@ public class DrawerActivity extends ActionBarActivity {
 	private ActionBarDrawerToggle mDrawerToggle;
 	private TextView mTitle;
 
-	private int topFragment = CLASS_LIST_FRAGMENT;
+	private Fragment currentFragment;
+	private int currentFragmentId = CLASS_LIST_FRAGMENT;
+
+	//This is only used to start gathering location data for later
+	private LocationService gps;
 
 
     @Override
@@ -47,15 +51,18 @@ public class DrawerActivity extends ActionBarActivity {
 		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		mTitle = (TextView) findViewById(R.id.title_text);
 
+		gps = LocationService.getInstance(this);
+		gps.startGPS(20000, 15);
+
 		setSupportActionBar(mToolbar);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
 
 		//Class list is the default tab to have open at start-up
-		Fragment classList = new ClassListFragment();
+		currentFragment = new ClassListFragment();
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-		transaction.add(R.id.container, classList);
+		transaction.add(R.id.container, currentFragment);
 		transaction.commit();
-		topFragment = CLASS_LIST_FRAGMENT;
+		currentFragmentId = CLASS_LIST_FRAGMENT;
 		mTitle.setText(R.string.title_class_list);
 
 
@@ -91,6 +98,12 @@ public class DrawerActivity extends ActionBarActivity {
 				R.layout.drawer_item_fragment, R.id.drawer_text, drawerItems));
     }
 
+	@Override
+	protected void onPause() {
+		super.onPause();
+		gps.stopGPS();
+	}
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -110,9 +123,12 @@ public class DrawerActivity extends ActionBarActivity {
     }
 
 	private void displayView(int position) {
-		Fragment fragment = null;
 
-		if(position == topFragment) {
+		if(position == currentFragmentId) {
+			if(position == GROUP_FRAGMENT) {
+				((RequestInfoFragment) currentFragment).refreshInfo();
+			}
+
 			//No need to switch to current fragment
 			mDrawerLayout.closeDrawer(mDrawerList);
 			return;
@@ -123,31 +139,31 @@ public class DrawerActivity extends ActionBarActivity {
 
 		switch (position) {
 			case CLASS_LIST_FRAGMENT:
-				fragment = new ClassListFragment();
+				currentFragment = new ClassListFragment();
 				mTitle.setText(R.string.title_class_list);
 				break;
 			case GROUP_FRAGMENT:
-				fragment = new RequestInfoFragment();
+				currentFragment = new RequestInfoFragment();
 				mTitle.setText(getString(R.string.title_my_group));
 				break;
 			case PROFILE_FRAGMENT:
-				fragment = new ProfileFragment();
+				currentFragment = new ProfileFragment();
 				mTitle.setText(R.string.title_my_profile);
 				break;
             case MESSAGES_FRAGMENT:
-                fragment = new MessagesFragment();
+                currentFragment = new MessagesFragment();
 				mTitle.setText(R.string.title_messages);
                 break;
 			default:
 				break;
 		}
 
-		if(fragment != null) {
+		if(currentFragment != null) {
 			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-			transaction.replace(R.id.container, fragment);
+			transaction.replace(R.id.container, currentFragment);
 			transaction.commit();
 		}
-		topFragment = position;
+		currentFragmentId = position;
 		mDrawerLayout.closeDrawer(mDrawerList);
 
 	}

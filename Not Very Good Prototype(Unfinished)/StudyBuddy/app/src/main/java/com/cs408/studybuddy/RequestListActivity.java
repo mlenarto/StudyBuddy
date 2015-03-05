@@ -50,11 +50,7 @@ public class RequestListActivity extends ActionBarActivity {
 		mText.setText(R.string.title_Request_List);
 
 		gps = LocationService.getInstance(this);
-//		gps.startGPS(10*1000, 5);
-
-		//This can return null, include checks
-//		mLocation = gps.getLocation();
-
+		gps.startGPS(10*1000, 5);
 
 		noRequestText.setVisibility(View.GONE);
         Bundle extras = getIntent().getExtras();
@@ -91,6 +87,9 @@ public class RequestListActivity extends ActionBarActivity {
                     if (!RequestListActivity.this.requests.isEmpty())
                     {
                         ListView requestList = (ListView) findViewById(R.id.class_list);
+						//TODO: sort list by location (gps class has a distance method)
+						Location loc = gps.getLocation();
+
 
                         requestList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
 								android.R.layout.simple_list_item_1, android.R.id.text1, RequestListActivity.this.requests));
@@ -143,6 +142,6 @@ public class RequestListActivity extends ActionBarActivity {
 	@Override
 	public void onPause() {
 		super.onPause();
-//		gps.stopGPS();
+		gps.stopGPS();
 	}
 }
