@@ -59,7 +59,7 @@ public class LocationService extends Service implements LocationListener
 	 *	Quick approximation of the distance between two locations in meters.
 	 *	Needs to be tested.
 	 */
-	public double distance(double lat_a, double long_a, double lat_b, double long_b) {
+	public double distance(float lat_a, float long_a, float lat_b, float long_b) {
 		double degreeLen = 110.25;
 
 		double x = lat_a - lat_b;
