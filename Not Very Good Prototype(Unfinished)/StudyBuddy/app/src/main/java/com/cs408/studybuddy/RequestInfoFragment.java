@@ -142,7 +142,7 @@ public class RequestInfoFragment extends Fragment {
 			currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
 			if(currentGroup != null) {
 				try {
-
+                    requestObj = currentGroup;
                     //TODO: Add loading indicator while this all occurs
 
                     currentGroup.fetchIfNeeded();
@@ -349,8 +349,14 @@ public class RequestInfoFragment extends Fragment {
 
 
 	private void joinGroup(final boolean isHelper) {
+        numMembers++;       //update member & helper count
+        if(isHelper) {
+            numHelpers++;
+        }
 		ParseUser.getCurrentUser().put("currentRequest", requestObj);
 		ParseUser.getCurrentUser().put("isHelper", isHelper);
+        ParseUser.getCurrentUser().put("cacheHelpers", numHelpers);
+        ParseUser.getCurrentUser().put("cacheMembers", numMembers);
 		ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
 			@Override
 			public void done(ParseException e) {
@@ -358,18 +364,12 @@ public class RequestInfoFragment extends Fragment {
 					//user saved properly.
 					isInGroup = true;
 					currentGroup = requestObj;
-
-                    //cache current group info
-                    numMembers++;       //update member & helper count
-                    if(isHelper) {
-                        numHelpers++;
-                    }
-                    ParseUser.getCurrentUser().put("cacheHelpers", numHelpers);
-                    ParseUser.getCurrentUser().put("cacheMembers", numMembers);
                     ParseUser.getCurrentUser().pinInBackground();     //cache current group info, assume happens almost immediately.
-
 					setupButtonLayout();
-					Toast.makeText(getActivity().getApplicationContext(), R.string.join_group_success,
+                    String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
+                    String members = getResources().getQuantityString(R.plurals.members, numMembers);
+                    memberCount.setText(numHelpers + " " + help + ", " + numMembers + " " + members);
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.join_group_success,
 							Toast.LENGTH_SHORT).show();
 				} else {
 					//user was not saved properly.
@@ -383,8 +383,14 @@ public class RequestInfoFragment extends Fragment {
 	}
 
 	private void leaveGroup() {
+        if(ParseUser.getCurrentUser().getBoolean("isHelper")){
+            numHelpers--;
+        }
+        numMembers--;
 		ParseUser.getCurrentUser().remove("currentRequest");
 		ParseUser.getCurrentUser().put("isHelper", false);
+        ParseUser.getCurrentUser().remove("cacheHelpers");
+        ParseUser.getCurrentUser().remove("cacheMembers");
 		ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
 			@Override
 			public void done(ParseException e) {
@@ -392,7 +398,11 @@ public class RequestInfoFragment extends Fragment {
 					//user saved properly.
 					isInGroup = false;
 					currentGroup = null;
-					setupButtonLayout();
+                    ParseUser.getCurrentUser().pinInBackground();     //cache (lack of) group info
+                    setupButtonLayout();
+                    String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
+                    String members = getResources().getQuantityString(R.plurals.members, numMembers);
+                    memberCount.setText(numHelpers + " " + help + ", " + numMembers + " " + members);
 					Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
 							Toast.LENGTH_SHORT).show();
 				} else {
