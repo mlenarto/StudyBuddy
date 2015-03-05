@@ -241,7 +241,7 @@ public class RequestInfoFragment extends Fragment {
 
 		requestTitle.setText(result[0]);
 		timeRemaining.setText(timeHours + " " + h + ", " + timeMinutes + " " + m);
-		memberCount.setText(helperCount + " " + help + ", " + membersTotal + " " + members);
+		memberCount.setText(membersTotal + " " + members + " (" + helperCount + " " + help + ")");
 		requestLocation.setText(result[4]);
 		requestDescription.setText(result[5]);
 
@@ -373,7 +373,8 @@ public class RequestInfoFragment extends Fragment {
 					setupButtonLayout();
                     String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
                     String members = getResources().getQuantityString(R.plurals.members, numMembers);
-                    memberCount.setText(numHelpers + " " + help + ", " + numMembers + " " + members);
+                    memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
+                    //memberCount.setText(numHelpers + " " + help + ", " + numMembers + " " + members);
                     Toast.makeText(getActivity().getApplicationContext(), R.string.join_group_success,
 							Toast.LENGTH_SHORT).show();
 				} else {
@@ -407,7 +408,7 @@ public class RequestInfoFragment extends Fragment {
                     setupButtonLayout();
                     String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
                     String members = getResources().getQuantityString(R.plurals.members, numMembers);
-                    memberCount.setText(numHelpers + " " + help + ", " + numMembers + " " + members);
+                    memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
 					Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
 							Toast.LENGTH_SHORT).show();
 				} else {
