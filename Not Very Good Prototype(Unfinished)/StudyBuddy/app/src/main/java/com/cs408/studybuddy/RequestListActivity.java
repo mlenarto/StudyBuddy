@@ -22,6 +22,7 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,8 +35,7 @@ public class RequestListActivity extends ActionBarActivity {
 	public static final String CREATED_NEW_REQUEST = "created_new_request";
 
     private static String course = new String();
-    private List<String> requests = new ArrayList<>();
-    private List<String> requests_id = new ArrayList<>(); //Parse object ID for requests
+    private ArrayList<ClassRequest> requests = new ArrayList<ClassRequest>();
 
     private static String course_obj_id = new String();
 	private LocationService gps;
@@ -107,11 +107,15 @@ public class RequestListActivity extends ActionBarActivity {
 			{
 				if (e == null)
 				{
+                    Location loc = gps.getLocation();
 					RequestListActivity.this.requests.clear();
 					for (ParseObject request : requests)
 					{
-						RequestListActivity.this.requests.add(request.getString("title"));  //save request title
-						RequestListActivity.this.requests_id.add(request.getObjectId());    //save object ID
+                        ClassRequest nextReq = new ClassRequest(request.getString("title"), request.getObjectId());
+                        double distance = gps.distance(loc.getLatitude(), loc.getLongitude(),
+                                request.getParseGeoPoint("geoLocation").getLatitude(), request.getParseGeoPoint("geoLocation").getLongitude());
+                        nextReq.setDistance(distance);
+                        RequestListActivity.this.requests.add(nextReq);
 					}
 					Log.d("RequestListActivity", "Retrieved " + requests.size() + " help requests");
 
@@ -119,9 +123,9 @@ public class RequestListActivity extends ActionBarActivity {
 					{
 						noRequestText.setVisibility(View.GONE);
 						ListView requestList = (ListView) findViewById(R.id.class_list);
-						//TODO: sort list by location (gps class has a distance method)
-						mLocation = gps.getLocation();
 
+                        //sort list by location
+                        Collections.sort(RequestListActivity.this.requests);
 
                         requestList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
 								android.R.layout.simple_list_item_1, android.R.id.text1, RequestListActivity.this.requests));
@@ -130,8 +134,8 @@ public class RequestListActivity extends ActionBarActivity {
 							@Override
 							public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                 Intent i = new Intent(RequestListActivity.this, RequestInfoActivity.class);
-                                i.putExtra("request_title", RequestListActivity.this.requests.get(position));
-                                i.putExtra("request_id", RequestListActivity.this.requests_id.get(position));
+                                i.putExtra("request_title", RequestListActivity.this.requests.get(position).title);
+                                i.putExtra("request_id", RequestListActivity.this.requests.get(position).id);
                                 Log.d("RequestListActivity", "opened: " + RequestListActivity.this.requests.get(position));
                                 startActivity(i);
 								//startActivity(new Intent(RequestListActivity.this, RequestInfoActivity.class));
@@ -185,4 +189,39 @@ public class RequestListActivity extends ActionBarActivity {
 				updateList();
 		}
 	}
+}
+
+/*
+* Class for storing request info, and sorting by distance
+* Hand-crafted with love by Tyler
+ */
+class ClassRequest implements Comparable{
+    String title;
+    String id;
+    double distance;
+
+    ClassRequest(String title, String id){
+        this.title = title;
+        this.id = id;
+    }
+
+    void setDistance(double distance){
+        this.distance = distance;
+    }
+
+    @Override
+    public int compareTo(Object another) {
+        ClassRequest o = (ClassRequest)another;
+        if(distance > o.distance)
+            return 1;
+        else if(distance < o.distance)
+            return -1;
+        else
+            return 0;
+    }
+
+    @Override
+    public String toString() {
+        return title;
+    }
 }
