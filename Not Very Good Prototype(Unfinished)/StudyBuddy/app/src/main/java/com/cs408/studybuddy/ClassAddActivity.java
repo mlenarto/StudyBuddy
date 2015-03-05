@@ -178,30 +178,6 @@ public class ClassAddActivity extends ActionBarActivity
 			return;
 		}
 
-		String classString = prefs.getString("class_list", null);
-		SharedPreferences.Editor edit = prefs.edit();
-
-		if(classString != null && !classString.isEmpty())
-		{
-			classString += "," + newCourse;
-			edit.putString("class_list", classString);
-		}
-
-		else
-		{
-			edit.putString("class_list", newCourse);
-		}
-
-		edit.commit();
-
-		//TODO: Handle the case where we fail to add the course on the server, so we don't add it locally.
-
-		classes.add(newCourse);
-		Collections.sort(classes);
-		arrayAdapter.notifyDataSetChanged();
-
-
-
 		/* Add class to the user's course list on database */
 		//Grab class object from database
 		ParseQuery<ParseObject> query = ParseQuery.getQuery("Course");
@@ -217,14 +193,38 @@ public class ClassAddActivity extends ActionBarActivity
 					ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
 					relation.add(classObj);
 
-                    String spaceless_className = newCourse.replaceAll("\\s","");
-                    ParsePush.subscribeInBackground(spaceless_className);
+                    //String spaceless_className = newCourse.replaceAll("\\s","");   MOVED BELOW
+                    //ParsePush.subscribeInBackground(spaceless_className);          MOVED BELOW
 
 					userObj.saveInBackground(new SaveCallback() {
 						@Override
 						public void done(ParseException e) {
 							if(e == null){
 								//course saved properly.
+                                String classString = prefs.getString("class_list", null);
+                                SharedPreferences.Editor edit = prefs.edit();
+
+                                if(classString != null && !classString.isEmpty())
+                                {
+                                    classString += "," + newCourse;
+                                    edit.putString("class_list", classString);
+                                }
+
+                                else
+                                {
+                                    edit.putString("class_list", newCourse);
+                                }
+
+                                edit.commit();
+
+                                classes.add(newCourse);
+                                Collections.sort(classes);
+                                arrayAdapter.notifyDataSetChanged();
+
+                                //subscribe user to class's channel
+                                String spaceless_className = newCourse.replaceAll("\\s","");
+                                ParsePush.subscribeInBackground(spaceless_className);
+
 								newClass.setText("");
 								Toast.makeText(getApplicationContext(), newCourse + " was added!",
 										Toast.LENGTH_SHORT).show();
@@ -239,11 +239,10 @@ public class ClassAddActivity extends ActionBarActivity
 					});
 
 				} else {
-					//didn't find the class (should never happen once we pick classes from a drop-down)
+					//couldn't retrieve the class
 					Log.d("ClassAddActivity", "Error: " + e.getMessage());
-					Toast.makeText(getApplicationContext(), "Error: Class not found.",
+					Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
 							Toast.LENGTH_SHORT).show();
-					removeClassFromPrefs(newCourse);
 				}
 			}
 		});
@@ -295,7 +294,7 @@ public class ClassAddActivity extends ActionBarActivity
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 
-							removeClassFromPrefs(className);
+							//removeClassFromPrefs(className);  MOVED BELOW
 
                             /* Remove class to the user's course list on database */
                             //Grab class object from database
@@ -314,14 +313,20 @@ public class ClassAddActivity extends ActionBarActivity
                                         relation.remove(classObj);
 
                                         // Unsubscribe user from the channel for that class
-                                        String spaceless_className = className.replaceAll("\\s","");
-                                        ParsePush.unsubscribeInBackground(spaceless_className);
+                                        //String spaceless_className = className.replaceAll("\\s","");  MOVED BELOW
+                                        //ParsePush.unsubscribeInBackground(spaceless_className);       MOVED BELOW
 
                                         userObj.saveInBackground(new SaveCallback() {
                                             @Override
                                             public void done(ParseException e) {
                                                 if(e == null){
                                                     //user saved properly.
+                                                    removeClassFromPrefs(className);
+
+                                                    // Unsubscribe user from the channel for that class
+                                                    String spaceless_className = className.replaceAll("\\s","");
+                                                    ParsePush.unsubscribeInBackground(spaceless_className);
+
                                                     Toast.makeText(getApplicationContext(), className + " was removed.",
                                                             Toast.LENGTH_SHORT).show();
                                                 } else{
@@ -335,9 +340,9 @@ public class ClassAddActivity extends ActionBarActivity
                                         });
 
                                     } else {
-                                        //didn't find the class (should never happen once we pick classes from a drop-down)
+                                        //couldn't retrieve class
                                         Log.d("ClassAddActivity", "Error: " + e.getMessage());
-                                        Toast.makeText(getApplicationContext(), "Error: Class not found.",
+                                        Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
                                                 Toast.LENGTH_SHORT).show();
                                     }
                                 }
