@@ -21,6 +21,7 @@ public final class LoginHandler {
      */
     public static void finishLogIn() {
         setUpInstallation();
+        logIntoSinch();
     }
 
     /**
@@ -29,6 +30,7 @@ public final class LoginHandler {
      */
     public static void logOut(Context context) {
         unlinkInstallation();
+        logOutOfSinch();
         ParseUser.logOut();
     }
 
@@ -39,6 +41,22 @@ public final class LoginHandler {
         ParseInstallation installation = ParseInstallation.getCurrentInstallation();
         installation.put("user", ParseUser.getCurrentUser());
         installation.saveInBackground();
+    }
+
+    /**
+     * Logs the user into Sinch.
+     */
+    private static void logIntoSinch() {
+        SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
+        sinch.startClient(ParseUser.getCurrentUser().getObjectId());
+    }
+
+    /**
+     * Logs the user out of sinch.
+     */
+    private static void logOutOfSinch() {
+        SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
+        sinch.stopClient();
     }
 
     /**
