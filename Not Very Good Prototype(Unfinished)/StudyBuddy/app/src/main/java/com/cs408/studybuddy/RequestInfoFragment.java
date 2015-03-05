@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,15 +15,13 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.parse.FindCallback;
-import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
-import java.util.List;
+import java.util.Calendar;
 
 /**
  * Created by Evan on 2/9/2015.
@@ -134,7 +131,7 @@ public class RequestInfoFragment extends Fragment {
 					"" + numMembers,
 					requestObj.getString("locationDescription"),
 					requestObj.getString("description"),
-					"" + requestObj.getCreatedAt(),
+					"" + requestObj.getCreatedAt().getTime(),
 					request_id
 			};
 
@@ -178,7 +175,7 @@ public class RequestInfoFragment extends Fragment {
                             "" + numMembers,
 							currentGroup.getString("locationDescription"),
 							currentGroup.getString("description"),
-							"" + currentGroup.getCreatedAt(),
+							"" + currentGroup.getCreatedAt().getTime(),
 							currentGroup.getObjectId()
 					};
 				} catch (ParseException e) {
@@ -213,7 +210,7 @@ public class RequestInfoFragment extends Fragment {
 	 *  result[3] - Number of group members (including helpers)
 	 *  result[4] - Location description of the request
 	 *  result[5] - Description of the request's task
-	 *  result[6] - Timestamp of the request's creation
+	 *  result[6] - Timestamp of the request's creation (saved as long)
 	 *  result[7] - ID of the ParseObject representing this request
  	 */
 	private void setupInfo(String[] result) {
@@ -223,9 +220,17 @@ public class RequestInfoFragment extends Fragment {
 		TextView requestLocation = (TextView) root.findViewById(R.id.request_location);
 		TextView requestDescription = (TextView) root.findViewById(R.id.request_description);
 
-		int timeMillis = Integer.parseInt(result[1]);
-		int timeHours = timeMillis / 3600000;		//Milliseconds in an hour
-		int timeMinutes = (timeMillis - timeHours * 3600000) / 60000;
+
+		int totalTimeMillis = Integer.parseInt(result[1]);
+		Calendar cal = Calendar.getInstance();
+		long currentTime = cal.getTimeInMillis();
+		long startTime = Long.parseLong(result[6]);
+		long timeElapsed = currentTime - startTime;
+		//Can't have a negative time
+		long remainingTimeMillis = (totalTimeMillis > timeElapsed) ? totalTimeMillis - timeElapsed : 0;
+
+		int timeHours = (int) remainingTimeMillis / 3600000;		//Milliseconds in an hour
+		int timeMinutes = (int) (remainingTimeMillis - timeHours * 3600000) / 60000;
 		String h = getResources().getQuantityString(R.plurals.hours, timeHours);
 		String m = getResources().getQuantityString(R.plurals.minutes, timeMinutes);
 
@@ -406,8 +411,13 @@ public class RequestInfoFragment extends Fragment {
 		});
 	}
 
+	public void refreshInfo() {
+		LoadRequestTask loadRequest = new LoadRequestTask();
+		loadRequest.execute();
+	}
 
 
+	//Decide whether to show the "Leave group" button or both buttons for joining the group
 	private void setupButtonLayout() {
 		groupJoinedParams = (RelativeLayout.LayoutParams) joinOrLeaveRequest.getLayoutParams();
 		if(isInGroup) {
