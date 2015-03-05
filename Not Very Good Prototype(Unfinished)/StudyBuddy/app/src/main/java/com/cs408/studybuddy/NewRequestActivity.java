@@ -1,6 +1,7 @@
 package com.cs408.studybuddy;
 
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -37,6 +38,7 @@ public class NewRequestActivity extends ActionBarActivity {
     private ParseObject request, courseObj;
     private ParseUser user;
 	private SharedPreferences prefs;
+	private LocationService gps;
 
 
 	public void onCreate(Bundle savedInstanceState ) {
@@ -69,6 +71,9 @@ public class NewRequestActivity extends ActionBarActivity {
 				onBackPressed();
 			}
 		});
+
+		gps = LocationService.getInstance(this);
+		gps.startGPS(15000, 10);
 
 		submit.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -146,7 +151,12 @@ public class NewRequestActivity extends ActionBarActivity {
                 request.put("title", requestTitle);
                 request.put("description", requestDescription);
                 request.put("locationDescription", requestLocation);
-                ParseGeoPoint point = new ParseGeoPoint(30.0, -20.0);   //TODO: grab the user's actual coordinates
+				Location loc = gps.getLocation();
+				ParseGeoPoint point;
+				if(loc != null)
+					point = new ParseGeoPoint(loc.getLatitude(), loc.getLongitude());
+				else
+					point = new ParseGeoPoint(30.0, -20.0);   //TODO: What to do if the location can't be obtained
                 request.put("geoLocation", point);
                 request.put("duration", requestLengthMillis);
 
@@ -216,6 +226,7 @@ public class NewRequestActivity extends ActionBarActivity {
 
 	}
 
+	@Override
 	public void onResume() {
 		super.onResume();
 		requestTitleEdit.addTextChangedListener(new TextWatcher() {
@@ -268,5 +279,17 @@ public class NewRequestActivity extends ActionBarActivity {
 				requestLocationLength.setText(requestLocationEdit.length() + "/150");
 			}
 		});
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		gps.stopGPS();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		gps.stopGPS();
 	}
 }

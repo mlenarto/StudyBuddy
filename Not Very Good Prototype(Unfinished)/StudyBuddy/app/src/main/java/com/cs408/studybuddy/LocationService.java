@@ -10,10 +10,8 @@ public class LocationService extends Service implements LocationListener
 {
 	private static final int TWO_MINUTES = 1000 * 60 * 2;
 
-	private int distance = 3;
-	private static long timer = 5*60*1000;
 	private Context myContext;
-	Location currentLocation;
+	private Location currentLocation;
 	private boolean isConnected = false;
 	protected LocationManager locationManager = null;
 
@@ -71,7 +69,7 @@ public class LocationService extends Service implements LocationListener
 	}
 
 
-	private boolean checkProvider(){
+	private boolean checkProvider(int timer, int distance){
 		gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 		networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
@@ -98,9 +96,7 @@ public class LocationService extends Service implements LocationListener
 	public boolean startGPS(int minTime, int minDistance){
 		if(!isConnected) {
 			locationManager = (LocationManager) myContext.getSystemService(LOCATION_SERVICE);
-			timer = minTime;
-			distance = minDistance;
-			isConnected = checkProvider();
+			isConnected = checkProvider(minTime, minDistance);
 		}
 		return isConnected;
 	}
@@ -112,7 +108,7 @@ public class LocationService extends Service implements LocationListener
 		{
 			locationManager.removeUpdates(LocationService.this);
 		}
-		isConnected = true;
+		isConnected = false;
 		locationManager = null;
 	}
 	
@@ -136,44 +132,6 @@ public class LocationService extends Service implements LocationListener
 	{
 		if(isBetterLocation(location, currentLocation))
 			currentLocation = location;
-
-		//set the origin for the first time
-		//don't put it near the phone--if the phone gets within 1 meter, then problems occur
-//		if(origin == null)
-//		{
-//			origin = new float[2];
-//			origin[0] = (float) (location.getLatitude() * Math.PI / 180.0f);
-//			origin[1] = (float) (location.getLongitude() * Math.PI / 180.0f);
-//			Log.d("gps", "just set origin");
-//		}
-//
-//		if(currentLocation == null){
-//			currentLocation = location;
-//		} else if(location.getElapsedRealtimeNanos() > 5) {
-//
-//		}
-//		else if(location.getAccuracy() < 5){
-//			//Log.d("GPS", "within 5 from " + location.getProvider());
-//			currentLocation.setLatitude(currentLocation.getLatitude() + (location.getLatitude() - currentLocation.getLatitude()) * (1/location.getAccuracy()));
-//			currentLocation.setLongitude(currentLocation.getLongitude() + (location.getLongitude() - currentLocation.getLongitude()) * (1/location.getAccuracy()));
-//			currentLocation.setAccuracy(location.getAccuracy());
-//			currentLocation.setProvider(location.getProvider());
-//			//Log.d("GPS", "location: " + currentLocation.toString());
-//
-//		}
-//		else if(location.getAccuracy() < 35){
-//			//Log.d("GPS", "within 35 from " + location.getProvider());
-//			currentLocation.setLatitude(currentLocation.getLatitude() + (location.getLatitude() - currentLocation.getLatitude()) * (1/(2*location.getAccuracy())));
-//			currentLocation.setLongitude(currentLocation.getLongitude() + (location.getLongitude() - currentLocation.getLongitude()) * (1/(2*location.getAccuracy())));
-//			currentLocation.setAccuracy(location.getAccuracy());
-//			currentLocation.setProvider(location.getProvider());
-//			//Log.d("GPS", "location: " + currentLocation.toString());
-//
-//		}
-//		else{
-//			//Log.d("GPS", "Didn't update: " + location.getProvider());
-//		}
-
     }
 
 

@@ -37,6 +37,8 @@ public class DrawerActivity extends ActionBarActivity {
 	private Fragment currentFragment;
 	private int currentFragmentId = CLASS_LIST_FRAGMENT;
 
+	//This is only used to start gathering location data for later
+	private LocationService gps;
 
 
     @Override
@@ -48,6 +50,9 @@ public class DrawerActivity extends ActionBarActivity {
         mDrawerList = (ListView) findViewById(R.id.navigation_drawer);
 		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		mTitle = (TextView) findViewById(R.id.title_text);
+
+		gps = LocationService.getInstance(this);
+		gps.startGPS(20000, 15);
 
 		setSupportActionBar(mToolbar);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -92,6 +97,12 @@ public class DrawerActivity extends ActionBarActivity {
         mDrawerList.setAdapter(new ArrayAdapter<>(this,
 				R.layout.drawer_item_fragment, R.id.drawer_text, drawerItems));
     }
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		gps.stopGPS();
+	}
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
