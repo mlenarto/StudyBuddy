@@ -6,6 +6,14 @@ import android.app.*;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
+
+import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseInstallation;
+import com.parse.ParseQuery;
+import com.parse.SaveCallback;
 
 public class LocationService extends Service implements LocationListener
 {
@@ -215,8 +223,22 @@ public class LocationService extends Service implements LocationListener
 	@Override
     public void onLocationChanged(Location location) 
 	{
-		if(isBetterLocation(location, currentLocation))
-			currentLocation = location;
+		if(isBetterLocation(location, currentLocation)) {
+            currentLocation = location;
+
+            //add location to Parse installation object
+            ParseInstallation.getCurrentInstallation().put("geoLocation", new ParseGeoPoint(currentLocation.getLatitude(), currentLocation.getLongitude()));
+            ParseInstallation.getCurrentInstallation().saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    if(e != null){
+                        Log.d("LocationService", "Failed to save GPS location on server.");
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+        }
     }
 
 
