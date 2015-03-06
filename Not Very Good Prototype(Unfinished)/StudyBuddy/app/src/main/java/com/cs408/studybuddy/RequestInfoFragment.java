@@ -50,7 +50,7 @@ public class RequestInfoFragment extends Fragment {
 		infoContainer = (ScrollView) root.findViewById(R.id.info_container);
 		joinOrLeaveRequest = (Button) root.findViewById(R.id.request_join_leave);
 		joinAsHelper = (Button) root.findViewById(R.id.request_join_helper);
-        progress = ProgressDialog.show(getActivity(), "Loading...", "Please wait...", true);
+
 
 
 		memberCount = (TextView) root.findViewById(R.id.member_count);
@@ -58,7 +58,7 @@ public class RequestInfoFragment extends Fragment {
 
 		groupJoinedParams = (RelativeLayout.LayoutParams) joinOrLeaveRequest.getLayoutParams();
 		marginSize = groupJoinedParams.leftMargin;
-
+        progress = ProgressDialog.show(getActivity(), "Loading...", "Please wait...", true);
 		LoadRequestTask loadRequest = new LoadRequestTask();
 		loadRequest.execute();
 
@@ -204,6 +204,7 @@ public class RequestInfoFragment extends Fragment {
 					}
 				});
 			}
+            progress.dismiss();
 			return null;	//Error or not in group, display already handled
 		}
 	}
@@ -262,6 +263,7 @@ public class RequestInfoFragment extends Fragment {
 				isInGroup = true;
 		}
 		else {
+            progress.dismiss();
 			isInGroup = false;
 		}
 		setupButtonLayout();
@@ -350,6 +352,7 @@ public class RequestInfoFragment extends Fragment {
 						builder.create().show();
 					} else {
 						//join group on server
+
                         joinGroup(false);
 					}
 				}
