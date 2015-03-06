@@ -1,6 +1,7 @@
 package com.cs408.studybuddy;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -36,18 +38,21 @@ public class RequestInfoFragment extends Fragment {
 	private TextView noGroup;
     private ParseObject requestObj;
 	private ParseObject currentGroup;
+    private ProgressDialog progress;
 	private RelativeLayout.LayoutParams groupJoinedParams;
 	private int marginSize = 0;
-	boolean isInGroup;
     private int numHelpers;
     private int numMembers;
+    private boolean isInGroup;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		root = inflater.inflate(R.layout.fragment_request_info, container, false);
-
 		infoContainer = (ScrollView) root.findViewById(R.id.info_container);
 		joinOrLeaveRequest = (Button) root.findViewById(R.id.request_join_leave);
 		joinAsHelper = (Button) root.findViewById(R.id.request_join_helper);
+        progress = ProgressDialog.show(getActivity(), "Loading...", "Please wait...", true);
+
+
 		memberCount = (TextView) root.findViewById(R.id.member_count);
 		noGroup = (TextView) root.findViewById(R.id.no_group);
 
@@ -79,6 +84,7 @@ public class RequestInfoFragment extends Fragment {
 		Bundle extras = getArguments();
 
 		if(extras != null) {	//Having arguments means it is grabbing a request from the server
+
 			final String request_id = extras.getString("request_id");
 
 			//fetch request object from server
@@ -140,7 +146,6 @@ public class RequestInfoFragment extends Fragment {
 			if(currentGroup != null) {
 				try {
                     requestObj = currentGroup;
-                    //TODO: Add loading indicator while this all occurs
 
                     currentGroup.fetchIfNeeded();
 
@@ -238,13 +243,13 @@ public class RequestInfoFragment extends Fragment {
 		int membersTotal = Integer.parseInt(result[3]);
 		String help = getResources().getQuantityString(R.plurals.helpers, helperCount);
 		String members = getResources().getQuantityString(R.plurals.members, membersTotal);
-
 		requestTitle.setText(result[0]);
 		timeRemaining.setText(timeHours + " " + h + ", " + timeMinutes + " " + m);
 		memberCount.setText(membersTotal + " " + members + " (" + helperCount + " " + help + ")");
 		requestLocation.setText(result[4]);
 		requestDescription.setText(result[5]);
-
+        //TURN OFF SPINNER THINGY HERE-------------------------------------------------------------------------
+        progress.dismiss();
 		currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
 
 		if(currentGroup != null) {

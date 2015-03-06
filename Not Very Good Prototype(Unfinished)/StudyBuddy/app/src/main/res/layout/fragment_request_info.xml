@@ -22,7 +22,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:layout_marginLeft="20dp"
-                android:text="Title"
                 android:textSize="26sp"/>
 
             <TextView
@@ -41,26 +40,14 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/duration_label"
                 android:layout_marginLeft="20dp"
-                android:text="- hours, - minutes"
                 android:textSize="18sp"
-                />
-
-            <TextView
-                android:id="@+id/member_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/request_time"
-                android:layout_marginTop="20dp"
-                android:layout_marginLeft="20dp"
-                android:text="5 members"
-                android:textSize="20sp"
                 />
 
             <TextView
                 android:id="@+id/request_location_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/member_count"
+                android:layout_below="@+id/member_count"
                 android:layout_marginTop="30dp"
                 android:layout_marginLeft="20dp"
                 android:text="Location"
@@ -73,8 +60,17 @@
                 android:layout_below="@id/request_location_label"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
-                android:text="Location description"
                 android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/member_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/request_time"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="20dp"
+                android:textSize="20sp"
+                />
 
             <TextView
                 android:id="@+id/request_description_label"
@@ -93,7 +89,6 @@
                 android:layout_below="@id/request_description_label"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
-                android:text="Description"
                 android:textSize="18sp"
                 />
 
