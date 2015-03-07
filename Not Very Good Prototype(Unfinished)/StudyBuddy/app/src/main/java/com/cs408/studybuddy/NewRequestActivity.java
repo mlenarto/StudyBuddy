@@ -38,6 +38,7 @@ public class NewRequestActivity extends ActionBarActivity {
     private ParseObject request, courseObj;
     private ParseUser user;
 	private LocationService gps;
+	private boolean isSubmitting = false;
 
 
 	public void onCreate(Bundle savedInstanceState ) {
@@ -75,6 +76,10 @@ public class NewRequestActivity extends ActionBarActivity {
 		submit.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if(isSubmitting)
+					return;
+
+				isSubmitting = true;
 				String requestTitle = requestTitleEdit.getText().toString();
 				String requestDescription = descriptionTextEdit.getText().toString();
                 String requestLocation = requestLocationEdit.getText().toString();
@@ -111,21 +116,25 @@ public class NewRequestActivity extends ActionBarActivity {
                 if(requestTitle.isEmpty()){
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_title),
                             Toast.LENGTH_SHORT).show();
+					isSubmitting = false;
                     return;
                 }
                 else if(requestLengthMillis <= 0){
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_zero_time),
                             Toast.LENGTH_SHORT).show();
+					isSubmitting = false;
                     return;
                 }
                 else if(requestLocation.isEmpty()){
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_location),
                             Toast.LENGTH_SHORT).show();
+					isSubmitting = false;
                     return;
                 }
                 else if(requestDescription.isEmpty()){
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_description),
                             Toast.LENGTH_SHORT).show();
+					isSubmitting = false;
                     return;
                 }
 
@@ -139,6 +148,7 @@ public class NewRequestActivity extends ActionBarActivity {
                     e.printStackTrace();
                     Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                             Toast.LENGTH_SHORT).show();
+					isSubmitting = false;
                     return;
                 }
 
@@ -155,6 +165,7 @@ public class NewRequestActivity extends ActionBarActivity {
 				} else {
 					Toast.makeText(getApplicationContext(), getString(R.string.location_error),
 							Toast.LENGTH_SHORT).show();
+					isSubmitting = false;
 					return;
 				}
                 request.put("geoLocation", point);
