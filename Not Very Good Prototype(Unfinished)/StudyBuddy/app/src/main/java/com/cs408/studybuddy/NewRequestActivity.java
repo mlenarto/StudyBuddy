@@ -69,7 +69,7 @@ public class NewRequestActivity extends ActionBarActivity {
 			}
 		});
 
-		gps = LocationService.getInstance(this);
+		gps = LocationService.getInstance(getApplicationContext());
 		gps.startGPS(15000, 10);
 
 		submit.setOnClickListener(new View.OnClickListener() {
@@ -137,7 +137,7 @@ public class NewRequestActivity extends ActionBarActivity {
                     courseObj = query.getFirst();
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), getString(R.string.location_error),
+                    Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -153,7 +153,7 @@ public class NewRequestActivity extends ActionBarActivity {
 				if(loc != null) {
 					point = new ParseGeoPoint(loc.getLatitude(), loc.getLongitude());
 				} else {
-					Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+					Toast.makeText(getApplicationContext(), getString(R.string.location_error),
 							Toast.LENGTH_SHORT).show();
 					return;
 				}

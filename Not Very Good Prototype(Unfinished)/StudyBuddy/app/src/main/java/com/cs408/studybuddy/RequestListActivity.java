@@ -57,7 +57,7 @@ public class RequestListActivity extends ActionBarActivity {
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
 		mText.setText(R.string.title_Request_List);
 
-		gps = LocationService.getInstance(this);
+		gps = LocationService.getInstance(getApplicationContext());
 		gps.startGPS(10*1000, 5);
 
 		noRequestText.setVisibility(View.GONE);
@@ -166,6 +166,8 @@ public class RequestListActivity extends ActionBarActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
+
+		gps.startGPS(15*1000, 10);
 
 		runnable = new Runnable() {
 			public void run() {

@@ -1,5 +1,6 @@
 package com.cs408.studybuddy;
 
+import android.app.Application;
 import android.content.res.Configuration;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -51,7 +52,7 @@ public class DrawerActivity extends ActionBarActivity {
 		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		mTitle = (TextView) findViewById(R.id.title_text);
 
-		gps = LocationService.getInstance(this);
+		gps = LocationService.getInstance(getApplicationContext());
 		gps.startGPS(20000, 15);
 
 		setSupportActionBar(mToolbar);
