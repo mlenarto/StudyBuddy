@@ -1,57 +1,61 @@
 package com.cs408.studybuddy;
 
-import android.app.Activity;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.parse.FindCallback;
-import com.parse.ParseException;
-import com.parse.ParseQuery;
-import com.parse.ParseUser;
-import com.sinch.android.rtc.messaging.Message;
-import com.sinch.android.rtc.messaging.WritableMessage;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 public class MessageAdapter extends BaseAdapter {
 
-    public static final int DIRECTION_INCOMING = 0;
+    private List<ChatMessage> messages;
 
-    public static final int DIRECTION_OUTGOING = 1;
+    private HashSet<String> messageIds;
 
-    private List<MessageInfo> mMessages;
+    private SimpleDateFormat dateFormatter;
 
-    private SimpleDateFormat mFormatter;
+    private LayoutInflater inflater;
 
-    private LayoutInflater mInflater;
+    private static ChatMessageComparator messageComparator = new ChatMessageComparator();
 
     public MessageAdapter(LayoutInflater inflater) {
-        mInflater = inflater;
-        mMessages = new ArrayList<MessageInfo>();
-        mFormatter = new SimpleDateFormat("HH:mm");
+        this.inflater = inflater;
+        messages = new ArrayList<ChatMessage>();
+        messageIds = new HashSet<String>();
+        dateFormatter = new SimpleDateFormat("HH:mm");
     }
 
-    public void addMessage(WritableMessage message, int direction, String username, Date date) {
-        mMessages.add(new MessageInfo(message, direction, username, date));
+    public synchronized boolean addMessage(ChatMessage message) {
+        if (messageIds.contains(message.getId())) {
+            return false; // Avoid duplicate messages
+        }
+
+        // Binary search the message list to get the position to insert the message
+        int index = Collections.binarySearch(messages, message, messageComparator);
+        if (index < 0) {
+            index = ~index;
+        }
+        messages.add(index, message);
+        messageIds.add(message.getId());
         notifyDataSetChanged();
+        return true;
     }
 
     @Override
     public int getCount() {
-        return mMessages.size();
+        return messages.size();
     }
 
     @Override
     public Object getItem(int i) {
-        return mMessages.get(i);
+        return messages.get(i);
     }
 
     @Override
@@ -66,7 +70,7 @@ public class MessageAdapter extends BaseAdapter {
 
     @Override
     public int getItemViewType(int i) {
-        return mMessages.get(i).getDirection();
+        return messages.get(i).getDirection().ordinal();
     }
 
     @Override
@@ -75,55 +79,39 @@ public class MessageAdapter extends BaseAdapter {
 
         if (convertView == null) {
             int res = 0;
-            if (direction == DIRECTION_INCOMING) {
+            if (direction == ChatMessage.Direction.INCOMING.ordinal()) {
                 res = R.layout.message_right;
-            } else if (direction == DIRECTION_OUTGOING) {
+            } else if (direction == ChatMessage.Direction.OUTGOING.ordinal()) {
                 res = R.layout.message_left;
             }
-            convertView = mInflater.inflate(res, viewGroup, false);
+            convertView = inflater.inflate(res, viewGroup, false);
         }
 
-        WritableMessage message = mMessages.get(i).getMessage();
-        String name = mMessages.get(i).getUsername();
+        ChatMessage message = messages.get(i);
+        String name = message.getSender();
 
         TextView txtSender = (TextView) convertView.findViewById(R.id.txtSender);
         TextView txtMessage = (TextView) convertView.findViewById(R.id.txtMessage);
         TextView txtDate = (TextView) convertView.findViewById(R.id.txtDate);
 
         txtSender.setText(name);
-        txtMessage.setText(message.getTextBody());
-        txtDate.setText(mFormatter.format(mMessages.get(i).getDate()));
+        txtMessage.setText(message.getBody());
+        txtDate.setText(dateFormatter.format(message.getDate()));
 
         return convertView;
     }
 
-    private class MessageInfo {
-        private WritableMessage message;
-        private int direction;
-        private String username;
-        private Date date;
-
-        public MessageInfo(WritableMessage message, int direction, String username, Date date) {
-            this.message = message;
-            this.direction = direction;
-            this.username = username;
-            this.date = date;
-        }
-
-        public WritableMessage getMessage() {
-            return message;
-        }
-
-        public int getDirection() {
-            return direction;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public Date getDate() {
-            return date;
+    /**
+     * Compares chat messages by date.
+     */
+    private static class ChatMessageComparator implements Comparator<ChatMessage>
+    {
+        @Override
+        public int compare(ChatMessage lhs, ChatMessage rhs) {
+            if (lhs == rhs) {
+                return 0;
+            }
+            return lhs.getDate().compareTo(rhs.getDate());
         }
     }
 }

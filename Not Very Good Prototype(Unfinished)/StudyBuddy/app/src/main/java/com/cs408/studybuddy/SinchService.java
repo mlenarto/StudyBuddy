@@ -45,6 +45,10 @@ public class SinchService extends Service {
             SinchService.this.sendMessage(recipientUserId, textBody);
         }
 
+        public void sendMessage(WritableMessage message) {
+            SinchService.this.sendMessage(message);
+        }
+
         public void addMessageClientListener(MessageClientListener listener) {
             SinchService.this.addMessageClientListener(listener);
         }
@@ -79,6 +83,12 @@ public class SinchService extends Service {
     public void sendMessage(String recipientUserId, String textBody) {
         if (isStarted()) {
             WritableMessage message = new WritableMessage(recipientUserId, textBody);
+            mSinchClient.getMessageClient().send(message);
+        }
+    }
+
+    public void sendMessage(WritableMessage message) {
+        if (isStarted()) {
             mSinchClient.getMessageClient().send(message);
         }
     }
