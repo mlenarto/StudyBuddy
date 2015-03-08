@@ -33,12 +33,21 @@ public class MessageAdapter extends BaseAdapter {
     }
 
     /**
+     * Determines whether or not a message with the given ID is in the list.
+     * @param id The ID to check for.
+     * @return True if a message with the ID is in the list.
+     */
+    public synchronized boolean hasMessage(String id) {
+        return messageIds.contains(id);
+    }
+
+    /**
      * Determines whether or not a message is in the list based off of its ID.
      * @param message The message to check for.
      * @return True if the message is in the list.
      */
     public synchronized boolean hasMessage(ChatMessage message) {
-        return messageIds.contains(message.getId());
+        return hasMessage(message.getId());
     }
 
     /**

@@ -28,10 +28,12 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MessagesFragment extends Fragment implements MessageClientListener {
 
     private static final String TAG = MessagesFragment.class.getSimpleName();
+    private static final String DISPLAY_NAME_HEADER = "displayName"; // Used to cache display name in Sinch messages
 
     private View view;
     private MessageAdapter mMessageAdapter;
@@ -102,6 +104,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 }
 
                 // Add each user ID to the message if they're registered with Sinch
+                // TODO: What happens if there are no recipients?
                 for (ParseUser user : parseUsers) {
                     if (!user.has("sinch") || !user.getBoolean("sinch")) {
                         continue; // Sinch fails to send the message completely if the user hasn't registered with it...
@@ -109,6 +112,9 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                     Log.d("MessagesFragment", "Add recipient " + user.getObjectId());
                     message.addRecipient(user.getObjectId());
                 }
+
+                // Cache our display name in a message header
+                message.addHeader(DISPLAY_NAME_HEADER, (String)ParseUser.getCurrentUser().get("name"));
 
                 // Send the message to every user at once
                 SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
@@ -124,7 +130,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
     @Override
     public void onIncomingMessage(MessageClient client, Message message) {
-        addIncomingMessageInBackground(message);
+        addIncomingMessage(message);
     }
 
     @Override
@@ -155,15 +161,33 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
     @Override
     public void onMessageDelivered(MessageClient client, MessageDeliveryInfo deliveryInfo) {
-        Log.d(TAG, "onDelivered");
+        // This method is kinda useless for us - basically it just lets you know once a user
+        // actually receives a message, but it gets called even if the user who sent the message
+        // isn't logged in
     }
 
     /**
-     * Adds an incoming message to the message list in the background.
+     * Adds an incoming message to the message list.
      * @param message The message to add.
      */
-    private void addIncomingMessageInBackground(final Message message) {
-        // Look up the user's display name
+    private void addIncomingMessage(final Message message) {
+        if (mMessageAdapter.hasMessage(message.getMessageId())) {
+            Log.d(TAG, "Ignoring message " + message.getMessageId() + " because it's already in the list");
+            return; // Message is already in the list - don't bother with it
+        }
+
+        // If the display name was cached as part of the message,
+        // use it instead of doing a Parse query
+        Map<String, String> headers = message.getHeaders();
+        if (headers.containsKey(DISPLAY_NAME_HEADER)) {
+            String username = headers.get(DISPLAY_NAME_HEADER);
+            Log.d(TAG, "Got cached username for " + message.getMessageId() + ": " + username);
+            mMessageAdapter.addMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
+            return;
+        }
+
+        // Use Parse to look up the user's display name
+        Log.d(TAG, "Cached username not available for " + message.getMessageId() + "; falling back on Parse");
         ParseQuery<ParseUser> query = ParseUser.getQuery();
         query.whereEqualTo("objectId", message.getSenderId());
         query.selectKeys(Arrays.asList("name"));
@@ -172,9 +196,12 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             @Override
             public void done(List<ParseUser> parseUsers, ParseException e) {
                 if (e != null || parseUsers.size() == 0) {
-                    return; // Ignore errors...
+                    // TODO: Retry the query if an error occurred?
+                    Log.e(TAG, "Failed to get username for " + message.getMessageId() + ": " + ((e != null) ? e.getMessage() : " User not found"));
+                    return;
                 }
                 String username = parseUsers.get(0).getString("name");
+                Log.d(TAG, "Parse query returned username for " + message.getMessageId() + ": " + username);
                 mMessageAdapter.addMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
             }
         });
@@ -245,6 +272,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
      * Loads and displays the message history.
      */
     private void loadMessageHistory() {
+        Log.d(TAG, "Retrieving message history...");
         ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
         query.include("sender");
         query.findInBackground(new FindCallback<ParseObject>() {
@@ -267,6 +295,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                             : ChatMessage.Direction.INCOMING;
                     mMessageAdapter.addMessage(new ChatMessage(sinchId, username, text, direction, date));
                 }
+                Log.d(TAG, "Retrieved " + parseObjects.size() + " messages");
             }
         });
     }
