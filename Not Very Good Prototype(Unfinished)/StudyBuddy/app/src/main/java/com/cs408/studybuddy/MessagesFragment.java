@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.Arrays;
@@ -39,6 +40,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     private MessageAdapter mMessageAdapter;
     private EditText mTxtTextBody;
     private Button mBtnSend;
+    private ProgressBar loadingIndicator;
 
     private HashMap<String, ChatMessage> pendingMessages = new HashMap<>(); // Messages that haven't been stored to the database yet, keyed by ID
 
@@ -47,6 +49,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         view = inflater.inflate(R.layout.messaging, container, false);
 
         mTxtTextBody = (EditText) view.findViewById(R.id.txtTextBody);
+        loadingIndicator = (ProgressBar) view.findViewById(R.id.loadingIndicator);
 
         mMessageAdapter = new MessageAdapter(inflater);
         ListView messagesList = (ListView) view.findViewById(R.id.lstMessages);
@@ -273,6 +276,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
      */
     private void loadMessageHistory() {
         Log.d(TAG, "Retrieving message history...");
+        showLoadingIndicator(true);
         ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
         query.include("sender");
         query.findInBackground(new FindCallback<ParseObject>() {
@@ -280,6 +284,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if (e != null) {
                     displayNetworkError();
+                    showLoadingIndicator(false);
                     return;
                 }
                 for (final ParseObject savedMessage : parseObjects) {
@@ -295,9 +300,18 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                             : ChatMessage.Direction.INCOMING;
                     mMessageAdapter.addMessage(new ChatMessage(sinchId, username, text, direction, date));
                 }
+                showLoadingIndicator(false);
                 Log.d(TAG, "Retrieved " + parseObjects.size() + " messages");
             }
         });
+    }
+
+    /**
+     * Shows or hides the loading indicator.
+     * @param show True to show the loading indicator, false to hide it.
+     */
+    private void showLoadingIndicator(boolean show) {
+        loadingIndicator.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     /**

@@ -14,6 +14,14 @@
             android:divider="@null"
             android:dividerHeight="0dp" android:stackFromBottom="true" tools:listitem="@layout/message_left"/>
 
+    <ProgressBar
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/loadingIndicator"
+        android:visibility="gone"
+        android:indeterminateOnly="true"
+        android:keepScreenOn="true"
+        />
 
     <RelativeLayout
             android:id="@+id/relSendMessage"
