@@ -1,7 +1,6 @@
 package com.cs408.studybuddy;
 
 import com.parse.FindCallback;
-import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -25,9 +24,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 public class MessagesFragment extends Fragment implements MessageClientListener {
@@ -38,6 +37,8 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     private MessageAdapter mMessageAdapter;
     private EditText mTxtTextBody;
     private Button mBtnSend;
+
+    private HashMap<String, ChatMessage> pendingMessages = new HashMap<>(); // Messages that haven't been stored to the database yet, keyed by ID
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -80,34 +81,39 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             return;
         }
 
+        // Create a message object and update the UI immediately to make the user think the message sent successfully
+        final WritableMessage message = new WritableMessage();
+        message.setTextBody(textBody);
+        final ChatMessage addedMessage = addOutgoingMessage(message);
+        mTxtTextBody.setText("");
+
         // Get all active users for now
         ParseQuery<ParseUser> query = ParseUser.getQuery();
-        query.whereNotEqualTo("objectId", ParseUser.getCurrentUser().getObjectId());
+        query.whereNotEqualTo("objectId", ParseUser.getCurrentUser().getObjectId()); // Skip the current user
         query.selectKeys(Arrays.asList("objectId", "sinch"));
         query.findInBackground(new FindCallback<ParseUser>() {
             @Override
             public void done(List<ParseUser> parseUsers, ParseException e) {
                 if (e != null) {
-                    Toast.makeText(view.getContext(), getString(R.string.network_error), Toast.LENGTH_SHORT).show();
+                    // User query failed - notify the user and redact the message
+                    displayNetworkError();
+                    redactMessage(addedMessage);
                     return;
                 }
 
-                // Build a list of the user IDs
-                ArrayList<String> recipients = new ArrayList<String>();
+                // Add each user ID to the message if they're registered with Sinch
                 for (ParseUser user : parseUsers) {
                     if (!user.has("sinch") || !user.getBoolean("sinch")) {
-                        continue;
+                        continue; // Sinch fails to send the message completely if the user hasn't registered with it...
                     }
                     Log.d("MessagesFragment", "Add recipient " + user.getObjectId());
-                    recipients.add(user.getObjectId());
+                    message.addRecipient(user.getObjectId());
                 }
 
                 // Send the message to every user at once
                 SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
-                WritableMessage message = new WritableMessage(recipients, textBody);
+                pendingMessages.put(message.getMessageId(), addedMessage);
                 sinch.sendMessage(message);
-
-                mTxtTextBody.setText("");
             }
         });
     }
@@ -123,8 +129,10 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
     @Override
     public void onMessageSent(MessageClient client, Message message, String recipientId) {
-        if (addOutgoingMessage(message)) {
+        // Only store the message if it is still pending
+        if (pendingMessages.containsKey(message.getMessageId())) {
             storeMessage(message);
+            pendingMessages.remove(message.getMessageId());
         }
     }
 
@@ -134,14 +142,15 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     }
 
     @Override
-    public void onMessageFailed(MessageClient client, Message message,
-            MessageFailureInfo failureInfo) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Sending failed: ")
-                .append(failureInfo.getSinchError().getMessage());
-
-        //Toast.makeText(this, sb.toString(), Toast.LENGTH_LONG).show();
-        Log.d(TAG, sb.toString());
+    public void onMessageFailed(MessageClient client, Message message, MessageFailureInfo failureInfo) {
+        // Message failed to send - redact it
+        Log.d(TAG, "onMessageFailed: " + failureInfo.getSinchError().getMessage());
+        ChatMessage pending = pendingMessages.remove(message.getMessageId());
+        if (pending == null) {
+            return;
+        }
+        redactMessage(pending);
+        displayNetworkError();
     }
 
     @Override
@@ -149,6 +158,10 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         Log.d(TAG, "onDelivered");
     }
 
+    /**
+     * Adds an incoming message to the message list in the background.
+     * @param message The message to add.
+     */
     private void addIncomingMessageInBackground(final Message message) {
         // Look up the user's display name
         ParseQuery<ParseUser> query = ParseUser.getQuery();
@@ -167,12 +180,38 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         });
     }
 
-    private boolean addOutgoingMessage(Message message) {
+    /**
+     * Adds an outgoing message to the message list.
+     * @param message The message to add.
+     * @return The ChatMessage object that was added to the list.
+     */
+    private ChatMessage addOutgoingMessage(WritableMessage message) {
         // Just use the current user's display name
         String username = ParseUser.getCurrentUser().getString("name");
-        return mMessageAdapter.addMessage(new ChatMessage(message, username, ChatMessage.Direction.OUTGOING));
+        ChatMessage result = new ChatMessage(message.getMessageId(), username, message.getTextBody(), ChatMessage.Direction.OUTGOING, new Date());
+        mMessageAdapter.addMessage(result);
+        return result;
     }
 
+    /**
+     * Removes a message from the message list and puts its contents back into the textbox.
+     * @param message The message to remove.
+     * @return True if the message was redacted successfully.
+     */
+    private boolean redactMessage(ChatMessage message) {
+        if (!mMessageAdapter.removeMessage(message)) {
+            return false;
+        }
+        mTxtTextBody.setText(message.getBody());
+        mTxtTextBody.setSelection(message.getBody().length()); // Move the cursor to the end
+        Log.d(TAG, "Message " + message.getId() + " redacted");
+        return true;
+    }
+
+    /**
+     * Saves a message on the server.
+     * @param message The message to save.
+     */
     private void storeMessage(final Message message) {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
         query.whereEqualTo("sinchId", message.getMessageId());
@@ -181,7 +220,12 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if (e != null) {
-                    return; // TODO: Error handling?
+                    // TODO: Error handling
+                    // The issue though is that Sinch has already succeeded to send the message,
+                    // so we can't redact it and display an error to the user because that means
+                    // that people might get the message twice if the user re-sends it. Retrying
+                    // the operation might be the best idea here.
+                    return;
                 }
                 if (parseObjects.size() != 0) {
                     return; // Don't store messages twice
@@ -192,10 +236,14 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 savedMessage.put("date", message.getTimestamp());
                 savedMessage.put("sinchId", message.getMessageId());
                 savedMessage.saveInBackground();
+                Log.d(TAG, "Message " + message.getMessageId() + " saved to database");
             }
         });
     }
 
+    /**
+     * Loads and displays the message history.
+     */
     private void loadMessageHistory() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
         query.include("sender");
@@ -203,7 +251,8 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if (e != null) {
-                    return; // TODO: Error handling?
+                    displayNetworkError();
+                    return;
                 }
                 for (final ParseObject savedMessage : parseObjects) {
                     // Add the message
@@ -220,5 +269,12 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 }
             }
         });
+    }
+
+    /**
+     * Shows a toast to the user indicating that a network error occurred.
+     */
+    private void displayNetworkError() {
+        Toast.makeText(view.getContext(), getString(R.string.network_error), Toast.LENGTH_SHORT).show();
     }
 }

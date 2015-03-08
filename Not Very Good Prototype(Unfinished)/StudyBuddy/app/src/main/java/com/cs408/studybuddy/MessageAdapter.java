@@ -32,8 +32,22 @@ public class MessageAdapter extends BaseAdapter {
         dateFormatter = new SimpleDateFormat("HH:mm");
     }
 
+    /**
+     * Determines whether or not a message is in the list based off of its ID.
+     * @param message The message to check for.
+     * @return True if the message is in the list.
+     */
+    public synchronized boolean hasMessage(ChatMessage message) {
+        return messageIds.contains(message.getId());
+    }
+
+    /**
+     * Adds a message to the list if it is not already present.
+     * @param message The message to add.
+     * @return True if the message was not already in the list and was added.
+     */
     public synchronized boolean addMessage(ChatMessage message) {
-        if (messageIds.contains(message.getId())) {
+        if (hasMessage(message)) {
             return false; // Avoid duplicate messages
         }
 
@@ -44,6 +58,27 @@ public class MessageAdapter extends BaseAdapter {
         }
         messages.add(index, message);
         messageIds.add(message.getId());
+        notifyDataSetChanged();
+        return true;
+    }
+
+    /**
+     * Removes a message from the list.
+     * @param message The message to remove.
+     * @return True if the message was removed.
+     */
+    public synchronized boolean removeMessage(ChatMessage message) {
+        if (!hasMessage(message)) {
+            return false;
+        }
+
+        // Binary search the message list to find it
+        int index = Collections.binarySearch(messages, message, messageComparator);
+        if (index < 0) {
+            return false;
+        }
+        messages.remove(index);
+        messageIds.remove(message.getId());
         notifyDataSetChanged();
         return true;
     }
@@ -102,7 +137,7 @@ public class MessageAdapter extends BaseAdapter {
     }
 
     /**
-     * Compares chat messages by date.
+     * Compares chat messages by date and then by Sinch ID.
      */
     private static class ChatMessageComparator implements Comparator<ChatMessage>
     {
@@ -111,7 +146,11 @@ public class MessageAdapter extends BaseAdapter {
             if (lhs == rhs) {
                 return 0;
             }
-            return lhs.getDate().compareTo(rhs.getDate());
+            int dateComparison = lhs.getDate().compareTo(rhs.getDate());
+            if (dateComparison != 0) {
+                return dateComparison;
+            }
+            return lhs.getId().compareTo(rhs.getId());
         }
     }
 }
