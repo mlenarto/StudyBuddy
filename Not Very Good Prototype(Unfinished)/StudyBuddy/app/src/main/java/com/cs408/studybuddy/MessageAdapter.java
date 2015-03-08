@@ -124,9 +124,9 @@ public class MessageAdapter extends BaseAdapter {
         if (convertView == null) {
             int res = 0;
             if (direction == ChatMessage.Direction.INCOMING.ordinal()) {
-                res = R.layout.message_right;
-            } else if (direction == ChatMessage.Direction.OUTGOING.ordinal()) {
                 res = R.layout.message_left;
+            } else if (direction == ChatMessage.Direction.OUTGOING.ordinal()) {
+                res = R.layout.message_right;
             }
             convertView = inflater.inflate(res, viewGroup, false);
         }
