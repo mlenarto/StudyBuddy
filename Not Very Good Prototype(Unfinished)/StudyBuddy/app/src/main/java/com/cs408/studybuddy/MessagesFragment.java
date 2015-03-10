@@ -43,6 +43,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     private ProgressBar loadingIndicator;
 
     private HashMap<String, ChatMessage> pendingMessages = new HashMap<>(); // Messages that haven't been stored to the database yet, keyed by ID
+    private ChatMessageHistory history;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -141,7 +142,12 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         // Only store the message if it is still pending
         if (pendingMessages.containsKey(message.getMessageId())) {
             storeMessage(message);
-            pendingMessages.remove(message.getMessageId());
+
+            // Remove the message from the pending list and save it to the history
+            ChatMessage chatMessage = pendingMessages.remove(message.getMessageId());
+            if (history != null) {
+                history.saveMessage(chatMessage);
+            }
         }
     }
 
@@ -185,7 +191,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         if (headers.containsKey(DISPLAY_NAME_HEADER)) {
             String username = headers.get(DISPLAY_NAME_HEADER);
             Log.d(TAG, "Got cached username for " + message.getMessageId() + ": " + username);
-            mMessageAdapter.addMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
+            displayAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
             return;
         }
 
@@ -205,7 +211,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 }
                 String username = parseUsers.get(0).getString("name");
                 Log.d(TAG, "Parse query returned username for " + message.getMessageId() + ": " + username);
-                mMessageAdapter.addMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
+                displayAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
             }
         });
     }
@@ -219,8 +225,26 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         // Just use the current user's display name
         String username = ParseUser.getCurrentUser().getString("name");
         ChatMessage result = new ChatMessage(message.getMessageId(), username, message.getTextBody(), ChatMessage.Direction.OUTGOING, new Date());
-        mMessageAdapter.addMessage(result);
+        displayMessage(result);
         return result;
+    }
+
+    /**
+     * Displays a message.
+     * @param message The message to display.
+     */
+    private void displayMessage(ChatMessage message) {
+        mMessageAdapter.addMessage(message);
+    }
+
+    /**
+     * Displays a message, saving it to the message history if it is new.
+     * @param message The message to display.
+     */
+    private void displayAndSaveMessage(ChatMessage message) {
+        if (mMessageAdapter.addMessage(message) && history != null) {
+            history.saveMessage(message);
+        }
     }
 
     /**
@@ -275,8 +299,28 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
      * Loads and displays the message history.
      */
     private void loadMessageHistory() {
-        Log.d(TAG, "Retrieving message history...");
         showLoadingIndicator(true);
+        loadCachedMessageHistory();
+        downloadMessageHistory();
+    }
+
+    /**
+     * Loads the message history cached on disk.
+     */
+    private void loadCachedMessageHistory() {
+        Log.d(TAG, "Loading cached message history...");
+        history = ChatMessageHistory.load(view.getContext(), ParseUser.getCurrentUser().getObjectId());
+        for (ChatMessage message : history.getMessages()) {
+            displayMessage(message);
+        }
+        Log.d(TAG, "Loaded " + history.getMessages().size() + " cached messages");
+    }
+
+    /**
+     * Downloads the message history from the server and displays it.
+     */
+    private void downloadMessageHistory() {
+        Log.d(TAG, "Downloading message history...");
         ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
         query.include("sender");
         query.findInBackground(new FindCallback<ParseObject>() {
@@ -294,11 +338,10 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                     String text = savedMessage.getString("text");
                     Date date = savedMessage.getDate("date");
                     String sinchId = savedMessage.getString("sinchId");
-                    WritableMessage message = new WritableMessage(username, text);
                     ChatMessage.Direction direction = (sender.getObjectId().equals(ParseUser.getCurrentUser().getObjectId()))
                             ? ChatMessage.Direction.OUTGOING
                             : ChatMessage.Direction.INCOMING;
-                    mMessageAdapter.addMessage(new ChatMessage(sinchId, username, text, direction, date));
+                    displayAndSaveMessage(new ChatMessage(sinchId, username, text, direction, date));
                 }
                 showLoadingIndicator(false);
                 Log.d(TAG, "Retrieved " + parseObjects.size() + " messages");
