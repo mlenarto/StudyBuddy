@@ -1,9 +1,11 @@
 package com.cs408.studybuddy;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -16,11 +18,9 @@ import java.util.List;
 public class MessageAdapter extends BaseAdapter {
 
     private List<ChatMessage> messages;
-
     private HashSet<String> messageIds;
-
+    private HashSet<String> sendingMessages;
     private SimpleDateFormat dateFormatter;
-
     private LayoutInflater inflater;
 
     private static ChatMessageComparator messageComparator = new ChatMessageComparator();
@@ -29,6 +29,7 @@ public class MessageAdapter extends BaseAdapter {
         this.inflater = inflater;
         messages = new ArrayList<ChatMessage>();
         messageIds = new HashSet<String>();
+        sendingMessages = new HashSet<String>();
         dateFormatter = new SimpleDateFormat("HH:mm");
     }
 
@@ -88,8 +89,24 @@ public class MessageAdapter extends BaseAdapter {
         }
         messages.remove(index);
         messageIds.remove(message.getId());
+        sendingMessages.remove(message.getId());
         notifyDataSetChanged();
         return true;
+    }
+
+    /**
+     * Alters the "sending" status of a message.
+     * @param list The ListView the message belongs to.
+     * @param message The message to alter.
+     * @param sending True to mark that the message is sending, false otherwise.
+     */
+    public synchronized void setSending(ListView list, ChatMessage message, boolean sending) {
+        if (sending) {
+            sendingMessages.add(message.getId());
+        } else {
+            sendingMessages.remove(message.getId());
+        }
+        updateItem(list, message);
     }
 
     @Override
@@ -137,19 +154,41 @@ public class MessageAdapter extends BaseAdapter {
         TextView txtSender = (TextView) convertView.findViewById(R.id.txtSender);
         TextView txtMessage = (TextView) convertView.findViewById(R.id.txtMessage);
         TextView txtDate = (TextView) convertView.findViewById(R.id.txtDate);
+        TextView txtSending = (TextView) convertView.findViewById(R.id.txtSending);
 
         txtSender.setText(name);
         txtMessage.setText(message.getBody());
         txtDate.setText(dateFormatter.format(message.getDate()));
+        txtSending.setVisibility(sendingMessages.contains(message.getId()) ? View.VISIBLE : View.GONE);
 
         return convertView;
     }
 
     /**
+     * Updates the view for an item in a list.
+     * @param list The ListView the message belongs to.
+     * @param item The message to update the view for.
+     */
+    private void updateItem(ListView list, ChatMessage item) {
+        // Find the view in the list by searching between the first and last visible items
+        int start = list.getFirstVisiblePosition();
+        int end = list.getLastVisiblePosition();
+        for (int i = start; i <= end; i++) {
+            if (list.getItemAtPosition(i) != item) {
+                continue;
+            }
+
+            // Force the view to update
+            View view = list.getChildAt(i - start);
+            getView(i, view, list);
+            break;
+        }
+    }
+
+    /**
      * Compares chat messages by date and then by Sinch ID.
      */
-    private static class ChatMessageComparator implements Comparator<ChatMessage>
-    {
+    private static class ChatMessageComparator implements Comparator<ChatMessage> {
         @Override
         public int compare(ChatMessage lhs, ChatMessage rhs) {
             if (lhs == rhs) {

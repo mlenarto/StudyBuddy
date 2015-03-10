@@ -41,6 +41,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     private EditText mTxtTextBody;
     private Button mBtnSend;
     private ProgressBar loadingIndicator;
+    private ListView messagesList;
 
     private HashMap<String, ChatMessage> pendingMessages = new HashMap<>(); // Messages that haven't been stored to the database yet, keyed by ID
     private ChatMessageHistory history;
@@ -53,7 +54,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         loadingIndicator = (ProgressBar) view.findViewById(R.id.loadingIndicator);
 
         mMessageAdapter = new MessageAdapter(inflater);
-        ListView messagesList = (ListView) view.findViewById(R.id.lstMessages);
+        messagesList = (ListView) view.findViewById(R.id.lstMessages);
         messagesList.setAdapter(mMessageAdapter);
 
         mBtnSend = (Button) view.findViewById(R.id.btnSend);
@@ -148,6 +149,9 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             if (history != null) {
                 history.saveMessage(chatMessage);
             }
+
+            // Indicate that the message is done sending
+            mMessageAdapter.setSending(messagesList, chatMessage, false);
         }
     }
 
@@ -226,6 +230,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         String username = ParseUser.getCurrentUser().getString("name");
         ChatMessage result = new ChatMessage(message.getMessageId(), username, message.getTextBody(), ChatMessage.Direction.OUTGOING, new Date());
         displayMessage(result);
+        mMessageAdapter.setSending(messagesList, result, true);
         return result;
     }
 
