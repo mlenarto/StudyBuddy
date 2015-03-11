@@ -106,14 +106,17 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             @Override
             public void done(List<ParseUser> parseUsers, ParseException e) {
                 if (e != null) {
-                    // User query failed - notify the user and redact the message
+                    // User query failed - notify the user and remove the message
                     displayNetworkError();
                     removeMessage(addedMessage);
                     return;
                 }
 
+                // TODO: Sinch only supports sending to 10 users at a time.
+                // This can probably be hacked around by clearing the recipient list and resending
+                // the message for each group of 10 users.
+
                 // Add each user ID to the message if they're registered with Sinch
-                // TODO: What happens if there are no recipients?
                 for (ParseUser user : parseUsers) {
                     if (!user.has("sinch") || !user.getBoolean("sinch")) {
                         continue; // Sinch fails to send the message completely if the user hasn't registered with it...
@@ -121,13 +124,18 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                     Log.d("MessagesFragment", "Add recipient " + user.getObjectId());
                     message.addRecipient(user.getObjectId());
                 }
+                if (message.getRecipientIds().size() == 0) {
+                    // Sinch doesn't let you send a message to nobody, so just finish sending it and return
+                    finishSendingMessage(addedMessage);
+                    return;
+                }
 
                 // Cache our display name in a message header
                 message.addHeader(DISPLAY_NAME_HEADER, (String)ParseUser.getCurrentUser().get("name"));
 
-                // Send the message to every user at once
-                SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
+                // Send the message
                 pendingMessages.put(message.getMessageId(), addedMessage);
+                SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
                 sinch.sendMessage(message);
             }
         });
@@ -144,18 +152,10 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
     @Override
     public void onMessageSent(MessageClient client, Message message, String recipientId) {
-        // Only store the message if it is still pending
         if (pendingMessages.containsKey(message.getMessageId())) {
-            storeMessage(message);
-
-            // Remove the message from the pending list and save it to the history
+            // Message is still pending - save it
             ChatMessage chatMessage = pendingMessages.remove(message.getMessageId());
-            if (history != null) {
-                history.saveMessage(chatMessage);
-            }
-
-            // Indicate that the message is done sending
-            setSending(chatMessage, false);
+            finishSendingMessage(chatMessage);
         }
     }
 
@@ -181,6 +181,20 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         // This method is kinda useless for us - basically it just lets you know once a user
         // actually receives a message, but it gets called even if the user who sent the message
         // isn't logged in
+    }
+
+    /**
+     * Finishes sending a message, saving it to the server and to local history.
+     * @param message
+     */
+    private void finishSendingMessage(ChatMessage message) {
+        storeMessage(message);
+        if (history != null) {
+            history.saveMessage(message);
+        }
+
+        // Indicate that the message is done sending
+        setSending(message, false);
     }
 
     /**
@@ -306,9 +320,9 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
      * Saves a message on the server.
      * @param message The message to save.
      */
-    private void storeMessage(final Message message) {
+    private void storeMessage(final ChatMessage message) {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
-        query.whereEqualTo("sinchId", message.getMessageId());
+        query.whereEqualTo("sinchId", message.getId());
         query.setLimit(1);
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
@@ -325,12 +339,12 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                     return; // Don't store messages twice
                 }
                 ParseObject savedMessage = new ParseObject("SavedMessages");
-                savedMessage.put("text", message.getTextBody());
+                savedMessage.put("text", message.getBody());
                 savedMessage.put("sender", ParseUser.getCurrentUser());
-                savedMessage.put("date", message.getTimestamp());
-                savedMessage.put("sinchId", message.getMessageId());
+                savedMessage.put("date", message.getDate());
+                savedMessage.put("sinchId", message.getId());
                 savedMessage.saveInBackground();
-                Log.d(TAG, "Message " + message.getMessageId() + " saved to database");
+                Log.d(TAG, "Message " + message.getId() + " saved to database");
             }
         });
     }
