@@ -13,6 +13,7 @@ import com.sinch.android.rtc.messaging.MessageDeliveryInfo;
 import com.sinch.android.rtc.messaging.MessageFailureInfo;
 import com.sinch.android.rtc.messaging.WritableMessage;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -68,7 +69,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
         sinch.addMessageClientListener(this);
         setButtonEnabled(true);
-        loadMessageHistory();
+        loadMessageHistoryInBackground();
         return view;
     }
 
@@ -77,6 +78,9 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
         if (sinch != null) {
             sinch.removeMessageClientListener(this);
+        }
+        if (history != null) {
+            history.close();
         }
         super.onDestroy();
     }
@@ -104,7 +108,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 if (e != null) {
                     // User query failed - notify the user and redact the message
                     displayNetworkError();
-                    redactMessage(addedMessage);
+                    removeMessage(addedMessage);
                     return;
                 }
 
@@ -151,7 +155,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             }
 
             // Indicate that the message is done sending
-            mMessageAdapter.setSending(messagesList, chatMessage, false);
+            setSending(chatMessage, false);
         }
     }
 
@@ -162,13 +166,13 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
     @Override
     public void onMessageFailed(MessageClient client, Message message, MessageFailureInfo failureInfo) {
-        // Message failed to send - redact it
+        // Message failed to send - remove it
         Log.d(TAG, "onMessageFailed: " + failureInfo.getSinchError().getMessage());
         ChatMessage pending = pendingMessages.remove(message.getMessageId());
         if (pending == null) {
             return;
         }
-        redactMessage(pending);
+        removeMessage(pending);
         displayNetworkError();
     }
 
@@ -195,7 +199,9 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         if (headers.containsKey(DISPLAY_NAME_HEADER)) {
             String username = headers.get(DISPLAY_NAME_HEADER);
             Log.d(TAG, "Got cached username for " + message.getMessageId() + ": " + username);
-            displayAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
+            if (addAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING))) {
+                updateMessageList();
+            }
             return;
         }
 
@@ -215,7 +221,9 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 }
                 String username = parseUsers.get(0).getString("name");
                 Log.d(TAG, "Parse query returned username for " + message.getMessageId() + ": " + username);
-                displayAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
+                if (addAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING))) {
+                    updateMessageList();
+                }
             }
         });
     }
@@ -229,27 +237,37 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         // Just use the current user's display name
         String username = ParseUser.getCurrentUser().getString("name");
         ChatMessage result = new ChatMessage(message.getMessageId(), username, message.getTextBody(), ChatMessage.Direction.OUTGOING, new Date());
-        displayMessage(result);
-        mMessageAdapter.setSending(messagesList, result, true);
+        if (addMessage(result)) {
+            updateMessageList();
+        }
+        setSending(result, true);
         return result;
     }
 
     /**
-     * Displays a message.
-     * @param message The message to display.
+     * Adds a message to the list if it is not already present.
+     * The message list will not be updated.
+     * @param message The message to add.
+     * @return True if the message was added successfully and the message list needs to be updated.
      */
-    private void displayMessage(ChatMessage message) {
-        mMessageAdapter.addMessage(message);
+    private boolean addMessage(ChatMessage message) {
+        return mMessageAdapter.addMessage(message);
     }
 
     /**
-     * Displays a message, saving it to the message history if it is new.
+     * Adds a message to the list, saving it to the message history if it is new.
+     * The message list will not be updated.
      * @param message The message to display.
+     * @return True if the message was added successfully and the message list needs to be updated.
      */
-    private void displayAndSaveMessage(ChatMessage message) {
-        if (mMessageAdapter.addMessage(message) && history != null) {
+    private boolean addAndSaveMessage(ChatMessage message) {
+        if (!mMessageAdapter.addMessage(message)) {
+            return false;
+        }
+        if (history != null) {
             history.saveMessage(message);
         }
+        return true;
     }
 
     /**
@@ -257,14 +275,31 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
      * @param message The message to remove.
      * @return True if the message was redacted successfully.
      */
-    private boolean redactMessage(ChatMessage message) {
+    private boolean removeMessage(ChatMessage message) {
         if (!mMessageAdapter.removeMessage(message)) {
             return false;
         }
+        updateMessageList();
         mTxtTextBody.setText(message.getBody());
         mTxtTextBody.setSelection(message.getBody().length()); // Move the cursor to the end
         Log.d(TAG, "Message " + message.getId() + " redacted");
         return true;
+    }
+
+    /**
+     * Updates the message list after messages have been added or removed.
+     */
+    private void updateMessageList() {
+        mMessageAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * Updates the "sending" state of a message.
+     * @param message The message to update.
+     * @param sending True if the message is currently sending.
+     */
+    private void setSending(ChatMessage message, boolean sending) {
+        mMessageAdapter.setSending(messagesList, message, sending);
     }
 
     /**
@@ -281,7 +316,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 if (e != null) {
                     // TODO: Error handling
                     // The issue though is that Sinch has already succeeded to send the message,
-                    // so we can't redact it and display an error to the user because that means
+                    // so we can't remove it and display an error to the user because that means
                     // that people might get the message twice if the user re-sends it. Retrying
                     // the operation might be the best idea here.
                     return;
@@ -301,12 +336,10 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     }
 
     /**
-     * Loads and displays the message history.
+     * Loads the message history in a background thread.
      */
-    private void loadMessageHistory() {
-        showLoadingIndicator(true);
-        loadCachedMessageHistory();
-        downloadMessageHistory();
+    private void loadMessageHistoryInBackground() {
+        new LoadMessageHistoryTask().execute();
     }
 
     /**
@@ -316,7 +349,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         Log.d(TAG, "Loading cached message history...");
         history = ChatMessageHistory.load(view.getContext(), ParseUser.getCurrentUser().getObjectId());
         for (ChatMessage message : history.getMessages()) {
-            displayMessage(message);
+            addMessage(message);
         }
         Log.d(TAG, "Loaded " + history.getMessages().size() + " cached messages");
     }
@@ -324,34 +357,34 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     /**
      * Downloads the message history from the server and displays it.
      */
-    private void downloadMessageHistory() {
+    private boolean downloadMessageHistory() {
         Log.d(TAG, "Downloading message history...");
+
+        // Query for all saved messages
         ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
         query.include("sender");
-        query.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> parseObjects, ParseException e) {
-                if (e != null) {
-                    displayNetworkError();
-                    showLoadingIndicator(false);
-                    return;
-                }
-                for (final ParseObject savedMessage : parseObjects) {
-                    // Add the message
-                    ParseUser sender = savedMessage.getParseUser("sender");
-                    String username = sender.getString("name");
-                    String text = savedMessage.getString("text");
-                    Date date = savedMessage.getDate("date");
-                    String sinchId = savedMessage.getString("sinchId");
-                    ChatMessage.Direction direction = (sender.getObjectId().equals(ParseUser.getCurrentUser().getObjectId()))
-                            ? ChatMessage.Direction.OUTGOING
-                            : ChatMessage.Direction.INCOMING;
-                    displayAndSaveMessage(new ChatMessage(sinchId, username, text, direction, date));
-                }
-                showLoadingIndicator(false);
-                Log.d(TAG, "Retrieved " + parseObjects.size() + " messages");
-            }
-        });
+        List<ParseObject> parseObjects;
+        try {
+             parseObjects = query.find();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // Add each message
+        for (final ParseObject savedMessage : parseObjects) {
+            ParseUser sender = savedMessage.getParseUser("sender");
+            String username = sender.getString("name");
+            String text = savedMessage.getString("text");
+            Date date = savedMessage.getDate("date");
+            String sinchId = savedMessage.getString("sinchId");
+            ChatMessage.Direction direction = (sender.getObjectId().equals(ParseUser.getCurrentUser().getObjectId()))
+                    ? ChatMessage.Direction.OUTGOING
+                    : ChatMessage.Direction.INCOMING;
+            addAndSaveMessage(new ChatMessage(sinchId, username, text, direction, date));
+        }
+        Log.d(TAG, "Retrieved " + parseObjects.size() + " messages");
+        return true;
     }
 
     /**
@@ -367,5 +400,36 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
      */
     private void displayNetworkError() {
         Toast.makeText(view.getContext(), getString(R.string.network_error), Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Task for loading the message history in the background.
+     */
+    private class LoadMessageHistoryTask extends AsyncTask<Void, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            loadCachedMessageHistory();
+            publishProgress(); // Trigger a list refresh
+            return downloadMessageHistory();
+        }
+
+        @Override
+        protected void onPreExecute() {
+            showLoadingIndicator(true);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            updateMessageList();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            showLoadingIndicator(false);
+            updateMessageList();
+            if (!result) {
+                displayNetworkError();
+            }
+        }
     }
 }

@@ -69,6 +69,13 @@ public class ChatMessageHistory {
     }
 
     /**
+     * Closes the message history database.
+     */
+    public synchronized void close() {
+        openHelper.close();
+    }
+
+    /**
      * Constructs a ChatMessageHistory object.
      * @param openHelper The open helper to use.
      * @param userId The ID of the user to load chat history for.
