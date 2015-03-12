@@ -1,5 +1,6 @@
 package com.cs408.studybuddy;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
@@ -38,6 +39,7 @@ public class NewRequestActivity extends ActionBarActivity {
     private ParseObject request, courseObj;
     private ParseUser user;
 	private LocationService gps;
+    private ProgressDialog progress;
 	private boolean isSubmitting = false;
 
 
@@ -76,6 +78,7 @@ public class NewRequestActivity extends ActionBarActivity {
 		submit.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+                progress = ProgressDialog.show(NewRequestActivity.this, "Adding your request...", "Please wait...", true);
 				if(isSubmitting)
 					return;
 
@@ -94,12 +97,14 @@ public class NewRequestActivity extends ActionBarActivity {
                 if(extras == null){
                     Toast.makeText(getApplicationContext(), getString(R.string.bundle_error),
                             Toast.LENGTH_LONG).show(); //this should never happen
+                    progress.dismiss();
                     finish();
                 }
                 String course = extras.getString("selected_class"); //grabs the selected class
                 if(course == null){
                     Toast.makeText(getApplicationContext(), getString(R.string.error_no_class),
                             Toast.LENGTH_LONG).show(); //this should never happen
+                    progress.dismiss();
                     finish();
                 }
                 Log.d("NewRequestActivity", "Course: " + course);
@@ -109,6 +114,7 @@ public class NewRequestActivity extends ActionBarActivity {
                 if(user == null){
                     Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                             Toast.LENGTH_LONG).show();
+                    progress.dismiss();
                     finish();
                 }
 
@@ -117,17 +123,20 @@ public class NewRequestActivity extends ActionBarActivity {
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_title),
                             Toast.LENGTH_SHORT).show();
 					isSubmitting = false;
+                    progress.dismiss();
                     return;
                 }
                 else if(requestLengthMillis <= 0){
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_zero_time),
                             Toast.LENGTH_SHORT).show();
 					isSubmitting = false;
+                    progress.dismiss();
                     return;
                 }
                 else if(requestLocation.isEmpty()){
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_location),
                             Toast.LENGTH_SHORT).show();
+                    progress.dismiss();
 					isSubmitting = false;
                     return;
                 }
@@ -135,6 +144,7 @@ public class NewRequestActivity extends ActionBarActivity {
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_description),
                             Toast.LENGTH_SHORT).show();
 					isSubmitting = false;
+                    progress.dismiss();
                     return;
                 }
 
@@ -149,6 +159,7 @@ public class NewRequestActivity extends ActionBarActivity {
                     Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                             Toast.LENGTH_SHORT).show();
 					isSubmitting = false;
+                    progress.dismiss();
                     return;
                 }
 
@@ -165,6 +176,7 @@ public class NewRequestActivity extends ActionBarActivity {
 				} else {
 					Toast.makeText(getApplicationContext(), getString(R.string.location_error),
 							Toast.LENGTH_SHORT).show();
+                    progress.dismiss();
 					isSubmitting = false;
 					return;
 				}
@@ -199,12 +211,14 @@ public class NewRequestActivity extends ActionBarActivity {
 
                                                     Toast.makeText(getApplicationContext(), R.string.new_request_success,
                                                             Toast.LENGTH_SHORT).show();
+                                                    progress.dismiss();
 													finish();
                                                 } else{
                                                     //user was not saved properly.
                                                     e.printStackTrace();
                                                     Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                                                             Toast.LENGTH_SHORT).show();
+                                                    progress.dismiss();
 													finish();
                                                 }
                                             }
@@ -212,6 +226,7 @@ public class NewRequestActivity extends ActionBarActivity {
                                     } else{
                                         //course was not saved properly.
                                         e.printStackTrace();
+                                        progress.dismiss();
                                         Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                                                 Toast.LENGTH_SHORT).show();
 										finish();
@@ -221,6 +236,7 @@ public class NewRequestActivity extends ActionBarActivity {
                         }else{
                             //request didn't save properly
                             e.printStackTrace();
+                            progress.dismiss();
                             Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                                     Toast.LENGTH_SHORT).show();
 							finish();
