@@ -149,6 +149,7 @@ public class ClassAddActivity extends ActionBarActivity
 			newClass.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    //Displays a loading indicator when a user adds a class, so they know what the heck is taking so long.
                     progress = ProgressDialog.show(ClassAddActivity.this, "Loading...", "Please wait...", true);
                     addClass();
                 }
@@ -292,14 +293,14 @@ public class ClassAddActivity extends ActionBarActivity
 				@Override
 				public void onClick(View v) {
 					AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-
 					builder.setMessage("Are you sure you want to leave this class?")
 							.setTitle("Leave " + className + "?");
 
 					builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-
+                            //Should only do the crappy loading thingy if they say they in fact, do wish to remove their class
+                            progress = ProgressDialog.show(ClassAddActivity.this, "Loading...", "Please wait...", true);
 							//removeClassFromPrefs(className);  MOVED BELOW
 
                             /* Remove class to the user's course list on database */
@@ -332,12 +333,13 @@ public class ClassAddActivity extends ActionBarActivity
                                                     // Unsubscribe user from the channel for that class
                                                     String spaceless_className = className.replaceAll("\\s","");
                                                     ParsePush.unsubscribeInBackground(spaceless_className);
-
+                                                    progress.dismiss();
                                                     Toast.makeText(getApplicationContext(), className + " was removed.",
                                                             Toast.LENGTH_SHORT).show();
                                                 } else{
                                                     //course was not saved properly.
                                                     e.printStackTrace();
+                                                    progress.dismiss();
                                                     Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
                                                             Toast.LENGTH_SHORT).show();
                                                     return;
@@ -348,8 +350,10 @@ public class ClassAddActivity extends ActionBarActivity
                                     } else {
                                         //couldn't retrieve class
                                         Log.d("ClassAddActivity", "Error: " + e.getMessage());
+                                        progress.dismiss();
                                         Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
                                                 Toast.LENGTH_SHORT).show();
+
                                     }
                                 }
                             });
@@ -363,9 +367,9 @@ public class ClassAddActivity extends ActionBarActivity
 							//Do nothing
 						}
 					});
-
 					builder.create().show();
 				}
+
 			});
 
 			return v;
