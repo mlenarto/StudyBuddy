@@ -1,14 +1,17 @@
 package com.cs408.studybuddy;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -41,20 +44,23 @@ public class RequestListActivity extends ActionBarActivity {
 	private LocationService gps;
 	private Location mLocation;
 	private Handler handler;
+    private SwipeRefreshLayout swipeLayout;
+    private ProgressDialog progress;
 	Runnable runnable;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_request_list);
 
+        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
 		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		TextView mText = (TextView) findViewById(R.id.title_text);
 		Button newRequest = (Button) findViewById(R.id.newRequest);
 		noRequestText = (TextView) findViewById(R.id.no_requests);
-
 		setSupportActionBar(mToolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
+        setupSwipeLayout();
 		mText.setText(R.string.title_Request_List);
 
 		gps = LocationService.getInstance(getApplicationContext());
@@ -74,7 +80,7 @@ public class RequestListActivity extends ActionBarActivity {
         }
 
 		handler = new Handler(getMainLooper());
-
+        progress = ProgressDialog.show(RequestListActivity.this, "Loading requests...", "Please wait...", true);
 		updateList();
 
 		newRequest.setOnClickListener(new View.OnClickListener() {
@@ -93,6 +99,18 @@ public class RequestListActivity extends ActionBarActivity {
 			}
 		});
 	}
+
+    private void setupSwipeLayout()
+    {
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeLayout.setRefreshing(true);
+                updateList();
+                swipeLayout.setRefreshing(false);
+            }
+        });
+    }
 
 	private void updateList() {
 		gps.getLocationInBackground(20, new LocationService.locationUpdateListener() {
@@ -124,6 +142,27 @@ public class RequestListActivity extends ActionBarActivity {
 									noRequestText.setVisibility(View.GONE);
 									ListView requestList = (ListView) findViewById(R.id.class_list);
 
+                                    //This makes sure the list of requests will not refresh if the list is longer than one screen
+                                    requestList.setOnScrollListener(new AbsListView.OnScrollListener() {
+                                        @Override
+                                        public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+                                        }
+
+                                        @Override
+                                        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+                                            if (firstVisibleItem == 0) {
+                                                swipeLayout.setEnabled(true);
+                                            }
+
+                                            else {
+                                                swipeLayout.setEnabled(false);
+                                            }
+
+                                        }
+                                    });
+
 									//sort list by location
 									Collections.sort(RequestListActivity.this.requests);
 
@@ -142,20 +181,24 @@ public class RequestListActivity extends ActionBarActivity {
 										}
 									});
 								} else {
+                                    progress.dismiss();
 									noRequestText.setVisibility(View.VISIBLE);
 									Log.d("RequestListActivity", "Requests ArrayList is empty.");
 								}
 							} else {
 								Toast toast = Toast.makeText(getApplicationContext(), "An error occurred when retrieving the help requests for this course.", Toast.LENGTH_LONG);
 								toast.setGravity(Gravity.CENTER, 0, 0);
+                                progress.dismiss();
 								toast.show();
 								Log.d("RequestListActivity", "Error: " + e.getMessage());
 							}
+                            progress.dismiss();
 						}
 					});
 				} else {
 					Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.location_error), Toast.LENGTH_LONG);
 					toast.setGravity(Gravity.CENTER, 0, 0);
+                    progress.dismiss();
 					toast.show();
 					Log.d("RequestListActivity", "Error obtaining Location");
 				}
@@ -177,7 +220,6 @@ public class RequestListActivity extends ActionBarActivity {
 		};
 
 		handler.postDelayed(runnable, 30 * 1000);
-
 	}
 
 	@Override
@@ -189,8 +231,10 @@ public class RequestListActivity extends ActionBarActivity {
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
 		super.onActivityResult(requestCode, resultCode, data);
 		if(requestCode == NEW_REQUEST_INTENT && resultCode == RESULT_OK) {
+
 			if(data.getBooleanExtra(CREATED_NEW_REQUEST, false))
 				updateList();
 		}
@@ -225,6 +269,7 @@ class ClassRequest implements Comparable{
         else
             return 0;
     }
+
 
     @Override
     public String toString() {

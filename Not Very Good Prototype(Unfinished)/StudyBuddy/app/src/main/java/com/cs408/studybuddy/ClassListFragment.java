@@ -1,5 +1,6 @@
 package com.cs408.studybuddy;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -34,7 +35,7 @@ public class ClassListFragment extends Fragment {
     private SharedPreferences prefs;
 	private ArrayAdapter<String> classAdapter;
 	private String classesString;
-
+    private ProgressDialog progress;
     private List<String> courses = new ArrayList<>();
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -43,12 +44,13 @@ public class ClassListFragment extends Fragment {
 
 		//If a preference should be available in the entire app, open it like this
 		prefs = getActivity().getSharedPreferences(getString(R.string.app_preferences), 0);
-
+        progress = ProgressDialog.show(getActivity(), "Loading your classes...", "Please wait...", true);
         ParseRelation<ParseObject> courseListRelation = ParseUser.getCurrentUser().getRelation("courseList");
         courseListRelation.getQuery().findInBackground(new FindCallback<ParseObject>() {
             public void done(List<ParseObject> courseList, ParseException e) {
                 if (e != null) {
                     // There was an error
+                    progress.dismiss();
                     Log.d("ClassListFragment" , "Error retrieving course list for user");
 
                 } else
@@ -91,7 +93,7 @@ public class ClassListFragment extends Fragment {
                     {
                         Log.d("ClassListFragment", "Courses ArrayList is empty.");
                     }
-
+                    progress.dismiss();
                 }
             }
         });
