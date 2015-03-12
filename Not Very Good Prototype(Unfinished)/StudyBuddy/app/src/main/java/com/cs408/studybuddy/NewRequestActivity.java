@@ -285,17 +285,13 @@ public class NewRequestActivity extends ActionBarActivity {
 				requestLocationLength.setText(requestLocationEdit.length() + "/150");
 			}
 		});
+
+		gps.startGPS(15000, 10);
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		gps.stopGPS();
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
 		gps.stopGPS();
 	}
 }

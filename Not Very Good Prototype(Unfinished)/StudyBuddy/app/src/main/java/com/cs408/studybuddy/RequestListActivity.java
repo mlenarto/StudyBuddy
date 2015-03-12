@@ -58,7 +58,7 @@ public class RequestListActivity extends ActionBarActivity {
 		mText.setText(R.string.title_Request_List);
 
 		gps = LocationService.getInstance(getApplicationContext());
-		gps.startGPS(10*1000, 5);
+		gps.startGPS(15*1000, 10);
 
 		noRequestText.setVisibility(View.GONE);
         Bundle extras = getIntent().getExtras();
