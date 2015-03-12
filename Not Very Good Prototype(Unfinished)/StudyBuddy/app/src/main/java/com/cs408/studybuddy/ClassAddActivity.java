@@ -150,7 +150,7 @@ public class ClassAddActivity extends ActionBarActivity
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     //Displays a loading indicator when a user adds a class, so they know what the heck is taking so long.
-                    progress = ProgressDialog.show(ClassAddActivity.this, "Loading...", "Please wait...", true);
+                    progress = ProgressDialog.show(ClassAddActivity.this, "Adding your class...", "Please wait...", true);
                     addClass();
                 }
             });
@@ -300,7 +300,7 @@ public class ClassAddActivity extends ActionBarActivity
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
                             //Should only do the crappy loading thingy if they say they in fact, do wish to remove their class
-                            progress = ProgressDialog.show(ClassAddActivity.this, "Loading...", "Please wait...", true);
+                            progress = ProgressDialog.show(ClassAddActivity.this, "Removing the selected class from your class list...", "Please wait...", true);
 							//removeClassFromPrefs(className);  MOVED BELOW
 
                             /* Remove class to the user's course list on database */
