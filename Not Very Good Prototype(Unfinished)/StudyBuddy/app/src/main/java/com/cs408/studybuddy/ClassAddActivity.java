@@ -1,6 +1,7 @@
 package com.cs408.studybuddy;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -56,13 +57,13 @@ public class ClassAddActivity extends ActionBarActivity
     private SharedPreferences prefs;
     private classAdapter arrayAdapter;
     private List<String> classes;
+    private ProgressDialog progress;
 
     private Boolean is_valid;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_class_add);
-
         is_valid = false;
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		classList = (ListView) findViewById(R.id.classList);
@@ -148,7 +149,7 @@ public class ClassAddActivity extends ActionBarActivity
 			newClass.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Log.v("add class error", "Clicked on option");
+                    progress = ProgressDialog.show(ClassAddActivity.this, "Loading...", "Please wait...", true);
                     addClass();
                 }
             });
@@ -169,9 +170,11 @@ public class ClassAddActivity extends ActionBarActivity
 
     private void addClass()
     {
-		final String newCourse = newClass.getText().toString();
+
+        final String newCourse = newClass.getText().toString();
 
 		if(classes.contains(newCourse)) {
+            progress.dismiss();
 			newClass.setText("");
 			//TODO: fix error immediately below.
             //Toast.makeText(getApplicationContext(), getString(R.string.duplicate_class), Toast.LENGTH_SHORT).show();
@@ -226,13 +229,16 @@ public class ClassAddActivity extends ActionBarActivity
                                 ParsePush.subscribeInBackground(spaceless_className);
 
 								newClass.setText("");
+                                progress.dismiss();
 								Toast.makeText(getApplicationContext(), newCourse + " was added!",
 										Toast.LENGTH_SHORT).show();
                             } else{
 								//course was not saved properly.
 								e.printStackTrace();
+                                progress.dismiss();
 								Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
 										Toast.LENGTH_SHORT).show();
+
 								return;
 							}
 						}
