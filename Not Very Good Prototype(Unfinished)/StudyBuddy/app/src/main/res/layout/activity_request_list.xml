@@ -29,8 +29,8 @@
             android:textColor="@color/common_signin_btn_text_light"
             android:contentDescription="Create new request"
             android:layout_alignParentRight="true"/>
-
     </android.support.v7.widget.Toolbar>
+
 
     <TextView
         android:id="@+id/toolbar_border"
@@ -39,16 +39,24 @@
         android:layout_below="@id/toolbar"
         android:background="@color/grey"/>
 
-    <ListView
-        android:id="@+id/class_list"
+    <android.support.v4.widget.SwipeRefreshLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/swipe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar_border"
-        android:divider="@color/black"
-        android:dividerHeight="1dp"
-        android:overScrollFooter="@color/white"
-        android:cacheColorHint="@color/white"
-        android:background="@color/white"/>
+        android:layout_below="@+id/toolbar">
+
+        <ListView
+            android:id="@+id/class_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/toolbar_border"
+            android:divider="@color/black"
+            android:dividerHeight="1dp"
+            android:overScrollFooter="@color/white"
+            android:cacheColorHint="@color/white"
+            android:background="@color/white"/>
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <TextView
         android:id="@+id/no_requests"
