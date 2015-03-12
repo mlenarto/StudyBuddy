@@ -57,7 +57,7 @@ public class RequestInfoFragment extends Fragment {
 
 		groupJoinedParams = (RelativeLayout.LayoutParams) joinOrLeaveRequest.getLayoutParams();
 		marginSize = groupJoinedParams.leftMargin;
-        progress = ProgressDialog.show(getActivity(), "Loading...", "Please wait...", true);
+        progress = ProgressDialog.show(getActivity(), "Getting group info...", "Please wait...", true);
 		LoadRequestTask loadRequest = new LoadRequestTask();
 		loadRequest.execute();
 
@@ -248,7 +248,6 @@ public class RequestInfoFragment extends Fragment {
 		memberCount.setText(membersTotal + " " + members + " (" + helperCount + " " + help + ")");
 		requestLocation.setText(result[4]);
 		requestDescription.setText(result[5]);
-        //TURN OFF SPINNER THINGY HERE-------------------------------------------------------------------------
         progress.dismiss();
 		currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
 
@@ -365,6 +364,7 @@ public class RequestInfoFragment extends Fragment {
         if(isHelper) {
             numHelpers++;
         }
+        progress = ProgressDialog.show(getActivity(), "Joining group...", "Please wait...", true);
 		ParseUser.getCurrentUser().put("currentRequest", requestObj);
 		ParseUser.getCurrentUser().put("isHelper", isHelper);
         ParseUser.getCurrentUser().put("cacheHelpers", numHelpers);
@@ -382,11 +382,13 @@ public class RequestInfoFragment extends Fragment {
                     String members = getResources().getQuantityString(R.plurals.members, numMembers);
                     memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
                     //memberCount.setText(numHelpers + " " + help + ", " + numMembers + " " + members);
+                    progress.dismiss();
                     Toast.makeText(getActivity().getApplicationContext(), R.string.join_group_success,
 							Toast.LENGTH_SHORT).show();
 				} else {
 					//user was not saved properly.
 					e.printStackTrace();
+                    progress.dismiss();
 					Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
 							Toast.LENGTH_SHORT).show();
 				}
@@ -396,6 +398,7 @@ public class RequestInfoFragment extends Fragment {
 	}
 
 	private void leaveGroup() {
+        progress = ProgressDialog.show(getActivity(), "Leaving group...", "Please wait...", true);
         if(ParseUser.getCurrentUser().getBoolean("isHelper")){
             numHelpers--;
         }
@@ -416,11 +419,13 @@ public class RequestInfoFragment extends Fragment {
                     String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
                     String members = getResources().getQuantityString(R.plurals.members, numMembers);
                     memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
+                    progress.dismiss();
 					Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
 							Toast.LENGTH_SHORT).show();
 				} else {
 					//user was not saved properly.
 					e.printStackTrace();
+                    progress.dismiss();
 					Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
 							Toast.LENGTH_SHORT).show();
 				}
