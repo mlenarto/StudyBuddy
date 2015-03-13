@@ -2,7 +2,9 @@ package com.cs408.studybuddy;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -43,6 +45,7 @@ public class RequestInfoFragment extends Fragment {
     private int numHelpers;
     private int numMembers;
     private boolean isInGroup;
+	private boolean isProcessing = false;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		root = inflater.inflate(R.layout.fragment_request_info, container, false);
@@ -88,7 +91,6 @@ public class RequestInfoFragment extends Fragment {
 
 			//fetch request object from server
 			ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
-			//TODO: Add loading indicator while this occurs
 			try {
 				requestObj = query.get(request_id);
 			} catch (ParseException e) {
@@ -98,16 +100,16 @@ public class RequestInfoFragment extends Fragment {
 					public void run() {
 						Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
 								Toast.LENGTH_SHORT).show();
+						getActivity().finish();
 					}
 				});
-				getActivity().finish();
+				return null;
 			}
 
 			//fetch number of group members from server
 			numMembers = 0;
 			ParseQuery<ParseUser> memberQuery = ParseUser.getQuery();
 			memberQuery.whereEqualTo("currentRequest", requestObj);
-			//TODO: Add loading indicator while this occurs
 			try {
 				numMembers = memberQuery.count();
 				Log.d("RequestInfoActivity", "There are " + numMembers + " members.");
@@ -118,9 +120,10 @@ public class RequestInfoFragment extends Fragment {
 					public void run() {
 						Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
 								Toast.LENGTH_SHORT).show();
+						getActivity().finish();
 					}
 				});
-				getActivity().finish();
+				return null;
 			}
 
 			//fetch number of helper group members from server
@@ -128,7 +131,6 @@ public class RequestInfoFragment extends Fragment {
 			ParseQuery<ParseUser> helperQuery = ParseUser.getQuery();
 			helperQuery.whereEqualTo("currentRequest", requestObj);
 			helperQuery.whereEqualTo("isHelper", true);
-			//TODO: Add loading indicator while this occurs
 			try {
 				numHelpers = helperQuery.count();
 				Log.d("RequestInfoActivity", "There are " + numHelpers + " helpers.");
@@ -139,9 +141,10 @@ public class RequestInfoFragment extends Fragment {
 					public void run() {
 						Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
 								Toast.LENGTH_SHORT).show();
+						getActivity().finish();
 					}
 				});
-				getActivity().finish();
+				return null;
 			}
 
 			return new String[]{
@@ -155,7 +158,7 @@ public class RequestInfoFragment extends Fragment {
 					request_id
 			};
 
-		} else {
+		} else {	//Grabbing the user's current group
 			currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
 			if(currentGroup != null) {
 				try {
@@ -167,25 +170,69 @@ public class RequestInfoFragment extends Fragment {
                         if it fails, use the cached numbers.
                      */
 
-                    //TODO: If no internet connection, why does this cause the app to crash..? Exception is handled...
-                    try {
-                        //fetch number of group members from server
-                        ParseQuery<ParseUser> memberQuery = ParseUser.getQuery();
-                        memberQuery.whereEqualTo("currentRequest", currentGroup);
-                        numMembers = memberQuery.count();
-                        Log.d("RequestInfoActivity", "There are " + numMembers + " members.");
+					if(!CheckInternet()) {
+						numMembers = ParseUser.getCurrentUser().getInt("cacheMembers");
+						numHelpers = ParseUser.getCurrentUser().getInt("cacheHelpers");
+					} else {
+						try {
+							ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
+							query.get(currentGroup.getObjectId());
+						} catch (ParseException e) {
+							if(e.getCode() == ParseException.OBJECT_NOT_FOUND) {
+								ParseUser.getCurrentUser().remove("currentRequest");
+								ParseUser.getCurrentUser().put("isHelper", false);
+								ParseUser.getCurrentUser().remove("cacheHelpers");
+								ParseUser.getCurrentUser().remove("cacheMembers");
+								ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+									@Override
+									public void done(ParseException e) {
+										if (e == null) {
+											//user saved properly.
+											isInGroup = false;
+											currentGroup = null;
+											ParseUser.getCurrentUser().pinInBackground();     //cache (lack of) group info
+										} else {
+											//user was not saved properly.
+											e.printStackTrace();
+										}
+									}
+								});
+								getActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										progress.dismiss();
+										infoContainer.setVisibility(View.GONE);
+										noGroup.setText(getString(R.string.no_group));
+										noGroup.setVisibility(View.VISIBLE);
 
-                        //fetch number of helper group members from server
-                        ParseQuery<ParseUser> helperQuery = ParseUser.getQuery();
-                        helperQuery.whereEqualTo("currentRequest", currentGroup);
-                        helperQuery.whereEqualTo("isHelper", true);
-                        numHelpers = helperQuery.count();
-                        Log.d("RequestInfoActivity", "There are " + numHelpers + " helpers.");
-                    } catch(ParseException e){
-                        //get helper/member count from cache
-                        numMembers = ParseUser.getCurrentUser().getInt("cacheMembers");
-                        numHelpers = ParseUser.getCurrentUser().getInt("cacheHelpers");
-                    }
+										displayDeletedGroupAlert();
+									}
+								});
+								return null;
+							}
+						}
+
+
+						try {
+							//fetch number of group members from server
+							ParseQuery<ParseUser> memberQuery = ParseUser.getQuery();
+							memberQuery.whereEqualTo("currentRequest", currentGroup);
+							numMembers = memberQuery.count();
+							Log.d("RequestInfoActivity", "There are " + numMembers + " members.");
+
+							//fetch number of helper group members from server
+							ParseQuery<ParseUser> helperQuery = ParseUser.getQuery();
+							helperQuery.whereEqualTo("currentRequest", currentGroup);
+							helperQuery.whereEqualTo("isHelper", true);
+							numHelpers = helperQuery.count();
+							Log.d("RequestInfoActivity", "There are " + numHelpers + " helpers.");
+						} catch(ParseException e){
+							//get helper/member count from cache
+							numMembers = ParseUser.getCurrentUser().getInt("cacheMembers");
+							numHelpers = ParseUser.getCurrentUser().getInt("cacheHelpers");
+						}
+					}
+
 
                     return new String[]{
 							currentGroup.getString("title"),
@@ -284,13 +331,19 @@ public class RequestInfoFragment extends Fragment {
 		joinAsHelper.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if(isProcessing)
+					return;
+				isProcessing = true;
+
 				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
-				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
 				try {
 					//Checks if the request still exists when the user tries to join.
 					//It doesn't seems like there is a way to check without querying for it which
 					//throws a parse exception when it doesn't exist.
 					requestObj = query.get(result[7]);
+
+					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
 					if(currentGroup != null) {	//Only confirm for joining if the user is in another group
 						builder.setMessage(getString(R.string.request_leave_other_group_with_name, currentGroup.get("title")))
@@ -308,6 +361,7 @@ public class RequestInfoFragment extends Fragment {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								//Do nothing
+								isProcessing = false;
 							}
 						});
 
@@ -320,6 +374,7 @@ public class RequestInfoFragment extends Fragment {
 				} catch (ParseException e) {
 					if(e.getCode() == ParseException.OBJECT_NOT_FOUND)	//Group has been deleted
 						displayDeletedGroupAlert();
+					isProcessing = false;
 					e.printStackTrace();
 				}
 			}
@@ -328,13 +383,17 @@ public class RequestInfoFragment extends Fragment {
 		joinOrLeaveRequest.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if(isProcessing)
+					return;
+				isProcessing = true;
 
 				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
-				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
 				try {
 					requestObj = query.get(result[7]);
 
 					if(isInGroup) {		//Always confirm for leaving the group
+						AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 						builder.setMessage(getString(R.string.request_leave_generic_warning))
 								.setTitle(getString(R.string.request_leave_with_name, currentGroup.get("title")));
 
@@ -350,6 +409,7 @@ public class RequestInfoFragment extends Fragment {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								//Do nothing
+								isProcessing = false;
 							}
 						});
 
@@ -357,6 +417,7 @@ public class RequestInfoFragment extends Fragment {
 					}
 					else {		//Only confirm for joining if the user is in another group
 						if(currentGroup != null) {
+							AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
 							builder.setMessage(getString(R.string.request_leave_other_group_with_name, currentGroup.get("title")))
 									.setTitle(getString(R.string.request_already_in_group_warning));
@@ -374,6 +435,7 @@ public class RequestInfoFragment extends Fragment {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									//Do nothing
+									isProcessing = false;
 								}
 							});
 
@@ -393,6 +455,7 @@ public class RequestInfoFragment extends Fragment {
 							displayDeletedGroupAlert();
 						}
 					}
+					isProcessing = false;
 					e.printStackTrace();
 
 				}
@@ -424,12 +487,14 @@ public class RequestInfoFragment extends Fragment {
                     String members = getResources().getQuantityString(R.plurals.members, numMembers);
                     memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
                     //memberCount.setText(numHelpers + " " + help + ", " + numMembers + " " + members);
+					isProcessing = false;
                     progress.dismiss();
                     Toast.makeText(getActivity().getApplicationContext(), R.string.join_group_success,
 							Toast.LENGTH_SHORT).show();
 				} else {
 					//user was not saved properly.
 					e.printStackTrace();
+					isProcessing = false;
                     progress.dismiss();
 					Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
 							Toast.LENGTH_SHORT).show();
@@ -464,12 +529,14 @@ public class RequestInfoFragment extends Fragment {
                     progress.dismiss();
 					Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
 							Toast.LENGTH_SHORT).show();
+					isProcessing = false;
 				} else {
 					//user was not saved properly.
 					e.printStackTrace();
                     progress.dismiss();
 					Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
 							Toast.LENGTH_SHORT).show();
+					isProcessing = false;
 				}
 
 			}
@@ -513,5 +580,19 @@ public class RequestInfoFragment extends Fragment {
 			}
 		});
 		builder.create().show();
+	}
+
+	private boolean CheckInternet()
+	{
+		ConnectivityManager connec = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+		android.net.NetworkInfo wifi = connec.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		android.net.NetworkInfo mobile = connec.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+		if (wifi.isConnected()) {
+			return true;
+		} else if (mobile.isConnected()) {
+			return true;
+		}
+		return false;
 	}
 }
