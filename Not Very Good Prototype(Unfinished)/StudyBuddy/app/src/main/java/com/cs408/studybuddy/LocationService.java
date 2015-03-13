@@ -8,11 +8,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseInstallation;
-import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
 public class LocationService extends Service implements LocationListener
@@ -186,8 +184,8 @@ public class LocationService extends Service implements LocationListener
 	 *
 	 * @return success		returns success if either the network or gps networks are available
 	 */
-	public boolean startGPS(int minTime, int minDistance){
-		if(!isConnected) {
+	public synchronized boolean startGPS(int minTime, int minDistance) {
+		if (!isConnected) {
 			locationManager = (LocationManager) myContext.getSystemService(LOCATION_SERVICE);
 			isConnected = checkProvider(minTime, minDistance);
 		}
@@ -195,10 +193,8 @@ public class LocationService extends Service implements LocationListener
 	}
 	
 	
-	public void stopGPS()
-	{
-		if(locationManager != null)
-		{
+	public synchronized void stopGPS() {
+		if(locationManager != null) {
 			locationManager.removeUpdates(LocationService.this);
 		}
 		isConnected = false;
