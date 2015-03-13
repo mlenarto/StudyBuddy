@@ -93,8 +93,13 @@ public class RequestInfoFragment extends Fragment {
 				requestObj = query.get(request_id);
 			} catch (ParseException e) {
 				e.printStackTrace();
-				Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
-						Toast.LENGTH_SHORT).show();
+				getActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+								Toast.LENGTH_SHORT).show();
+					}
+				});
 				getActivity().finish();
 			}
 
@@ -108,8 +113,13 @@ public class RequestInfoFragment extends Fragment {
 				Log.d("RequestInfoActivity", "There are " + numMembers + " members.");
 			} catch (ParseException e) {
 				e.printStackTrace();
-				Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
-						Toast.LENGTH_SHORT).show();
+				getActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+								Toast.LENGTH_SHORT).show();
+					}
+				});
 				getActivity().finish();
 			}
 
@@ -124,8 +134,13 @@ public class RequestInfoFragment extends Fragment {
 				Log.d("RequestInfoActivity", "There are " + numHelpers + " helpers.");
 			} catch (ParseException e) {
 				e.printStackTrace();
-				Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
-						Toast.LENGTH_SHORT).show();
+				getActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+								Toast.LENGTH_SHORT).show();
+					}
+				});
 				getActivity().finish();
 			}
 
@@ -218,7 +233,7 @@ public class RequestInfoFragment extends Fragment {
 	 *  result[6] - Timestamp of the request's creation (saved as long)
 	 *  result[7] - ID of the ParseObject representing this request
  	 */
-	private void setupInfo(String[] result) {
+	private void setupInfo(final String[] result) {
 
 		TextView requestTitle = (TextView) root.findViewById(R.id.request_title);
 		TextView timeRemaining = (TextView) root.findViewById(R.id.request_time);
@@ -226,10 +241,10 @@ public class RequestInfoFragment extends Fragment {
 		TextView requestDescription = (TextView) root.findViewById(R.id.request_description);
 
 
-		int totalTimeMillis = Integer.parseInt(result[1]);
-		Calendar cal = Calendar.getInstance();
+		final int totalTimeMillis = Integer.parseInt(result[1]);
+		final Calendar cal = Calendar.getInstance();
 		long currentTime = cal.getTimeInMillis();
-		long startTime = Long.parseLong(result[6]);
+		final long startTime = Long.parseLong(result[6]);
 		long timeElapsed = currentTime - startTime;
 		//Can't have a negative time
 		long remainingTimeMillis = (totalTimeMillis > timeElapsed) ? totalTimeMillis - timeElapsed : 0;
@@ -269,65 +284,15 @@ public class RequestInfoFragment extends Fragment {
 		joinAsHelper.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(currentGroup != null) {
-					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+				try {
+					//Checks if the request still exists when the user tries to join.
+					//It doesn't seems like there is a way to check without querying for it which
+					//throws a parse exception when it doesn't exist.
+					requestObj = query.get(result[7]);
 
-					builder.setMessage(getString(R.string.request_leave_other_group_with_name, currentGroup.get("title")))  //Change this to the other group's title
-							.setTitle(getString(R.string.request_already_in_group_warning));
-
-					builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							//join group on server
-							joinGroup(true);
-						}
-					});
-
-					builder.setNegativeButton(getString(R.string.cancel_option), new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							//Do nothing
-						}
-					});
-
-					builder.create().show();
-				} else {
-					//join group on server
-					joinGroup(true);
-				}
-			}
-		});
-
-		joinOrLeaveRequest.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if(isInGroup) {		//Always confirm for leaving the group
-					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-					builder.setMessage(getString(R.string.request_leave_generic_warning))
-							.setTitle(getString(R.string.request_leave_with_name, currentGroup.get("title")));
-
-					builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							//Leave group on server
-                            leaveGroup();
-						}
-					});
-
-					builder.setNegativeButton(getString(R.string.cancel_option), new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							//Do nothing
-						}
-					});
-
-					builder.create().show();
-				}
-				else {		//Only confirm for joining if the user is in another group
-					if(currentGroup != null) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
+					if(currentGroup != null) {	//Only confirm for joining if the user is in another group
 						builder.setMessage(getString(R.string.request_leave_other_group_with_name, currentGroup.get("title")))
 								.setTitle(getString(R.string.request_already_in_group_warning));
 
@@ -335,8 +300,7 @@ public class RequestInfoFragment extends Fragment {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								//join group on server
-								joinGroup(false);
-
+								joinGroup(true);
 							}
 						});
 
@@ -350,9 +314,87 @@ public class RequestInfoFragment extends Fragment {
 						builder.create().show();
 					} else {
 						//join group on server
-
-                        joinGroup(false);
+						joinGroup(true);
 					}
+
+				} catch (ParseException e) {
+					if(e.getCode() == ParseException.OBJECT_NOT_FOUND)	//Group has been deleted
+						displayDeletedGroupAlert();
+					e.printStackTrace();
+				}
+			}
+		});
+
+		joinOrLeaveRequest.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+
+				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+				try {
+					requestObj = query.get(result[7]);
+
+					if(isInGroup) {		//Always confirm for leaving the group
+						builder.setMessage(getString(R.string.request_leave_generic_warning))
+								.setTitle(getString(R.string.request_leave_with_name, currentGroup.get("title")));
+
+						builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								//Leave group on server
+								leaveGroup();
+							}
+						});
+
+						builder.setNegativeButton(getString(R.string.cancel_option), new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								//Do nothing
+							}
+						});
+
+						builder.create().show();
+					}
+					else {		//Only confirm for joining if the user is in another group
+						if(currentGroup != null) {
+
+							builder.setMessage(getString(R.string.request_leave_other_group_with_name, currentGroup.get("title")))
+									.setTitle(getString(R.string.request_already_in_group_warning));
+
+							builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									//join group on server
+									joinGroup(false);
+
+								}
+							});
+
+							builder.setNegativeButton(getString(R.string.cancel_option), new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									//Do nothing
+								}
+							});
+
+							builder.create().show();
+						} else {
+							//join group on server
+
+							joinGroup(false);
+						}
+					}
+
+				} catch (ParseException e) {
+					if(e.getCode() == ParseException.OBJECT_NOT_FOUND) {	//Group has been deleted
+						if(isInGroup) {			//Trying to leave a deleted request should leave as normal
+							leaveGroup();
+						} else {    			//Can't join a request that has been deleted.
+							displayDeletedGroupAlert();
+						}
+					}
+					e.printStackTrace();
+
 				}
 			}
 		});
@@ -456,5 +498,20 @@ public class RequestInfoFragment extends Fragment {
 			joinOrLeaveRequest.setLayoutParams(groupJoinedParams);
 			joinAsHelper.setVisibility(View.VISIBLE);
 		}
+	}
+
+	private void displayDeletedGroupAlert() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setMessage(getString(R.string.request_deleted_info))
+				.setTitle(getString(R.string.request_deleted));
+
+		builder.setCancelable(false);
+		builder.setNeutralButton(getString(R.string.neutral_option), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				//Do nothing
+			}
+		});
+		builder.create().show();
 	}
 }
