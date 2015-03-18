@@ -81,6 +81,9 @@
             <meta-data
                 android:name="com.parse.ui.ParseLoginActivity.PARSE_LOGIN_EMAIL_AS_USERNAME"
                 android:value="true"/>
+            <meta-data
+                android:name="com.parse.ui.ParseLoginActivity.APP_LOGO"
+                android:resource="@drawable/app_logo"/>
         </activity>
         <activity android:name=".RequestListActivity"
                   android:label="@string/title_Request_List"

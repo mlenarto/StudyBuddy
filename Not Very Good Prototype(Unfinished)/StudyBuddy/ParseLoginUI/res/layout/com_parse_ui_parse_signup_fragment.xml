@@ -12,7 +12,7 @@
         layout="@layout/com_parse_ui_parse_login_app_logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="0.5" />
+        android:layout_weight="0.12" />
 
     <include
         layout="@layout/com_parse_ui_parse_signup_form"
