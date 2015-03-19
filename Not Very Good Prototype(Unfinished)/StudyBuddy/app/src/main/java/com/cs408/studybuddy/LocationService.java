@@ -51,7 +51,8 @@ public class LocationService extends Service implements LocationListener
 	{
 		if(locationManager == null || !isConnected) {
 			return null;
-		} if(currentLocation != null) {
+		}
+		if(currentLocation != null) {
 			return currentLocation;
 		}
 
@@ -59,7 +60,7 @@ public class LocationService extends Service implements LocationListener
 		Location loc2 = null;
 		if(networkEnabled)
 			loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-		else if(gpsEnabled)
+		if(gpsEnabled)
 			loc2 =  locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
 		if(loc1 != null)
@@ -94,7 +95,8 @@ public class LocationService extends Service implements LocationListener
 						}
 					});
 					return;
-				} if(currentLocation != null) {					//Already have a location saved, return it
+				}
+				if(currentLocation != null) {					//Already have a location saved, return it
 					startThread.post(new Runnable() {
 						@Override
 						public void run() {
@@ -114,8 +116,10 @@ public class LocationService extends Service implements LocationListener
 								listener.onLocationObtained(loc1);		//Network provider has a known previous location
 							}
 						});
+						return;
 					}
-				} else if(gpsEnabled) {
+				}
+				if(gpsEnabled) {
 					final Location loc2 = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 					if(loc2 != null) {
 						startThread.post(new Runnable() {
@@ -124,6 +128,7 @@ public class LocationService extends Service implements LocationListener
 								listener.onLocationObtained(loc2);		//GPS provider has a known previous location
 							}
 						});
+						return;
 					}
 				}
 
@@ -148,15 +153,28 @@ public class LocationService extends Service implements LocationListener
 
 	/**
 	 *	Quick approximation of the distance between two locations in meters.
-	 *	Needs to be tested.
+	 *
+	 *	Somewhat inaccurate for some small distances. If more accuracy is needed, uncomment
+	 *	and use the first section instead.
 	 */
 	public double distance(double lat_a, double long_a, double lat_b, double long_b) {
+//		double R = 6372.8; // In kilometers
+//
+//		double dLat = Math.toRadians(lat_b - lat_a);
+//		double dLon = Math.toRadians(long_b - long_a);
+//		lat_a = Math.toRadians(lat_a);
+//		lat_b = Math.toRadians(lat_b);
+//
+//		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat_a) * Math.cos(lat_b);
+//		double c = 2 * Math.asin(Math.sqrt(a));
+//		return R * c * 1000;
+
 		double degreeLen = 110.25;
 
 		double x = lat_a - lat_b;
 		double y = (long_a - long_b) * Math.cos(lat_b);
 
-		return degreeLen * Math.sqrt(x*x + y*y);
+		return degreeLen * Math.sqrt(x*x + y*y) * 1000;
 	}
 
 
@@ -172,8 +190,6 @@ public class LocationService extends Service implements LocationListener
 		}
 
 		return (networkEnabled || gpsEnabled);
-		//Log.d("GPS", "gps: " + gpsEnabled);
-		//Log.d("GPS", "network: " + networkEnabled);
 	}
 
 	/**
@@ -199,6 +215,11 @@ public class LocationService extends Service implements LocationListener
 		}
 		isConnected = false;
 		locationManager = null;
+	}
+
+
+	public synchronized boolean isConnected() {
+		return isConnected;
 	}
 	
 	/**

@@ -26,6 +26,7 @@
     <string name="network_error">Error: Check your network connection.</string>
     <string name="bundle_error">Error: Cannot find extras bundle.</string>
     <string name="error_no_class">Error: Cannot find selected class.</string>
+    <string name="error_getting_requests">An error occurred when retrieving the help requests for this course.</string>
     <string name="no_requests">No requests for this\n class right now.</string>
     <string name="no_group">You are not currently\n in a group</string>
     <string name="group_error">Error displaying group</string>

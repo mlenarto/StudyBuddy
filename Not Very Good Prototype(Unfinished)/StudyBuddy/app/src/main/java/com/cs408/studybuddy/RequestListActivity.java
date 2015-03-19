@@ -42,7 +42,6 @@ public class RequestListActivity extends ActionBarActivity {
 
     private static String course_obj_id = new String();
 	private LocationService gps;
-	private Location mLocation;
 	private Handler handler;
     private SwipeRefreshLayout swipeLayout;
     private ProgressDialog progress;
@@ -64,7 +63,7 @@ public class RequestListActivity extends ActionBarActivity {
 		mText.setText(R.string.title_Request_List);
 
 		gps = LocationService.getInstance(getApplicationContext());
-		gps.startGPS(15*1000, 10);
+		gps.startGPS(15*1000, 15);
 
 		noRequestText.setVisibility(View.GONE);
         Bundle extras = getIntent().getExtras();
@@ -113,6 +112,10 @@ public class RequestListActivity extends ActionBarActivity {
     }
 
 	private void updateList() {
+		if(!gps.isConnected())
+			gps.startGPS(15 * 1000, 15);
+
+
 		gps.getLocationInBackground(20, new LocationService.locationUpdateListener() {
 			@Override
 			public void onLocationObtained(final Location loc) {
@@ -186,7 +189,7 @@ public class RequestListActivity extends ActionBarActivity {
 									Log.d("RequestListActivity", "Requests ArrayList is empty.");
 								}
 							} else {
-								Toast toast = Toast.makeText(getApplicationContext(), "An error occurred when retrieving the help requests for this course.", Toast.LENGTH_LONG);
+								Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.error_getting_requests), Toast.LENGTH_LONG);
 								toast.setGravity(Gravity.CENTER, 0, 0);
                                 progress.dismiss();
 								toast.show();
@@ -210,7 +213,7 @@ public class RequestListActivity extends ActionBarActivity {
 	public void onResume() {
 		super.onResume();
 
-		gps.startGPS(15*1000, 10);
+		gps.startGPS(15*1000, 15);
 
 		runnable = new Runnable() {
 			public void run() {
