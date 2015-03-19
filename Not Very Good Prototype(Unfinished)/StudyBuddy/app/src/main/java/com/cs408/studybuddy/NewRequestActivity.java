@@ -243,7 +243,6 @@ public class NewRequestActivity extends ActionBarActivity {
                         }
                     }
                 });
-                progress.dismiss();
 			}
 		});
 
