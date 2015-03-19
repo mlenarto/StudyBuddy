@@ -25,6 +25,7 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
+
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -122,6 +123,9 @@
             </intent-filter>
         </receiver>
         <service android:name=".SinchService" />
+
+        <meta-data android:name="com.parse.push.notification_icon" android:resource="@drawable/push_icon"/>
+
     </application>
 
 </manifest>
