@@ -10,14 +10,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -28,7 +28,6 @@ import android.widget.Toast;
 
 import com.parse.GetCallback;
 import com.parse.ParseException;
-import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseQuery;
@@ -59,15 +58,22 @@ public class ClassAddActivity extends ActionBarActivity
     private List<String> classes;
     private ProgressDialog progress;
 
-    private Boolean is_valid;
+	private boolean animate = false;
+	private boolean isEditing = false;
+	private Animation fadeIn;
+	private Animation fadeOut;
+	private Animation hide;
+
+	private static final int animationTime = 250;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_class_add);
-        is_valid = false;
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		classList = (ListView) findViewById(R.id.classList);
 		newClass = (AutoCompleteTextView) findViewById(R.id.newClass);
+		final Button editList = (Button) findViewById(R.id.edit_classes);
+		final Button editListDone = (Button) findViewById(R.id.edit_classes_done);
 
 
 		ReadMasterClassTask read = new ReadMasterClassTask();
@@ -89,6 +95,49 @@ public class ClassAddActivity extends ActionBarActivity
 
 		arrayAdapter = new classAdapter(this, R.layout.fragment_class_add_item, classes);
 		classList.setAdapter(arrayAdapter);
+
+		hide = new AlphaAnimation(0, 0);
+		hide.setDuration(0);
+		hide.setFillAfter(true);
+
+		fadeIn = new AlphaAnimation(0, 1);
+		fadeIn.setDuration(animationTime);
+		fadeIn.setFillAfter(true);
+		fadeIn.setInterpolator(new LinearInterpolator());
+
+		fadeOut = new AlphaAnimation(1, 0);
+		fadeOut.setFillAfter(true);
+		fadeOut.setDuration(animationTime);
+		fadeOut.setInterpolator(new LinearInterpolator());
+
+		editListDone.setAnimation(hide);
+
+		editList.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(!isEditing) {
+					animate = true;
+					isEditing = true;
+					editList.startAnimation(fadeOut);
+					editListDone.startAnimation(fadeIn);
+					editListDone.bringToFront();
+					arrayAdapter.notifyDataSetChanged();
+				}
+			}
+		});
+
+		editListDone.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(isEditing) {
+					isEditing = false;
+					editList.startAnimation(fadeIn);
+					editListDone.startAnimation(fadeOut);
+					editList.bringToFront();
+					arrayAdapter.notifyDataSetChanged();
+				}
+			}
+		});
 
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
 			@Override
@@ -177,8 +226,7 @@ public class ClassAddActivity extends ActionBarActivity
 		if(classes.contains(newCourse)) {
             progress.dismiss();
 			newClass.setText("");
-			//TODO: fix error immediately below.
-            //Toast.makeText(getApplicationContext(), getString(R.string.duplicate_class), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.duplicate_class), Toast.LENGTH_SHORT).show();
 			return;
 		}
 
@@ -273,7 +321,7 @@ public class ClassAddActivity extends ActionBarActivity
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View v = convertView;
 			TextView classNameText;
-			Button remove;
+			final Button remove;
 			final String className;
 
 			if(v == null) {
@@ -288,10 +336,20 @@ public class ClassAddActivity extends ActionBarActivity
 			className = this.getItem(position);
 			classNameText.setText(className);
 
+			//Control visibility of the delete icon
+			if(!animate)
+				remove.startAnimation(hide);
+			else if(isEditing)
+				remove.startAnimation(fadeIn);
+			else
+				remove.startAnimation(fadeOut);
 
 			remove.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
+					if(!isEditing)	//Button is invisible and shouldn't react to touch events
+						return;
+
 					AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 					builder.setMessage("Are you sure you want to leave this class?")
 							.setTitle("Leave " + className + "?");

@@ -18,6 +18,31 @@
             android:textSize="20sp"
             android:text="@string/title_class_add" />
 
+        <RelativeLayout
+            android:layout_width="?attr/actionBarSize"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_gravity="right">
+
+            <Button
+                android:id="@+id/edit_classes_done"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/edit_done"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:textSize="18sp"
+                android:textColor="@color/common_signin_btn_text_light"/>
+
+            <Button
+                android:id="@+id/edit_classes"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/edit"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:textSize="18sp"
+                android:textColor="@color/common_signin_btn_text_light"/>
+
+        </RelativeLayout>
+
     </android.support.v7.widget.Toolbar>
 
     <TextView

@@ -16,6 +16,8 @@
     <string name="do_not_disturb">Do not disturb</string>
     <string name="logout">logout</string>
     <string name="edit_classes">Edit Classes</string>
+    <string name="edit">Edit</string>
+    <string name="edit_done">Done</string>
     <string name="class_add_activity">ClassAddActivity</string>
     <string name="class_prompt">Enter New Classes</string>
     <string name="app_preferences">com.cs408.studybuddy</string>
@@ -63,7 +65,7 @@
     <string name="title_New_Request">New Request</string>
     <string name="title_request_info">Request Info</string>
     <string name="title_my_group">My Group</string>
-    <string name="title_my_profile">My Profile</string>
+    <string name="title_my_profile">Settings</string>
     <string name="title_class_list">Classes</string>
     <string name="title_messages">Messages</string>
     <string name="title_class_add">Add Classes</string>
