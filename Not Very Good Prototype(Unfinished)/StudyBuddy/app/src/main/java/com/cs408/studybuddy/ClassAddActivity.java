@@ -110,7 +110,7 @@ public class ClassAddActivity extends ActionBarActivity
 		fadeOut.setDuration(animationTime);
 		fadeOut.setInterpolator(new LinearInterpolator());
 
-		editListDone.setAnimation(hide);
+		editListDone.startAnimation(hide);
 
 		editList.setOnClickListener(new View.OnClickListener() {
 			@Override
