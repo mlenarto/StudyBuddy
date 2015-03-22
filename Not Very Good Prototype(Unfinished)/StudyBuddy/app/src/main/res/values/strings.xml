@@ -73,8 +73,8 @@
     <string-array name="drawer_class_list">
         <item>@string/title_class_list</item>
         <item>@string/title_my_group</item>
-        <item>@string/title_my_profile</item>
         <item>@string/title_messages</item>
+        <item>@string/title_my_profile</item>
     </string-array>
 
 
