@@ -112,30 +112,82 @@ public class ClassAddActivity extends ActionBarActivity
 
 		editListDone.startAnimation(hide);
 
+		//Begin editing - hide "Edit" button, show "Done" button and delete icons
 		editList.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(!isEditing) {
-					animate = true;
-					isEditing = true;
-					editList.startAnimation(fadeOut);
-					editListDone.startAnimation(fadeIn);
-					editListDone.bringToFront();
-					arrayAdapter.notifyDataSetChanged();
-				}
+				animate = true;
+				isEditing = true;
+				editListDone.startAnimation(hide);	//"Done" button fades in, so it has to be hidden first
+
+				hide.setAnimationListener(new Animation.AnimationListener() {
+					@Override
+					public void onAnimationStart(Animation animation) { }
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						editListDone.setVisibility(View.VISIBLE);
+						editList.startAnimation(fadeOut);
+						editListDone.startAnimation(fadeIn);
+						fadeOut.setAnimationListener(new Animation.AnimationListener() {
+							@Override
+							public void onAnimationStart(Animation animation) { }
+
+							@Override
+							public void onAnimationEnd(Animation animation) {
+								editList.setVisibility(View.GONE);
+							}
+
+							@Override
+							public void onAnimationRepeat(Animation animation) { }
+						});
+						editListDone.bringToFront();
+						arrayAdapter.notifyDataSetChanged();
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) { }
+				});
+
+
 			}
 		});
 
+		//End editing - show "Edit" button, hide "Done" button and delete icons
 		editListDone.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(isEditing) {
-					isEditing = false;
-					editList.startAnimation(fadeIn);
-					editListDone.startAnimation(fadeOut);
-					editList.bringToFront();
-					arrayAdapter.notifyDataSetChanged();
-				}
+				isEditing = false;
+				editList.startAnimation(hide);
+
+				hide.setAnimationListener(new Animation.AnimationListener() {
+					@Override
+					public void onAnimationStart(Animation animation) { }
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						editList.setVisibility(View.VISIBLE);
+						editList.startAnimation(fadeIn);
+						editListDone.startAnimation(fadeOut);
+						fadeOut.setAnimationListener(new Animation.AnimationListener() {
+							@Override
+							public void onAnimationStart(Animation animation) { }
+
+							@Override
+							public void onAnimationEnd(Animation animation) {
+								editListDone.setVisibility(View.GONE);
+							}
+
+							@Override
+							public void onAnimationRepeat(Animation animation) { }
+						});
+						editList.bringToFront();
+						arrayAdapter.notifyDataSetChanged();
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) { }
+				});
 			}
 		});
 
@@ -339,10 +391,20 @@ public class ClassAddActivity extends ActionBarActivity
 			//Control visibility of the delete icon
 			if(!animate)
 				remove.startAnimation(hide);
-			else if(isEditing)
+			else if(isEditing) {
+				Animation fadeIn = new AlphaAnimation(0, 1);
+				fadeIn.setDuration(animationTime);
+				fadeIn.setFillAfter(true);
+				fadeIn.setInterpolator(new LinearInterpolator());
 				remove.startAnimation(fadeIn);
-			else
+			}
+			else{
+				Animation fadeOut = new AlphaAnimation(1, 0);
+				fadeOut.setFillAfter(true);
+				fadeOut.setDuration(animationTime);
+				fadeOut.setInterpolator(new LinearInterpolator());
 				remove.startAnimation(fadeOut);
+			}
 
 			remove.setOnClickListener(new View.OnClickListener() {
 				@Override

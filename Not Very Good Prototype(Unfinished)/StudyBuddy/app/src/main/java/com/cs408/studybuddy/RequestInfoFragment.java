@@ -245,6 +245,38 @@ public class RequestInfoFragment extends Fragment {
 							currentGroup.getObjectId()
 					};
 				} catch (ParseException e) {
+					if(e.getCode() == ParseException.OBJECT_NOT_FOUND) {
+						ParseUser.getCurrentUser().remove("currentRequest");
+						ParseUser.getCurrentUser().put("isHelper", false);
+						ParseUser.getCurrentUser().remove("cacheHelpers");
+						ParseUser.getCurrentUser().remove("cacheMembers");
+						ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+							@Override
+							public void done(ParseException e) {
+								if (e == null) {
+									//user saved properly.
+									isInGroup = false;
+									currentGroup = null;
+									ParseUser.getCurrentUser().pinInBackground();     //cache (lack of) group info
+								} else {
+									//user was not saved properly.
+									e.printStackTrace();
+								}
+							}
+						});
+						getActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								progress.dismiss();
+								infoContainer.setVisibility(View.GONE);
+								noGroup.setText(getString(R.string.no_group));
+								noGroup.setVisibility(View.VISIBLE);
+
+								displayDeletedGroupAlert();
+							}
+						});
+						return null;
+					}
 					e.printStackTrace();
 					getActivity().runOnUiThread(new Runnable() {
 						@Override
