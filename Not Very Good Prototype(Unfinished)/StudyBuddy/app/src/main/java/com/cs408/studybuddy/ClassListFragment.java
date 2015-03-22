@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.parse.FindCallback;
 import com.parse.Parse;
@@ -37,10 +38,13 @@ public class ClassListFragment extends Fragment {
 	private String classesString;
     private ProgressDialog progress;
     private List<String> courses = new ArrayList<>();
+    TextView noClassText;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		view = inflater.inflate(R.layout.fragment_class_list, container, false);
 		classList = (ListView) view.findViewById(R.id.class_list);
+        noClassText = (TextView) view.findViewById(R.id.no_classes);
+        noClassText.setVisibility(View.GONE);
 
 		//If a preference should be available in the entire app, open it like this
 		prefs = getActivity().getSharedPreferences(getString(R.string.app_preferences), 0);
@@ -91,6 +95,7 @@ public class ClassListFragment extends Fragment {
                     }
                     else
                     {
+                        noClassText.setVisibility(View.VISIBLE);
                         Log.d("ClassListFragment", "Courses ArrayList is empty.");
                     }
                     progress.dismiss();

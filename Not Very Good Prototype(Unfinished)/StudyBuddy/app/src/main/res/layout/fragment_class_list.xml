@@ -17,5 +17,18 @@
 
     <!--android:listSelector="@color/drawer_list_selected"-->
 
+    <TextView
+        android:id="@+id/no_classes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/text_border"
+        android:gravity="center_horizontal"
+        android:text="@string/no_classes"
+        android:textColor="@color/common_signin_btn_text_light"
+        android:textSize="20sp"
+        android:visibility="gone"
+        android:singleLine="false" />
 
 </RelativeLayout>
