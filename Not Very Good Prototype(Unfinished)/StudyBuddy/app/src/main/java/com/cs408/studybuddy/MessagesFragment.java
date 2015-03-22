@@ -1,6 +1,7 @@
 package com.cs408.studybuddy;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -195,6 +196,24 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
         // Indicate that the message is done sending
         setSending(message, false);
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
+        query.getInBackground(ParseUser.getCurrentUser().getString("currentRequest"), new GetCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject request, ParseException e) {
+                if (e == null) {
+                    //object retrieved
+                    if (request.getNumber("duration").doubleValue() < 1800000)
+                    {
+                        request.put("duration", 1800000);
+                        request.saveInBackground();
+                    }
+                }
+                else {
+                    //something went wrong
+                }
+            }
+        });
     }
 
     /**
