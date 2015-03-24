@@ -112,16 +112,18 @@ public class RequestListActivity extends ActionBarActivity {
         });
     }
 
-	private void updateList() {
+	private void updateList()
+    {
 		if(!gps.isConnected())
 			gps.startGPS(15 * 1000, 15);
 
-
-		gps.getLocationInBackground(20, new LocationService.locationUpdateListener() {
+		gps.getLocationInBackground(20, new LocationService.locationUpdateListener()
+        {
 			@Override
-			public void onLocationObtained(final Location loc) {
-
-				if (loc != null) {
+			public void onLocationObtained(final Location loc)
+            {
+				if (loc != null)
+                {
 					// Inner query to grab course pointer so we pull help requests for the specific course
 					ParseQuery innerQuery = new ParseQuery("Course");
 					innerQuery.whereEqualTo("courseNumber", course);
@@ -129,11 +131,15 @@ public class RequestListActivity extends ActionBarActivity {
 					//Retrieve helpRequest list from Parse
 					ParseQuery<ParseObject> request_query = ParseQuery.getQuery("HelpRequest");
 					request_query.whereMatchesQuery("course", innerQuery);
-					request_query.findInBackground(new FindCallback<ParseObject>() {
-						public void done(List<ParseObject> requests, ParseException e) {
-							if (e == null) {
+					request_query.findInBackground(new FindCallback<ParseObject>()
+                    {
+						public void done(List<ParseObject> requests, ParseException e)
+                        {
+							if (e == null)
+                            {
 								RequestListActivity.this.requests.clear();
-								for (ParseObject request : requests) {
+								for (ParseObject request : requests)
+                                {
 									ClassRequest nextReq = new ClassRequest(request.getString("title"), request.getObjectId());
 									double distance = gps.distance(loc.getLatitude(), loc.getLongitude(),
 											request.getParseGeoPoint("geoLocation").getLatitude(), request.getParseGeoPoint("geoLocation").getLongitude());
@@ -142,25 +148,30 @@ public class RequestListActivity extends ActionBarActivity {
 								}
 								Log.d("RequestListActivity", "Retrieved " + requests.size() + " help requests");
 
-								if (!RequestListActivity.this.requests.isEmpty()) {
+								if (!RequestListActivity.this.requests.isEmpty())
+                                {
 									noRequestText.setVisibility(View.GONE);
 									ListView requestList = (ListView) findViewById(R.id.class_list);
 
                                     //This makes sure the list of requests will not refresh if the list is longer than one screen
-                                    requestList.setOnScrollListener(new AbsListView.OnScrollListener() {
+                                    requestList.setOnScrollListener(new AbsListView.OnScrollListener()
+                                    {
                                         @Override
-                                        public void onScrollStateChanged(AbsListView view, int scrollState) {
-
+                                        public void onScrollStateChanged(AbsListView view, int scrollState)
+                                        {
                                         }
 
                                         @Override
-                                        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                                        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
+                                        {
 
-                                            if (firstVisibleItem == 0) {
+                                            if (firstVisibleItem == 0)
+                                            {
                                                 swipeLayout.setEnabled(true);
                                             }
 
-                                            else {
+                                            else
+                                            {
                                                 swipeLayout.setEnabled(false);
                                             }
 
@@ -173,9 +184,11 @@ public class RequestListActivity extends ActionBarActivity {
 									requestList.setAdapter(new ArrayAdapter<>(RequestListActivity.this,
 											android.R.layout.simple_list_item_1, android.R.id.text1, RequestListActivity.this.requests));
 
-									requestList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+									requestList.setOnItemClickListener(new AdapterView.OnItemClickListener()
+                                    {
 										@Override
-										public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+										public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+                                        {
 											Intent i = new Intent(RequestListActivity.this, RequestInfoActivity.class);
 											i.putExtra("request_title", RequestListActivity.this.requests.get(position).title);
 											i.putExtra("request_id", RequestListActivity.this.requests.get(position).id);
@@ -184,12 +197,19 @@ public class RequestListActivity extends ActionBarActivity {
 											//startActivity(new Intent(RequestListActivity.this, RequestInfoActivity.class));
 										}
 									});
-								} else {
+								}
+
+                                else
+                                {
                                     progress.dismiss();
 									noRequestText.setVisibility(View.VISIBLE);
 									Log.d("RequestListActivity", "Requests ArrayList is empty.");
 								}
-							} else {
+
+							}
+
+                            else
+                            {
 								Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.error_getting_requests), Toast.LENGTH_LONG);
 								toast.setGravity(Gravity.CENTER, 0, 0);
                                 progress.dismiss();
@@ -199,7 +219,11 @@ public class RequestListActivity extends ActionBarActivity {
                             progress.dismiss();
 						}
 					});
-				} else {
+                    progress.dismiss();
+				}
+
+                else
+                {
 					Toast toast = Toast.makeText(getApplicationContext(), getString(R.string.location_error), Toast.LENGTH_LONG);
 					toast.setGravity(Gravity.CENTER, 0, 0);
                     progress.dismiss();
