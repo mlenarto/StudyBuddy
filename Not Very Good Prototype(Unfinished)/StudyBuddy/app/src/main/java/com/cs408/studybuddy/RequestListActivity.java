@@ -105,6 +105,7 @@ public class RequestListActivity extends ActionBarActivity {
             @Override
             public void onRefresh() {
                 swipeLayout.setRefreshing(true);
+				progress.show();
                 updateList();
                 swipeLayout.setRefreshing(false);
             }
@@ -238,8 +239,10 @@ public class RequestListActivity extends ActionBarActivity {
 		super.onActivityResult(requestCode, resultCode, data);
 		if(requestCode == NEW_REQUEST_INTENT && resultCode == RESULT_OK) {
 
-			if(data.getBooleanExtra(CREATED_NEW_REQUEST, false))
+			if(data.getBooleanExtra(CREATED_NEW_REQUEST, false)) {
+				progress.show();
 				updateList();
+			}
 		}
 	}
 }

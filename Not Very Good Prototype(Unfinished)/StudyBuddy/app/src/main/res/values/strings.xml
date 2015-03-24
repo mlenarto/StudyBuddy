@@ -30,9 +30,10 @@
     <string name="error_no_class">Error: Cannot find selected class.</string>
     <string name="error_getting_requests">An error occurred when retrieving the help requests for this course.</string>
     <string name="no_requests">No requests for this\n class right now.</string>
-    <string name="no_group">You are not currently\n in a group</string>
+    <string name="no_group">You are not currently\n in a group.</string>
     <string name="group_error">Error displaying group</string>
     <string name="location_error">An error occurred while getting your location.</string>
+    <string name="no_classes">Add your classes from\n the Settings menu.</string>
 
 
     <string name="request_join">Join Group</string>
@@ -73,8 +74,8 @@
     <string-array name="drawer_class_list">
         <item>@string/title_class_list</item>
         <item>@string/title_my_group</item>
-        <item>@string/title_my_profile</item>
         <item>@string/title_messages</item>
+        <item>@string/title_my_profile</item>
     </string-array>
 
 

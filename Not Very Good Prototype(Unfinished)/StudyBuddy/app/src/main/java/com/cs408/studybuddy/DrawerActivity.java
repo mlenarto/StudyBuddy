@@ -22,9 +22,8 @@ public class DrawerActivity extends ActionBarActivity {
 
 	private static final int CLASS_LIST_FRAGMENT = 0;
 	private static final int GROUP_FRAGMENT = 1;
-	private static final int PROFILE_FRAGMENT = 2;
-    private static final int MESSAGES_FRAGMENT = 3;
-
+	private static final int MESSAGES_FRAGMENT = 2;
+	private static final int PROFILE_FRAGMENT = 3;
 
 
     /**
@@ -147,14 +146,14 @@ public class DrawerActivity extends ActionBarActivity {
 				currentFragment = new RequestInfoFragment();
 				mTitle.setText(getString(R.string.title_my_group));
 				break;
+			case MESSAGES_FRAGMENT:
+				currentFragment = new MessagesFragment();
+				mTitle.setText(R.string.title_messages);
+				break;
 			case PROFILE_FRAGMENT:
 				currentFragment = new ProfileFragment();
 				mTitle.setText(R.string.title_my_profile);
 				break;
-            case MESSAGES_FRAGMENT:
-                currentFragment = new MessagesFragment();
-				mTitle.setText(R.string.title_messages);
-                break;
 			default:
 				break;
 		}
