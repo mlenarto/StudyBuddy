@@ -18,6 +18,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.DeleteCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -543,47 +544,127 @@ public class RequestInfoFragment extends Fragment {
             //fetch number of group members from server, delete the request object if the current user is the only member
             ParseQuery<ParseUser> memberQuery = ParseUser.getQuery();
             memberQuery.whereEqualTo("currentRequest", currentGroup);
-            if (memberQuery.count() == 1) currentGroup.deleteInBackground();
+            if (memberQuery.count() <= 1){
+                //Prompt the user to let them know it will delete the group
+                progress.dismiss();
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage(getString(R.string.request_leave_delete_warning))
+                        .setTitle(getString(R.string.request_leave_delete, currentGroup.get("title")));
+
+                builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Delete group and continue to leave
+                        progress = ProgressDialog.show(getActivity(), "Leaving group...", "Please wait...", true);
+                        currentGroup.deleteInBackground(new DeleteCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                if(e == null){
+                                    //Group delete successful, now leave it
+                                    if(ParseUser.getCurrentUser().getBoolean("isHelper")){
+                                        numHelpers--;
+                                    }
+                                    numMembers--;
+                                    ParseUser.getCurrentUser().remove("currentRequest");
+                                    ParseUser.getCurrentUser().put("isHelper", false);
+                                    ParseUser.getCurrentUser().remove("cacheHelpers");
+                                    ParseUser.getCurrentUser().remove("cacheMembers");
+                                    ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+                                        @Override
+                                        public void done(ParseException e) {
+                                            if (e == null) {
+                                                //user saved properly.
+                                                isInGroup = false;
+                                                currentGroup = null;
+                                                ParseUser.getCurrentUser().pinInBackground();     //cache (lack of) group info
+                                                setupButtonLayout();
+                                                String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
+                                                String members = getResources().getQuantityString(R.plurals.members, numMembers);
+                                                memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
+                                                progress.dismiss();
+                                                Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
+                                                        Toast.LENGTH_SHORT).show();
+                                                isProcessing = false;
+                                            } else {
+                                                //user was not saved properly.
+                                                e.printStackTrace();
+                                                progress.dismiss();
+                                                Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+                                                        Toast.LENGTH_SHORT).show();
+                                                isProcessing = false;
+                                            }
+
+                                        }
+                                    });
+
+                                    //TODO: Send user back to request list, and refresh the request list.
+                                }
+                                else{
+                                    //group was not deleted
+                                    e.printStackTrace();
+                                    progress.dismiss();
+                                    Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+                                            Toast.LENGTH_SHORT).show();
+                                    isProcessing = false;
+                                }
+                            }
+                        });
+
+                    }
+                });
+
+                builder.setNegativeButton(getString(R.string.cancel_option), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //User doesn't leave the group, do nothing
+                        isProcessing = false;
+                    }
+                });
+
+                builder.create().show();
+            }
+            else{
+                //Leaving group will not cause it to be deleted, don't prompt user.
+                if(ParseUser.getCurrentUser().getBoolean("isHelper")){
+                    numHelpers--;
+                }
+                numMembers--;
+                ParseUser.getCurrentUser().remove("currentRequest");
+                ParseUser.getCurrentUser().put("isHelper", false);
+                ParseUser.getCurrentUser().remove("cacheHelpers");
+                ParseUser.getCurrentUser().remove("cacheMembers");
+                ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            //user saved properly.
+                            isInGroup = false;
+                            currentGroup = null;
+                            ParseUser.getCurrentUser().pinInBackground();     //cache (lack of) group info
+                            setupButtonLayout();
+                            String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
+                            String members = getResources().getQuantityString(R.plurals.members, numMembers);
+                            memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
+                            progress.dismiss();
+                            Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
+                                    Toast.LENGTH_SHORT).show();
+                            isProcessing = false;
+                        } else {
+                            //user was not saved properly.
+                            e.printStackTrace();
+                            progress.dismiss();
+                            Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+                                    Toast.LENGTH_SHORT).show();
+                            isProcessing = false;
+                        }
+
+                    }
+                });
+            }
 
         } catch(ParseException e){
             Log.e("RequestInfoFragment", "Error deleting help request when user leaves");
         }
-
-        if(ParseUser.getCurrentUser().getBoolean("isHelper")){
-            numHelpers--;
-        }
-        numMembers--;
-		ParseUser.getCurrentUser().remove("currentRequest");
-		ParseUser.getCurrentUser().put("isHelper", false);
-        ParseUser.getCurrentUser().remove("cacheHelpers");
-        ParseUser.getCurrentUser().remove("cacheMembers");
-		ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
-			@Override
-			public void done(ParseException e) {
-				if (e == null) {
-					//user saved properly.
-					isInGroup = false;
-					currentGroup = null;
-                    ParseUser.getCurrentUser().pinInBackground();     //cache (lack of) group info
-                    setupButtonLayout();
-                    String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
-                    String members = getResources().getQuantityString(R.plurals.members, numMembers);
-                    memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
-                    progress.dismiss();
-					Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
-							Toast.LENGTH_SHORT).show();
-					isProcessing = false;
-				} else {
-					//user was not saved properly.
-					e.printStackTrace();
-                    progress.dismiss();
-					Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
-							Toast.LENGTH_SHORT).show();
-					isProcessing = false;
-				}
-
-			}
-		});
 	}
 
 	public void refreshInfo() {
