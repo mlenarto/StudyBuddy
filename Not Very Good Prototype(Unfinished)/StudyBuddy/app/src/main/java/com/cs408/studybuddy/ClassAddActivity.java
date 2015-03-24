@@ -327,6 +327,7 @@ public class ClassAddActivity extends ActionBarActivity
 
                                 //subscribe user to class's channel
                                 String spaceless_className = newCourse.replaceAll("\\s","");
+                                Log.d("push",spaceless_className);
                                 ParsePush.subscribeInBackground(spaceless_className);
 
 								newClass.setText("");
@@ -523,7 +524,13 @@ public class ClassAddActivity extends ActionBarActivity
 		arrayAdapter.notifyDataSetChanged();
 	}
 
-
+    //Class method that is used to get the list of all classes the user is in
+    public static ArrayList<String> getClasses(SharedPreferences prefs)
+    {
+        String classesString = prefs.getString("class_list",null);
+        ArrayList<String> classes = convertToArray(classesString);
+        return classes;
+    }
 
 	//This will convert any array into a string seperated by commas
 	public static String convertToString(ArrayList<String> list)
