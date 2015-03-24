@@ -538,6 +538,17 @@ public class RequestInfoFragment extends Fragment {
 
 	private void leaveGroup() {
         progress = ProgressDialog.show(getActivity(), "Leaving group...", "Please wait...", true);
+
+        try {
+            //fetch number of group members from server, delete the request object if the current user is the only member
+            ParseQuery<ParseUser> memberQuery = ParseUser.getQuery();
+            memberQuery.whereEqualTo("currentRequest", currentGroup);
+            if (memberQuery.count() == 1) currentGroup.deleteInBackground();
+
+        } catch(ParseException e){
+            Log.e("RequestInfoFragment", "Error deleting help request when user leaves");
+        }
+
         if(ParseUser.getCurrentUser().getBoolean("isHelper")){
             numHelpers--;
         }
