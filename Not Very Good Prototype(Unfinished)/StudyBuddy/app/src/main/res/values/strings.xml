@@ -46,6 +46,8 @@
     <string name="request_deleted">Request not available</string>
     <string name="request_deleted_info">It may have been deleted due to the time running out or having no members.</string>
     <string name="my_request_id">currentRequestID</string>
+    <string name="request_leave_delete">Delete %s?</string>
+    <string name="request_leave_delete_warning">Leaving this group will cause it to be deleted. Continue?</string>
 
     <string name="new_request_success">Your request was created!</string>
     <string name="new_request_error">Failed to create request, please try again</string>
