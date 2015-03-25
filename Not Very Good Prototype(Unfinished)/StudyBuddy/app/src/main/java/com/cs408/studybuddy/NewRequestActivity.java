@@ -206,7 +206,7 @@ public class NewRequestActivity extends ActionBarActivity {
                                                 if(e == null){
                                                     //user saved properly.
 													Intent result = new Intent();
-													result.putExtra(RequestListActivity.CREATED_NEW_REQUEST, true);
+													result.putExtra(RequestListActivity.REFRESH_REQUEST_LIST, true);
 													setResult(RESULT_OK, result);
 
                                                     Toast.makeText(getApplicationContext(), R.string.new_request_success,

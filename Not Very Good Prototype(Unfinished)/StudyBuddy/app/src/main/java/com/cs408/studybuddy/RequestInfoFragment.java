@@ -25,8 +25,6 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
-import java.util.Calendar;
-
 /**
  * Created by Evan on 2/9/2015.
  */
@@ -47,6 +45,7 @@ public class RequestInfoFragment extends Fragment {
     private int numMembers;
     private boolean isInGroup;
 	private boolean isProcessing = false;
+	private boolean myGroup = true;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		root = inflater.inflate(R.layout.fragment_request_info, container, false);
@@ -87,7 +86,7 @@ public class RequestInfoFragment extends Fragment {
 		Bundle extras = getArguments();
 
 		if(extras != null) {	//Having arguments means it is grabbing a request from the server
-
+			myGroup = false;
 			final String request_id = extras.getString("request_id");
 
 			//fetch request object from server
@@ -160,6 +159,7 @@ public class RequestInfoFragment extends Fragment {
 			};
 
 		} else {	//Grabbing the user's current group
+			myGroup = true;
 			currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
 			if(currentGroup != null) {
 				try {
@@ -321,25 +321,24 @@ public class RequestInfoFragment extends Fragment {
 		TextView requestDescription = (TextView) root.findViewById(R.id.request_description);
 
 
-		final int totalTimeMillis = Integer.parseInt(result[1]);
-		final Calendar cal = Calendar.getInstance();
-		long currentTime = cal.getTimeInMillis();
-		final long startTime = Long.parseLong(result[6]);
-		long timeElapsed = currentTime - startTime;
-		//Can't have a negative time
-		long remainingTimeMillis = (totalTimeMillis > timeElapsed) ? totalTimeMillis - timeElapsed : 0;
+		final int remainingTimeMillis = Integer.parseInt(result[1]);
 
-		int timeHours = (int) remainingTimeMillis / 3600000;		//Milliseconds in an hour
-		int timeMinutes = (int) (remainingTimeMillis - timeHours * 3600000) / 60000;
+		int timeHours = remainingTimeMillis / 3600000;		//Milliseconds in an hour
+		int timeMinutes = (remainingTimeMillis - timeHours * 3600000) / 60000;
 		String h = getResources().getQuantityString(R.plurals.hours, timeHours);
 		String m = getResources().getQuantityString(R.plurals.minutes, timeMinutes);
+		Log.d("time remaining", "remainingTimeMillis = " + remainingTimeMillis);
+		if(timeHours == 0)
+			timeRemaining.setText(timeMinutes + " " + m);
+		else
+			timeRemaining.setText(timeHours + " " + h + ", " + timeMinutes + " " + m);
 
 		int helperCount = Integer.parseInt(result[2]);
 		int membersTotal = Integer.parseInt(result[3]);
 		String help = getResources().getQuantityString(R.plurals.helpers, helperCount);
 		String members = getResources().getQuantityString(R.plurals.members, membersTotal);
+
 		requestTitle.setText(result[0]);
-		timeRemaining.setText(timeHours + " " + h + ", " + timeMinutes + " " + m);
 		memberCount.setText(membersTotal + " " + members + " (" + helperCount + " " + help + ")");
 		requestLocation.setText(result[4]);
 		requestDescription.setText(result[5]);
@@ -585,6 +584,10 @@ public class RequestInfoFragment extends Fragment {
                                                 Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
                                                         Toast.LENGTH_SHORT).show();
                                                 isProcessing = false;
+												if(!myGroup)		//Return to the request list if the request was opened from there
+													((RequestInfoActivity)getActivity()).returnAndUpdate();
+												else
+													refreshInfo();
                                             } else {
                                                 //user was not saved properly.
                                                 e.printStackTrace();
@@ -593,11 +596,8 @@ public class RequestInfoFragment extends Fragment {
                                                         Toast.LENGTH_SHORT).show();
                                                 isProcessing = false;
                                             }
-
                                         }
                                     });
-
-                                    //TODO: Send user back to request list, and refresh the request list.
                                 }
                                 else{
                                     //group was not deleted

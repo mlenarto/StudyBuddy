@@ -1,5 +1,6 @@
 package com.cs408.studybuddy;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -42,5 +43,12 @@ public class RequestInfoActivity extends ActionBarActivity {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		ft.replace(R.id.info_fragment, info);
 		ft.commit();
+	}
+
+	public void returnAndUpdate() {
+		Intent result = new Intent();
+		result.putExtra(RequestListActivity.REFRESH_REQUEST_LIST, true);
+		setResult(RESULT_OK, result);
+		finish();
 	}
 }

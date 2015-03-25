@@ -34,8 +34,8 @@ import java.util.List;
 public class RequestListActivity extends ActionBarActivity {
 	TextView noRequestText;
 
-	private static final int NEW_REQUEST_INTENT = 1;
-	public static final String CREATED_NEW_REQUEST = "created_new_request";
+	private static final int REQUEST_LIST_INTENT = 1;
+	public static final String REFRESH_REQUEST_LIST = "created_new_request";
 
     private static String course = new String();
     private ArrayList<ClassRequest> requests = new ArrayList<ClassRequest>();
@@ -87,7 +87,7 @@ public class RequestListActivity extends ActionBarActivity {
 			public void onClick(View v) {
 				Intent i = new Intent(RequestListActivity.this, NewRequestActivity.class);
 				i.putExtra("selected_class", course);
-				startActivityForResult(i, NEW_REQUEST_INTENT);
+				startActivityForResult(i, REQUEST_LIST_INTENT);
 			}
 		});
 
@@ -193,7 +193,7 @@ public class RequestListActivity extends ActionBarActivity {
 											i.putExtra("request_title", RequestListActivity.this.requests.get(position).title);
 											i.putExtra("request_id", RequestListActivity.this.requests.get(position).id);
 											Log.d("RequestListActivity", "opened: " + RequestListActivity.this.requests.get(position));
-											startActivity(i);
+											startActivityForResult(i, REQUEST_LIST_INTENT);
 											//startActivity(new Intent(RequestListActivity.this, RequestInfoActivity.class));
 										}
 									});
@@ -219,7 +219,6 @@ public class RequestListActivity extends ActionBarActivity {
                             progress.dismiss();
 						}
 					});
-                    progress.dismiss();
 				}
 
                 else
@@ -261,9 +260,9 @@ public class RequestListActivity extends ActionBarActivity {
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
 		super.onActivityResult(requestCode, resultCode, data);
-		if(requestCode == NEW_REQUEST_INTENT && resultCode == RESULT_OK) {
+		if(requestCode == REQUEST_LIST_INTENT && resultCode == RESULT_OK) {
 
-			if(data.getBooleanExtra(CREATED_NEW_REQUEST, false)) {
+			if(data.getBooleanExtra(REFRESH_REQUEST_LIST, false)) {
 				progress.show();
 				updateList();
 			}
