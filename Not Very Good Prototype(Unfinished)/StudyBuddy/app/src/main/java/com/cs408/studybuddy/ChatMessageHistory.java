@@ -38,6 +38,19 @@ public class ChatMessageHistory {
     }
 
     /**
+     * Clears the chat history for a user.
+     * @param context The context to use.
+     * @param userId The ID of the user to clear chat history for.
+     */
+    public static void clear(Context context, String userId) {
+        ChatMessageHistoryOpenHelper helper = new ChatMessageHistoryOpenHelper(context);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        db.delete(TABLE_NAME, "user=?", new String[] { userId }); // Delete all messages belonging to the given user
+        db.close();
+        Log.d(TAG, "Cleared chat history for user " + userId);
+    }
+
+    /**
      * Gets the messages in the chat history, in no particular order.
      * @return The messages in the chat history.
      */
