@@ -385,7 +385,8 @@ public class RequestInfoFragment extends Fragment {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								//join group on server
-								joinGroup(true);
+								//joinGroup(true);
+                                checkAndJoin(true);
 							}
 						});
 
@@ -458,7 +459,8 @@ public class RequestInfoFragment extends Fragment {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									//join group on server
-									joinGroup(false);
+									//joinGroup(false);
+                                    checkAndJoin(false);
 
 								}
 							});
@@ -664,6 +666,11 @@ public class RequestInfoFragment extends Fragment {
 
         } catch(ParseException e){
             Log.e("RequestInfoFragment", "Error deleting help request when user leaves");
+            e.printStackTrace();
+            progress.dismiss();
+            Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+                    Toast.LENGTH_SHORT).show();
+            isProcessing = false;
         }
 	}
 
@@ -719,4 +726,80 @@ public class RequestInfoFragment extends Fragment {
 		}
 		return false;
 	}
+
+    /**
+     * Checks if leaving the user's old
+     * group will cause it to be deleted.
+     * If so, it prompts the user and then joins
+     * if they select to continue.
+     *
+     * By Tyler
+     */
+    private void checkAndJoin(boolean isHelper){
+        final Boolean isHelperLocal = isHelper;
+        progress = ProgressDialog.show(getActivity(), "Leaving group...", "Please wait...", true);
+
+        try {
+            //fetch number of group members from server, delete the request object if the current user is the only member
+            ParseQuery<ParseUser> memberQuery = ParseUser.getQuery();
+            memberQuery.whereEqualTo("currentRequest", currentGroup);
+            if (memberQuery.count() <= 1){
+                //Prompt the user to let them know it will delete the group
+                progress.dismiss();
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage(getString(R.string.request_leave_delete_warning))
+                        .setTitle(getString(R.string.request_leave_delete, currentGroup.get("title")));
+
+                builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Delete group and continue to leave
+                        progress = ProgressDialog.show(getActivity(), "Leaving group...", "Please wait...", true);
+                        currentGroup.deleteInBackground(new DeleteCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                if(e == null){
+                                    //Group delete successful, now join the other group
+                                    progress.dismiss();
+                                    joinGroup(isHelperLocal);
+                                }
+                                else{
+                                    //group was not deleted
+                                    e.printStackTrace();
+                                    progress.dismiss();
+                                    Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+                                            Toast.LENGTH_SHORT).show();
+                                    isProcessing = false;
+                                }
+                            }
+                        });
+
+                    }
+                });
+
+                builder.setNegativeButton(getString(R.string.cancel_option), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //User doesn't leave the group, do nothing
+                        isProcessing = false;
+                    }
+                });
+
+                builder.create().show();
+            }
+            else{
+                //Leaving group will not cause it to be deleted, don't prompt user.
+                progress.dismiss();
+                joinGroup(isHelperLocal);
+            }
+
+        } catch(ParseException e){
+            Log.e("RequestInfoFragment", "Error deleting help request when user leaves");
+            e.printStackTrace();
+            progress.dismiss();
+            Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+                    Toast.LENGTH_SHORT).show();
+            isProcessing = false;
+        }
+    }
 }
