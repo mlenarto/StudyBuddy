@@ -41,7 +41,7 @@ public class NewRequestActivity extends ActionBarActivity {
     private TextView descriptionLength;
     private EditText requestLocationEdit;
     private TextView requestLocationLength;
-    private ParseObject request, courseObj;
+    private ParseObject request, courseObj, currentGroup;
     private ParseUser user;
     private LocationService gps;
     private ProgressDialog progress;
@@ -232,7 +232,32 @@ public class NewRequestActivity extends ActionBarActivity {
     private void checkAndProceed(final String course, final String requestTitle, final String requestDescription, final String requestLocation, final int requestLengthMillis) {
         //progress = ProgressDialog.show(NewRequestActivity.this, "Adding your request...", "Please wait...", true);
         //check if user is in a group
-        final ParseObject currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
+        currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
+
+		try {
+			if(currentGroup != null) {
+				currentGroup.fetchIfNeeded();
+				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
+				query.get(currentGroup.getObjectId());
+			}
+		} catch (ParseException e) {
+			if(e.getCode() == ParseException.OBJECT_NOT_FOUND) {
+				ParseUser.getCurrentUser().remove("currentRequest");
+				ParseUser.getCurrentUser().put("isHelper", false);
+				ParseUser.getCurrentUser().remove("cacheHelpers");
+				ParseUser.getCurrentUser().remove("cacheMembers");
+				try {
+					ParseUser.getCurrentUser().save();
+					currentGroup = null;
+					ParseUser.getCurrentUser().pinInBackground();
+				} catch (ParseException e1) {
+					e1.printStackTrace();
+				}
+			}
+			e.printStackTrace();
+		}
+
+
         if (currentGroup != null) {
             progress.dismiss();
             AlertDialog.Builder builder = new AlertDialog.Builder(NewRequestActivity.this);
@@ -293,7 +318,14 @@ public class NewRequestActivity extends ActionBarActivity {
                                 }
                             });
 
-                            builder.create().show();
+							AlertDialog dialogMessage = builder.create();
+							dialogMessage.setOnDismissListener(new DialogInterface.OnDismissListener() {
+								@Override
+								public void onDismiss(DialogInterface dialog) {
+									isSubmitting = false;
+								}
+							});
+							dialogMessage.show();
                         } else {
                             //Leaving group will not cause it to be deleted, don't prompt user.
                             progress.dismiss();
@@ -321,7 +353,14 @@ public class NewRequestActivity extends ActionBarActivity {
                 }
             });
 
-            builder.create().show();
+			AlertDialog dialog = builder.create();
+            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+				@Override
+				public void onDismiss(DialogInterface dialog) {
+					isSubmitting = false;
+				}
+			});
+			dialog.show();
 
         } else {
             //not in a group, simply proceed
@@ -373,65 +412,47 @@ public class NewRequestActivity extends ActionBarActivity {
         request.put("duration", requestLengthMillis);
 
         Log.d("request", "request = " + request.toString());
-        request.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                if (e == null) {
-                    //request saved properly
-                            /*add the HelpRequest to the course's object*/
-                    ParseRelation<ParseObject> requests = courseObj.getRelation("requests");
-                    requests.add(request);
-                    courseObj.saveInBackground(new SaveCallback() {
-                        @Override
-                        public void done(ParseException e) {
-                            if (e == null) {
-                                //course saved properly.
-                                         /*add the HelpRequest to the user's object*/
-                                user.put("currentRequest", request);
-                                user.put("isHelper", false);    //assume if creating a request, they are not a helper.
-                                user.saveInBackground(new SaveCallback() {
-                                    @Override
-                                    public void done(ParseException e) {
-                                        if (e == null) {
-                                            //user saved properly.
-                                            Intent result = new Intent();
-                                            result.putExtra(RequestListActivity.REFRESH_REQUEST_LIST, true);
-                                            setResult(RESULT_OK, result);
 
-                                            Toast.makeText(getApplicationContext(), R.string.new_request_success,
-                                                    Toast.LENGTH_SHORT).show();
-                                            progress.dismiss();
-                                            finish();
-                                        } else {
-                                            //user was not saved properly.
-                                            e.printStackTrace();
-                                            Toast.makeText(getApplicationContext(), getString(R.string.network_error),
-                                                    Toast.LENGTH_SHORT).show();
-                                            progress.dismiss();
-                                            finish();
-                                        }
-                                    }
-                                });
-                            } else {
-                                //course was not saved properly.
-                                e.printStackTrace();
-                                progress.dismiss();
-                                Toast.makeText(getApplicationContext(), getString(R.string.network_error),
-                                        Toast.LENGTH_SHORT).show();
-                                finish();
-                            }
-                        }
-                    });
-                } else {
-                    //request didn't save properly
-                    e.printStackTrace();
-                    progress.dismiss();
-                    Toast.makeText(getApplicationContext(), getString(R.string.network_error),
-                            Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-            }
-        });
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					request.save();
+
+					ParseRelation<ParseObject> requests = courseObj.getRelation("requests");
+					requests.add(request);
+					courseObj.save();
+
+					user.put("currentRequest", request);
+					user.put("isHelper", false);    //assume if creating a request, they are not a helper.
+					user.save();
+
+					Intent result = new Intent();
+					result.putExtra(RequestListActivity.REFRESH_REQUEST_LIST, true);
+					setResult(RESULT_OK, result);
+
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(getApplicationContext(), R.string.new_request_success,
+									Toast.LENGTH_SHORT).show();
+							progress.dismiss();
+							finish();
+						}
+					});
+				} catch (ParseException e) {
+					e.printStackTrace();
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+									Toast.LENGTH_SHORT).show();
+							progress.dismiss();
+						}
+					});
+				}
+			}
+		}).start();
     }
 
 }

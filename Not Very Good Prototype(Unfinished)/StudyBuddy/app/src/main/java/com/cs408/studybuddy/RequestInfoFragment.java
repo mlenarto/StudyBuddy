@@ -359,10 +359,27 @@ public class RequestInfoFragment extends Fragment {
 		if(currentGroup != null) {
 			try {
 				currentGroup.fetchIfNeeded();
+				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
+				query.get(currentGroup.getObjectId());
 			} catch (ParseException e) {
+				if(e.getCode() == ParseException.OBJECT_NOT_FOUND) {
+					ParseUser.getCurrentUser().remove("currentRequest");
+					ParseUser.getCurrentUser().put("isHelper", false);
+					ParseUser.getCurrentUser().remove("cacheHelpers");
+					ParseUser.getCurrentUser().remove("cacheMembers");
+					try {
+						ParseUser.getCurrentUser().save();
+
+						isInGroup = false;
+						currentGroup = null;
+						ParseUser.getCurrentUser().pinInBackground();
+					} catch (ParseException e1) {
+						e1.printStackTrace();
+					}
+				}
 				e.printStackTrace();
 			}
-			if(result[7].equals(currentGroup.getObjectId()))
+			if(currentGroup != null && result[7].equals(currentGroup.getObjectId()))
 				isInGroup = true;
 		}
 		else {

@@ -141,6 +141,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 					loadMessageHistoryInBackground();
 				}
 			}
+			loadMessageHistoryInBackground();
 		} else {
 			loadMessageHistoryInBackground();
 		}
@@ -283,7 +284,8 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
      */
     private void updateRequestTime() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
-        query.getInBackground(ParseUser.getCurrentUser().getString("currentRequest"), new GetCallback<ParseObject>() {
+		ParseObject request = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
+        query.getInBackground(request.getObjectId(), new GetCallback<ParseObject>() {
 			@Override
 			public void done(ParseObject request, ParseException e) {
 				if (e == null) {
