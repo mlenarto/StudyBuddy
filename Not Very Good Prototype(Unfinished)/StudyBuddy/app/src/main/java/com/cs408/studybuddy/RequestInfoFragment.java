@@ -94,16 +94,27 @@ public class RequestInfoFragment extends Fragment {
 			try {
 				requestObj = query.get(request_id);
 			} catch (ParseException e) {
-				e.printStackTrace();
-				getActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
-								Toast.LENGTH_SHORT).show();
-						getActivity().finish();
-					}
-				});
-				return null;
+				if(e.getCode() == ParseException.OBJECT_NOT_FOUND) {
+					getActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							displayDeletedGroupAlert(true);
+						}
+					});
+					return null;
+				}
+				else {
+					e.printStackTrace();
+					getActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(getActivity().getApplicationContext(), getString(R.string.network_error),
+									Toast.LENGTH_SHORT).show();
+							getActivity().finish();
+						}
+					});
+					return null;
+				}
 			}
 
 			//fetch number of group members from server
@@ -206,7 +217,7 @@ public class RequestInfoFragment extends Fragment {
 										noGroup.setText(getString(R.string.no_group));
 										noGroup.setVisibility(View.VISIBLE);
 
-										displayDeletedGroupAlert();
+										displayDeletedGroupAlert(false);
 									}
 								});
 								return null;
@@ -273,7 +284,7 @@ public class RequestInfoFragment extends Fragment {
 								noGroup.setText(getString(R.string.no_group));
 								noGroup.setVisibility(View.VISIBLE);
 
-								displayDeletedGroupAlert();
+								displayDeletedGroupAlert(false);
 							}
 						});
 						return null;
@@ -398,7 +409,14 @@ public class RequestInfoFragment extends Fragment {
 							}
 						});
 
-						builder.create().show();
+						AlertDialog dialog = builder.create();
+						dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+							@Override
+							public void onDismiss(DialogInterface dialog) {
+								isProcessing = false;
+							}
+						});
+						dialog.show();
 					} else {
 						//join group on server
 						joinGroup(true);
@@ -406,7 +424,7 @@ public class RequestInfoFragment extends Fragment {
 
 				} catch (ParseException e) {
 					if(e.getCode() == ParseException.OBJECT_NOT_FOUND)	//Group has been deleted
-						displayDeletedGroupAlert();
+						displayDeletedGroupAlert(false);
 					isProcessing = false;
 					e.printStackTrace();
 				}
@@ -446,7 +464,14 @@ public class RequestInfoFragment extends Fragment {
 							}
 						});
 
-						builder.create().show();
+						AlertDialog dialog = builder.create();
+						dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+							@Override
+							public void onDismiss(DialogInterface dialog) {
+								isProcessing = false;
+							}
+						});
+						dialog.show();
 					}
 					else {		//Only confirm for joining if the user is in another group
 						if(currentGroup != null) {
@@ -473,7 +498,14 @@ public class RequestInfoFragment extends Fragment {
 								}
 							});
 
-							builder.create().show();
+							AlertDialog dialog = builder.create();
+							dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+								@Override
+								public void onDismiss(DialogInterface dialog) {
+									isProcessing = false;
+								}
+							});
+							dialog.show();
 						} else {
 							//join group on server
 
@@ -486,7 +518,7 @@ public class RequestInfoFragment extends Fragment {
 						if(isInGroup) {			//Trying to leave a deleted request should leave as normal
 							leaveGroup();
 						} else {    			//Can't join a request that has been deleted.
-							displayDeletedGroupAlert();
+							displayDeletedGroupAlert(false);
 						}
 					}
 					isProcessing = false;
@@ -698,7 +730,7 @@ public class RequestInfoFragment extends Fragment {
 		}
 	}
 
-	private void displayDeletedGroupAlert() {
+	private void displayDeletedGroupAlert(final boolean leaveActivity) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setMessage(getString(R.string.request_deleted_info))
 				.setTitle(getString(R.string.request_deleted));
@@ -707,7 +739,9 @@ public class RequestInfoFragment extends Fragment {
 		builder.setNeutralButton(getString(R.string.neutral_option), new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				//Do nothing
+				if(leaveActivity) {
+					((RequestInfoActivity) getActivity()).returnAndUpdate();
+				}
 			}
 		});
 		builder.create().show();
