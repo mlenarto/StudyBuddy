@@ -68,6 +68,7 @@ public class MessageAdapter extends BaseAdapter {
         }
         messages.add(index, message);
         messageIds.add(message.getId());
+        notifyDataSetChanged();
         return true;
     }
 
@@ -89,6 +90,7 @@ public class MessageAdapter extends BaseAdapter {
         messages.remove(index);
         messageIds.remove(message.getId());
         sendingMessages.remove(message.getId());
+        notifyDataSetChanged();
         return true;
     }
 

@@ -14,6 +14,7 @@ import com.sinch.android.rtc.messaging.MessageDeliveryInfo;
 import com.sinch.android.rtc.messaging.MessageFailureInfo;
 import com.sinch.android.rtc.messaging.WritableMessage;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -27,7 +28,9 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +39,12 @@ import java.util.Map;
 public class MessagesFragment extends Fragment implements MessageClientListener {
 
     private static final String TAG = MessagesFragment.class.getSimpleName();
+
+    private static final String PREFS_NAME = "MessagePrefs";
+    private static final String LAST_GROUP_PREF = "lastGroup";
+
     private static final String DISPLAY_NAME_HEADER = "displayName"; // Used to cache display name in Sinch messages
+    private static final String GROUP_ID_HEADER = "groupId";         // Used to set the group ID for a Sinch message
 
     private View view;
     private MessageAdapter mMessageAdapter;
@@ -44,6 +52,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     private Button mBtnSend;
     private ProgressBar loadingIndicator;
     private ListView messagesList;
+    private LoadMessageHistoryTask loadTask;
 
     private HashMap<String, ChatMessage> pendingMessages = new HashMap<>(); // Messages that haven't been stored to the database yet, keyed by ID
     private ChatMessageHistory history;
@@ -76,6 +85,11 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
     @Override
     public void onDestroy() {
+        if (loadTask != null) {
+            // Cancel loading
+            loadTask.cancel(true);
+            loadTask = null;
+        }
         SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
         if (sinch != null) {
             sinch.removeMessageClientListener(this);
@@ -99,9 +113,11 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         final ChatMessage addedMessage = addOutgoingMessage(message);
         mTxtTextBody.setText("");
 
-        // Get all active users for now
+        // Get all users belonging to our current request
         ParseQuery<ParseUser> query = ParseUser.getQuery();
+        final ParseObject request = (ParseObject)ParseUser.getCurrentUser().get("currentRequest");
         query.whereNotEqualTo("objectId", ParseUser.getCurrentUser().getObjectId()); // Skip the current user
+        query.whereEqualTo("currentRequest", request);
         query.selectKeys(Arrays.asList("objectId", "sinch"));
         query.findInBackground(new FindCallback<ParseUser>() {
             @Override
@@ -131,8 +147,9 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                     return;
                 }
 
-                // Cache our display name in a message header
+                // Cache our display name and group ID in message headers
                 message.addHeader(DISPLAY_NAME_HEADER, (String)ParseUser.getCurrentUser().get("name"));
+                message.addHeader(GROUP_ID_HEADER, request.getObjectId());
 
                 // Send the message
                 pendingMessages.put(message.getMessageId(), addedMessage);
@@ -193,10 +210,14 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         if (history != null) {
             history.saveMessage(message);
         }
-
-        // Indicate that the message is done sending
         setSending(message, false);
+        updateRequestTime();
+    }
 
+    /**
+     * Updates the remaining time in the current request if it is less than 30 minutes.
+     */
+    private void updateRequestTime() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
         query.getInBackground(ParseUser.getCurrentUser().getString("currentRequest"), new GetCallback<ParseObject>() {
             @Override
@@ -226,15 +247,25 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             return; // Message is already in the list - don't bother with it
         }
 
+        // Check the message's group ID
+        Map<String, String> headers = message.getHeaders();
+        if (!headers.containsKey(GROUP_ID_HEADER)) {
+            Log.d(TAG, "Ignoring message " + message.getMessageId() + " because it does not have a group ID");
+            return;
+        }
+        String groupId = headers.get(GROUP_ID_HEADER);
+        ParseObject request = (ParseObject)ParseUser.getCurrentUser().get("currentRequest");
+        if (!groupId.equals(request.getObjectId())) {
+            Log.d(TAG, "Ignoring message " + message.getMessageId() + " because its group ID does not match");
+            return;
+        }
+
         // If the display name was cached as part of the message,
         // use it instead of doing a Parse query
-        Map<String, String> headers = message.getHeaders();
         if (headers.containsKey(DISPLAY_NAME_HEADER)) {
             String username = headers.get(DISPLAY_NAME_HEADER);
             Log.d(TAG, "Got cached username for " + message.getMessageId() + ": " + username);
-            if (addAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING))) {
-                updateMessageList();
-            }
+            addAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
             return;
         }
 
@@ -254,9 +285,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 }
                 String username = parseUsers.get(0).getString("name");
                 Log.d(TAG, "Parse query returned username for " + message.getMessageId() + ": " + username);
-                if (addAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING))) {
-                    updateMessageList();
-                }
+                addAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
             }
         });
     }
@@ -270,16 +299,13 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         // Just use the current user's display name
         String username = ParseUser.getCurrentUser().getString("name");
         ChatMessage result = new ChatMessage(message.getMessageId(), username, message.getTextBody(), ChatMessage.Direction.OUTGOING, new Date());
-        if (addMessage(result)) {
-            updateMessageList();
-        }
+        addMessage(result);
         setSending(result, true);
         return result;
     }
 
     /**
      * Adds a message to the list if it is not already present.
-     * The message list will not be updated.
      * @param message The message to add.
      * @return True if the message was added successfully and the message list needs to be updated.
      */
@@ -289,7 +315,6 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
     /**
      * Adds a message to the list, saving it to the message history if it is new.
-     * The message list will not be updated.
      * @param message The message to display.
      * @return True if the message was added successfully and the message list needs to be updated.
      */
@@ -312,18 +337,10 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         if (!mMessageAdapter.removeMessage(message)) {
             return false;
         }
-        updateMessageList();
         mTxtTextBody.setText(message.getBody());
         mTxtTextBody.setSelection(message.getBody().length()); // Move the cursor to the end
         Log.d(TAG, "Message " + message.getId() + " redacted");
         return true;
-    }
-
-    /**
-     * Updates the message list after messages have been added or removed.
-     */
-    private void updateMessageList() {
-        mMessageAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -360,8 +377,8 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 ParseObject savedMessage = new ParseObject("SavedMessages");
                 savedMessage.put("text", message.getBody());
                 savedMessage.put("sender", ParseUser.getCurrentUser());
-                savedMessage.put("date", message.getDate());
                 savedMessage.put("sinchId", message.getId());
+                savedMessage.put("request", ParseUser.getCurrentUser().get("currentRequest"));
                 savedMessage.saveInBackground();
                 Log.d(TAG, "Message " + message.getId() + " saved to database");
             }
@@ -372,52 +389,76 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
      * Loads the message history in a background thread.
      */
     private void loadMessageHistoryInBackground() {
-        new LoadMessageHistoryTask().execute();
+        loadTask = new LoadMessageHistoryTask();
+        loadTask.execute();
     }
 
     /**
      * Loads the message history cached on disk.
+     * @return The messages that were loaded.
      */
-    private void loadCachedMessageHistory() {
+    private Collection<ChatMessage> loadCachedMessageHistory() {
+        // Load the latest group ID from shared preferences, and if it doesn't match, then throw the local history out
+        SharedPreferences prefs = view.getContext().getSharedPreferences(PREFS_NAME, 0);
+        String groupId = prefs.getString(LAST_GROUP_PREF, "");
+        ParseObject request = (ParseObject)ParseUser.getCurrentUser().get("currentRequest");
+        if (!groupId.equals(request.getObjectId())) {
+            // User changed groups, so clear the message history
+            Log.d(TAG, "Clearing cached message history because the user changed groups");
+            ChatMessageHistory.clear(view.getContext(), ParseUser.getCurrentUser().getObjectId());
+        }
+
         Log.d(TAG, "Loading cached message history...");
         history = ChatMessageHistory.load(view.getContext(), ParseUser.getCurrentUser().getObjectId());
-        for (ChatMessage message : history.getMessages()) {
-            addMessage(message);
-        }
         Log.d(TAG, "Loaded " + history.getMessages().size() + " cached messages");
+
+        // Save the current group ID associated with the message history
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(LAST_GROUP_PREF, request.getObjectId());
+        editor.commit();
+
+        return history.getMessages();
     }
 
     /**
      * Downloads the message history from the server and displays it.
+     * @return The messages that were downloaded if successful, or null otherwise.
      */
-    private boolean downloadMessageHistory() {
+    private Collection<ChatMessage> downloadMessageHistory() {
         Log.d(TAG, "Downloading message history...");
 
-        // Query for all saved messages
+        // Query for all saved messages from the current request
         ParseQuery<ParseObject> query = ParseQuery.getQuery("SavedMessages");
         query.include("sender");
+        ParseObject request = (ParseObject)ParseUser.getCurrentUser().get("currentRequest");
+        query.whereEqualTo("request", request);
         List<ParseObject> parseObjects;
         try {
              parseObjects = query.find();
         } catch (ParseException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
 
         // Add each message
+        ArrayList<ChatMessage> result = new ArrayList<>();
         for (final ParseObject savedMessage : parseObjects) {
             ParseUser sender = savedMessage.getParseUser("sender");
             String username = sender.getString("name");
             String text = savedMessage.getString("text");
-            Date date = savedMessage.getDate("date");
+            Date date = savedMessage.getCreatedAt();
             String sinchId = savedMessage.getString("sinchId");
             ChatMessage.Direction direction = (sender.getObjectId().equals(ParseUser.getCurrentUser().getObjectId()))
                     ? ChatMessage.Direction.OUTGOING
                     : ChatMessage.Direction.INCOMING;
-            addAndSaveMessage(new ChatMessage(sinchId, username, text, direction, date));
+            ChatMessage message = new ChatMessage(sinchId, username, text, direction, date);
+            result.add(message);
+            if (!mMessageAdapter.hasMessage(message)) {
+                history.saveMessage(message);
+            }
         }
         Log.d(TAG, "Retrieved " + parseObjects.size() + " messages");
-        return true;
+        return result;
     }
 
     /**
@@ -438,12 +479,16 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     /**
      * Task for loading the message history in the background.
      */
-    private class LoadMessageHistoryTask extends AsyncTask<Void, Void, Boolean> {
+    private class LoadMessageHistoryTask extends AsyncTask<Void, Collection<ChatMessage>, Boolean> {
         @Override
         protected Boolean doInBackground(Void... params) {
-            loadCachedMessageHistory();
-            publishProgress(); // Trigger a list refresh
-            return downloadMessageHistory();
+            publishProgress(loadCachedMessageHistory());
+            Collection<ChatMessage> downloaded = downloadMessageHistory();
+            if (downloaded != null) {
+                publishProgress(downloaded);
+                return true;
+            }
+            return false;
         }
 
         @Override
@@ -452,14 +497,19 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         }
 
         @Override
-        protected void onProgressUpdate(Void... values) {
-            updateMessageList();
+        protected void onProgressUpdate(Collection<ChatMessage>... values) {
+            /* Add all of the values to the message adapter */
+            if (values[0] == null) {
+                return;
+            }
+            for (ChatMessage message : values[0]) {
+                addMessage(message);
+            }
         }
 
         @Override
         protected void onPostExecute(Boolean result) {
             showLoadingIndicator(false);
-            updateMessageList();
             if (!result) {
                 displayNetworkError();
             }

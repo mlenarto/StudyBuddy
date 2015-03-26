@@ -54,7 +54,7 @@ public class ChatMessage {
      * @param direction The direction of the message.
      */
     public ChatMessage(Message message, String sender, Direction direction) {
-        this(message.getMessageId(), sender, message.getTextBody(), direction, message.getTimestamp());
+        this(message.getMessageId(), sender, message.getTextBody(), direction, new Date());
     }
 
     /**
