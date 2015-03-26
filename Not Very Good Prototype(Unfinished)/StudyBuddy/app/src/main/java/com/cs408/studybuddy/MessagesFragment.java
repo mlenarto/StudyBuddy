@@ -6,6 +6,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.messaging.Message;
 import com.sinch.android.rtc.messaging.MessageClient;
@@ -14,7 +15,11 @@ import com.sinch.android.rtc.messaging.MessageDeliveryInfo;
 import com.sinch.android.rtc.messaging.MessageFailureInfo;
 import com.sinch.android.rtc.messaging.WritableMessage;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -26,6 +31,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -52,9 +59,12 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     private Button mBtnSend;
     private ProgressBar loadingIndicator;
     private ListView messagesList;
+	private RelativeLayout sendLayout;
+	private TextView noGroup;
     private LoadMessageHistoryTask loadTask;
+	ParseObject currentGroup;
 
-    private HashMap<String, ChatMessage> pendingMessages = new HashMap<>(); // Messages that haven't been stored to the database yet, keyed by ID
+	private HashMap<String, ChatMessage> pendingMessages = new HashMap<>(); // Messages that haven't been stored to the database yet, keyed by ID
     private ChatMessageHistory history;
 
     @Override
@@ -76,12 +86,66 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             }
         });
 
+		sendLayout = (RelativeLayout) view.findViewById(R.id.relSendMessage);
+		noGroup = (TextView) view.findViewById(R.id.no_group);
+
         SinchService.SinchServiceInterface sinch = StudyBuddyApplication.getSinchServiceInterface();
         sinch.addMessageClientListener(this);
         setButtonEnabled(true);
-        loadMessageHistoryInBackground();
+//        loadMessageHistoryInBackground();
         return view;
     }
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
+		if(currentGroup == null) {
+			messagesList.setVisibility(View.GONE);
+			sendLayout.setVisibility(View.GONE);
+			noGroup.setVisibility(View.VISIBLE);
+		} else if(CheckInternet()) {
+			try {
+				currentGroup.fetchIfNeeded();
+				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
+				query.get(currentGroup.getObjectId());
+			} catch (ParseException e) {
+				if(e.getCode() == ParseException.OBJECT_NOT_FOUND) {
+					ParseUser.getCurrentUser().remove("currentRequest");
+					ParseUser.getCurrentUser().put("isHelper", false);
+					ParseUser.getCurrentUser().remove("cacheHelpers");
+					ParseUser.getCurrentUser().remove("cacheMembers");
+					ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+						@Override
+						public void done(ParseException e) {
+							if (e == null) {
+								//user saved properly.
+								currentGroup = null;
+								ParseUser.getCurrentUser().pinInBackground();     //cache (lack of) group info
+							} else {
+								//user was not saved properly.
+								e.printStackTrace();
+							}
+						}
+					});
+					getActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							messagesList.setVisibility(View.GONE);
+							sendLayout.setVisibility(View.GONE);
+							noGroup.setVisibility(View.VISIBLE);
+							displayDeletedGroupAlert();
+						}
+					});
+				} else {
+					loadMessageHistoryInBackground();
+				}
+			}
+		} else {
+			loadMessageHistoryInBackground();
+		}
+
+	}
 
     @Override
     public void onDestroy() {
@@ -220,21 +284,19 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     private void updateRequestTime() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
         query.getInBackground(ParseUser.getCurrentUser().getString("currentRequest"), new GetCallback<ParseObject>() {
-            @Override
-            public void done(ParseObject request, ParseException e) {
-                if (e == null) {
-                    //object retrieved
-                    if (request.getNumber("duration").doubleValue() < 1800000)
-                    {
-                        request.put("duration", 1800000);
-                        request.saveInBackground();
-                    }
-                }
-                else {
-                    //something went wrong
-                }
-            }
-        });
+			@Override
+			public void done(ParseObject request, ParseException e) {
+				if (e == null) {
+					//object retrieved
+					if (request.getNumber("duration").doubleValue() < 1800000) {
+						request.put("duration", 1800000);
+						request.saveInBackground();
+					}
+				} else {
+					//something went wrong
+				}
+			}
+		});
     }
 
     /**
@@ -475,6 +537,30 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
     private void displayNetworkError() {
         Toast.makeText(view.getContext(), getString(R.string.network_error), Toast.LENGTH_SHORT).show();
     }
+
+	private void displayDeletedGroupAlert() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setMessage(getString(R.string.request_deleted_info))
+				.setTitle(getString(R.string.request_deleted));
+
+		builder.setCancelable(false);
+		builder.setNeutralButton(getString(R.string.neutral_option), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				//Do Nothing
+			}
+		});
+		builder.create().show();
+	}
+
+	private boolean CheckInternet()
+	{
+		ConnectivityManager connec = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+		android.net.NetworkInfo wifi = connec.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		android.net.NetworkInfo mobile = connec.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+		return wifi.isConnected() || mobile.isConnected();
+	}
 
     /**
      * Task for loading the message history in the background.

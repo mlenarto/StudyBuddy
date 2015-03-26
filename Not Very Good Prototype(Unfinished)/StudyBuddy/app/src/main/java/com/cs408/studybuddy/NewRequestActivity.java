@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,12 +25,14 @@ import com.parse.ParseRelation;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Evan on 2/8/2015.
  */
 public class NewRequestActivity extends ActionBarActivity {
 
-	private Toolbar mToolbar;
 	private EditText requestTitleEdit;
 	private TextView requestTitleLength;
 	private EditText descriptionTextEdit;
@@ -47,7 +50,7 @@ public class NewRequestActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_new_request);
 
-		mToolbar = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
 		TextView mTitle = (TextView) findViewById(R.id.title_text);
 		requestTitleEdit = (EditText) findViewById(R.id.request_title);
 		requestTitleLength = (TextView)findViewById(R.id.request_title_length);
@@ -75,14 +78,24 @@ public class NewRequestActivity extends ActionBarActivity {
 		gps = LocationService.getInstance(getApplicationContext());
 		gps.startGPS(15000, 10);
 
+		requestTitleEdit.setOnKeyListener(new View.OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				//Returning true will ignore the key, this way we can prevent new lines in the title
+				return keyCode == KeyEvent.KEYCODE_ENTER;
+			}
+		});
+
 		submit.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-                progress = ProgressDialog.show(NewRequestActivity.this, "Adding your request...", "Please wait...", true);
 				if(isSubmitting)
 					return;
 
 				isSubmitting = true;
+
+				progress = ProgressDialog.show(NewRequestActivity.this, "Adding your request...", "Please wait...", true);
+
 				String requestTitle = requestTitleEdit.getText().toString();
 				String requestDescription = descriptionTextEdit.getText().toString();
                 String requestLocation = requestLocationEdit.getText().toString();
@@ -100,7 +113,7 @@ public class NewRequestActivity extends ActionBarActivity {
                     progress.dismiss();
                     finish();
                 }
-                String course = extras.getString("selected_class"); //grabs the selected class
+                final String course = extras.getString("selected_class"); //grabs the selected class
                 if(course == null){
                     Toast.makeText(getApplicationContext(), getString(R.string.error_no_class),
                             Toast.LENGTH_LONG).show(); //this should never happen
@@ -184,65 +197,50 @@ public class NewRequestActivity extends ActionBarActivity {
                 request.put("duration", requestLengthMillis);
 
 				Log.d("request", "request = " + request.toString());
-                request.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if(e == null){
-                            //request saved properly
-                            /*add the HelpRequest to the course's object*/
-                            ParseRelation<ParseObject> requests = courseObj.getRelation("requests");
-                            requests.add(request);
-                            courseObj.saveInBackground(new SaveCallback() {
-                                @Override
-                                public void done(ParseException e) {
-                                    if(e == null){
-                                        //course saved properly.
-                                         /*add the HelpRequest to the user's object*/
-                                        user.put("currentRequest", request);
-                                        user.put("isHelper", false);    //assume if creating a request, they are not a helper.
-                                        user.saveInBackground(new SaveCallback() {
-                                            @Override
-                                            public void done(ParseException e) {
-                                                if(e == null){
-                                                    //user saved properly.
-													Intent result = new Intent();
-													result.putExtra(RequestListActivity.REFRESH_REQUEST_LIST, true);
-													setResult(RESULT_OK, result);
+				Log.d("new request", "saving request");
 
-                                                    Toast.makeText(getApplicationContext(), R.string.new_request_success,
-                                                            Toast.LENGTH_SHORT).show();
-                                                    progress.dismiss();
-													finish();
-                                                } else{
-                                                    //user was not saved properly.
-                                                    e.printStackTrace();
-                                                    Toast.makeText(getApplicationContext(), getString(R.string.network_error),
-                                                            Toast.LENGTH_SHORT).show();
-                                                    progress.dismiss();
-													finish();
-                                                }
-                                            }
-                                        });
-                                    } else{
-                                        //course was not saved properly.
-                                        e.printStackTrace();
-                                        progress.dismiss();
-                                        Toast.makeText(getApplicationContext(), getString(R.string.network_error),
-                                                Toast.LENGTH_SHORT).show();
-										finish();
-                                    }
-                                }
-                            });
-                        }else{
-                            //request didn't save properly
-                            e.printStackTrace();
-                            progress.dismiss();
-                            Toast.makeText(getApplicationContext(), getString(R.string.network_error),
-                                    Toast.LENGTH_SHORT).show();
-							finish();
-                        }
-                    }
-                });
+
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							request.save();
+
+							ParseRelation<ParseObject> requests = courseObj.getRelation("requests");
+							requests.add(request);
+							courseObj.save();
+
+							user.put("currentRequest", request);
+							user.put("isHelper", false);    //assume if creating a request, they are not a helper.
+							user.save();
+
+							Intent result = new Intent();
+							result.putExtra(RequestListActivity.REFRESH_REQUEST_LIST, true);
+							setResult(RESULT_OK, result);
+
+							runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									Toast.makeText(getApplicationContext(), R.string.new_request_success,
+											Toast.LENGTH_SHORT).show();
+									progress.dismiss();
+									finish();
+								}
+							});
+						} catch (ParseException e) {
+							e.printStackTrace();
+							runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+											Toast.LENGTH_SHORT).show();
+									progress.dismiss();
+								}
+							});
+						}
+					}
+				}).start();
+
 			}
 		});
 

@@ -39,6 +39,7 @@ public class RequestListActivity extends ActionBarActivity {
 
     private static String course = new String();
     private ArrayList<ClassRequest> requests = new ArrayList<ClassRequest>();
+	private ListView requestList;
 
     private static String course_obj_id = new String();
 	private LocationService gps;
@@ -56,6 +57,8 @@ public class RequestListActivity extends ActionBarActivity {
 		TextView mText = (TextView) findViewById(R.id.title_text);
 		Button newRequest = (Button) findViewById(R.id.newRequest);
 		noRequestText = (TextView) findViewById(R.id.no_requests);
+		requestList = (ListView) findViewById(R.id.class_list);
+
 		setSupportActionBar(mToolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -129,7 +132,7 @@ public class RequestListActivity extends ActionBarActivity {
 					innerQuery.whereEqualTo("courseNumber", course);
 
 					//Retrieve helpRequest list from Parse
-					ParseQuery<ParseObject> request_query = ParseQuery.getQuery("HelpRequest");
+					final ParseQuery<ParseObject> request_query = ParseQuery.getQuery("HelpRequest");
 					request_query.whereMatchesQuery("course", innerQuery);
 					request_query.findInBackground(new FindCallback<ParseObject>()
                     {
@@ -150,8 +153,8 @@ public class RequestListActivity extends ActionBarActivity {
 
 								if (!RequestListActivity.this.requests.isEmpty())
                                 {
+									requestList.setVisibility(View.VISIBLE);
 									noRequestText.setVisibility(View.GONE);
-									ListView requestList = (ListView) findViewById(R.id.class_list);
 
                                     //This makes sure the list of requests will not refresh if the list is longer than one screen
                                     requestList.setOnScrollListener(new AbsListView.OnScrollListener()
@@ -201,6 +204,7 @@ public class RequestListActivity extends ActionBarActivity {
 
                                 else
                                 {
+									requestList.setVisibility(View.GONE);
                                     progress.dismiss();
 									noRequestText.setVisibility(View.VISIBLE);
 									Log.d("RequestListActivity", "Requests ArrayList is empty.");
