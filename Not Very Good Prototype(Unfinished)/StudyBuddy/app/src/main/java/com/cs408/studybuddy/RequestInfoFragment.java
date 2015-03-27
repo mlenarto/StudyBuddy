@@ -49,7 +49,7 @@ public class RequestInfoFragment extends Fragment {
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		root = inflater.inflate(R.layout.fragment_request_info, container, false);
-		infoContainer = (ScrollView) root.findViewById(R.id.info_container);
+		//infoContainer = (ScrollView) root.findViewById(R.id.info_container);
 		joinOrLeaveRequest = (Button) root.findViewById(R.id.request_join_leave);
 		joinAsHelper = (Button) root.findViewById(R.id.request_join_helper);
 
@@ -213,7 +213,7 @@ public class RequestInfoFragment extends Fragment {
 									@Override
 									public void run() {
 										progress.dismiss();
-										infoContainer.setVisibility(View.GONE);
+										//infoContainer.setVisibility(View.GONE);
 										noGroup.setText(getString(R.string.no_group));
 										noGroup.setVisibility(View.VISIBLE);
 
@@ -280,7 +280,7 @@ public class RequestInfoFragment extends Fragment {
 							@Override
 							public void run() {
 								progress.dismiss();
-								infoContainer.setVisibility(View.GONE);
+								//infoContainer.setVisibility(View.GONE);
 								noGroup.setText(getString(R.string.no_group));
 								noGroup.setVisibility(View.VISIBLE);
 
@@ -293,7 +293,7 @@ public class RequestInfoFragment extends Fragment {
 					getActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							infoContainer.setVisibility(View.GONE);
+							//infoContainer.setVisibility(View.GONE);
 							noGroup.setText(getString(R.string.group_error));
 							noGroup.setVisibility(View.VISIBLE);
 						}
@@ -303,7 +303,7 @@ public class RequestInfoFragment extends Fragment {
 				getActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						infoContainer.setVisibility(View.GONE);
+						//infoContainer.setVisibility(View.GONE);
 						noGroup.setText(getString(R.string.no_group));
 						noGroup.setVisibility(View.VISIBLE);
 					}
