@@ -45,7 +45,12 @@
                 android:layout_alignTop="@+id/btnSend"
                 android:background="@android:color/white"
                 android:layout_alignBottom="@+id/btnSend"
-                android:layout_toLeftOf="@+id/btnSend"/>
+                android:layout_toLeftOf="@+id/btnSend"
+                android:maxLines="1"
+                android:inputType="text"
+                android:singleLine="true"
+                android:imeOptions="actionSend"
+                android:maxLength="300"/>
 
         <Button
                 android:id="@+id/btnSend"
