@@ -131,13 +131,13 @@ public class NewRequestActivity extends ActionBarActivity {
                    // isSubmitting = false;
                     progress.dismiss();
                     return;
-                } else if (requestLengthMillis <= 0) {
+                } /*else if (requestLengthMillis <= 0) {
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_zero_time),
                             Toast.LENGTH_SHORT).show();
                   //  isSubmitting = false;
                     progress.dismiss();
                     return;
-                } else if (requestLocation.isEmpty()) {
+                }*/ else if (requestLocation.isEmpty()) {
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_location),
                             Toast.LENGTH_SHORT).show();
                     progress.dismiss();
