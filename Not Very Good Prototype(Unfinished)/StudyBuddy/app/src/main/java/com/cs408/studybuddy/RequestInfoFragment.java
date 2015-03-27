@@ -406,7 +406,7 @@ public class RequestInfoFragment extends Fragment {
 					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
 					if(currentGroup != null) {	//Only confirm for joining if the user is in another group
-						builder.setMessage(getString(R.string.request_leave_other_group_with_name, currentGroup.get("title")))
+						builder.setMessage(getString(R.string.request_leave_other_group_with_name, result[0]))
 								.setTitle(getString(R.string.request_already_in_group_warning));
 
 						builder.setPositiveButton(getString(R.string.confirm_option), new DialogInterface.OnClickListener() {
