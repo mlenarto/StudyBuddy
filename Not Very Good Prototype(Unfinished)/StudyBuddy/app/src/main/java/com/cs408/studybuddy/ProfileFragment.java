@@ -94,7 +94,7 @@ public class ProfileFragment extends Fragment {
     private void setupSilentMode()
     {
         silent = (SwitchCompat)view.findViewById(R.id.alert_switch);
-        silent.setChecked(mprefs.getBoolean("silent",false));
+       // silent.setChecked(mprefs.getBoolean("silent",false));
         silent.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
@@ -130,8 +130,8 @@ public class ProfileFragment extends Fragment {
                                                 String spaceless_className = className.replaceAll("\\s", "");
                                                 ParsePush.unsubscribeInBackground(spaceless_className);
                                                 progress.dismiss();
-                                                edit.putBoolean("silent",true);
-                                                edit.commit();
+                                               // edit.putBoolean("silent",true);
+                                               // edit.commit();
                                                 Log.d("ProfileFragment", "true: Switch should be in spot " + mprefs.getBoolean("silent",false));
                                             }
 
@@ -141,8 +141,8 @@ public class ProfileFragment extends Fragment {
                                                 e.printStackTrace();
                                                 progress.dismiss();
                                                 Toast.makeText(getActivity().getApplicationContext(), "Error: Check your network connection.", Toast.LENGTH_SHORT).show();
-                                                edit.putBoolean("silent",false);
-                                                edit.commit();
+                                              //  edit.putBoolean("silent",false);
+                                              //  edit.commit();
                                                 return;
                                             }
                                         }
@@ -153,8 +153,8 @@ public class ProfileFragment extends Fragment {
                                 {
                                     //couldn't retrieve class
                                     Log.d("ProfileFragment", "Error: " + e.getMessage());
-                                    edit.putBoolean("silent",false);
-                                    edit.commit();
+                                   // edit.putBoolean("silent",false);
+                                   // edit.commit();
                                     progress.dismiss();
                                     Toast.makeText(getActivity().getApplicationContext(), "Error: Check your network connection.", Toast.LENGTH_SHORT).show();
                                 }
@@ -192,8 +192,8 @@ public class ProfileFragment extends Fragment {
                                                 // subscribe user to the channel for that class
                                                 String spaceless_className = className.replaceAll("\\s", "");
                                                 ParsePush.subscribeInBackground(spaceless_className);
-                                                edit.putBoolean("silent",false);
-                                                edit.commit();
+                                               // edit.putBoolean("silent",false);
+                                               // //edit.commit();
                                                 Log.d("ProfileFragment", "Switch should be in spot " + mprefs.getBoolean("silent",false));
                                                 progress.dismiss();
                                             }
@@ -204,8 +204,8 @@ public class ProfileFragment extends Fragment {
                                                 e.printStackTrace();
                                                 progress.dismiss();
                                                 Toast.makeText(getActivity().getApplicationContext(), "Error: Check your network connection.", Toast.LENGTH_SHORT).show();
-                                                edit.putBoolean("silent",true);
-                                                edit.commit();
+                                               // edit.putBoolean("silent",true);
+                                                //edit.commit();
                                                 return;
                                             }
                                         }
@@ -217,8 +217,8 @@ public class ProfileFragment extends Fragment {
                                     //couldn't retrieve class
                                     Log.d("ProfileFragment", "Error: " + e.getMessage());
                                     progress.dismiss();
-                                    edit.putBoolean("silent",true);
-                                    edit.commit();
+                                    //edit.putBoolean("silent",true);
+                                    //edit.commit();
                                     Toast.makeText(getActivity().getApplicationContext(), "Error: Check your network connection.", Toast.LENGTH_SHORT).show();
                                 }
 
