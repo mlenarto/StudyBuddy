@@ -24,9 +24,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -35,6 +37,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.Override;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -72,6 +75,17 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         view = inflater.inflate(R.layout.messaging, container, false);
 
         mTxtTextBody = (EditText) view.findViewById(R.id.txtTextBody);
+        mTxtTextBody.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    sendMessage();
+                    return true;
+                }
+                return false;
+            }
+        });
+
         loadingIndicator = (ProgressBar) view.findViewById(R.id.loadingIndicator);
 
         mMessageAdapter = new MessageAdapter(inflater);
