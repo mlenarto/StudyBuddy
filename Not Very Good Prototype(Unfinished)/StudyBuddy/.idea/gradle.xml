@@ -5,12 +5,12 @@
       <GradleProjectSettings>
         <option name="distributionType" value="LOCAL" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="C:\Program Files\Android\Android Studio\gradle\gradle-2.2.1" />
+        <option name="gradleHome" value="$APPLICATION_HOME_DIR$/gradle/gradle-2.2.1" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/ParseLoginUI" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="/u/data/u92/adierkin/cs408/StudyBuddy/Not Very Good Prototype(Unfinished)/StudyBuddy" />
+            <option value="/u/data/u92/adierkin/cs408/StudyBuddy/Not Very Good Prototype(Unfinished)/StudyBuddy/ParseLoginUI" />
+            <option value="/u/data/u92/adierkin/cs408/StudyBuddy/Not Very Good Prototype(Unfinished)/StudyBuddy/app" />
           </set>
         </option>
       </GradleProjectSettings>

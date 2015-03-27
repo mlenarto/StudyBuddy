@@ -62,11 +62,14 @@ public class MessageAdapter extends BaseAdapter {
         }
 
         // Binary search the message list to get the position to insert the message
-        int index = Collections.binarySearch(messages, message, messageComparator);
+        /*int index = Collections.binarySearch(messages, message, messageComparator);
         if (index < 0) {
             index = ~index;
         }
-        messages.add(index, message);
+        messages.add(index, message);*/
+
+        // FLAW: Messages are out-of-order
+        messages.add(message);
         messageIds.add(message.getId());
         notifyDataSetChanged();
         return true;
@@ -83,11 +86,19 @@ public class MessageAdapter extends BaseAdapter {
         }
 
         // Binary search the message list to find it
-        int index = Collections.binarySearch(messages, message, messageComparator);
+        /*int index = Collections.binarySearch(messages, message, messageComparator);
         if (index < 0) {
             return false;
         }
-        messages.remove(index);
+        messages.remove(index);*/
+
+        // FLAW: Messages are out-of-order
+        for (int i = 0; i < messages.size(); i++) {
+            if (messages.get(i).getId().equals(message.getId())) {
+                messages.remove(i);
+                break;
+            }
+        }
         messageIds.remove(message.getId());
         sendingMessages.remove(message.getId());
         notifyDataSetChanged();
