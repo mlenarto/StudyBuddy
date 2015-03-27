@@ -6,10 +6,7 @@
               android:background="@color/white" >
 
 
-    <ScrollView
-        android:id="@+id/info_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -121,7 +118,6 @@
                 />
 
         </RelativeLayout>
-    </ScrollView>
 
     <TextView
         android:id="@+id/no_group"

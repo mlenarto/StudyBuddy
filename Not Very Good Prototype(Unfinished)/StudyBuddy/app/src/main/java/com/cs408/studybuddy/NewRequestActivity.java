@@ -45,7 +45,7 @@ public class NewRequestActivity extends ActionBarActivity {
     private ParseUser user;
     private LocationService gps;
     private ProgressDialog progress;
-    private boolean isSubmitting = false;
+   // private boolean isSubmitting = false;
     private boolean proceed = true;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -85,10 +85,10 @@ public class NewRequestActivity extends ActionBarActivity {
             public void onClick(View v) {
                 progress = ProgressDialog.show(NewRequestActivity.this, "Adding your request...", "Please wait...", true);
 
-                if (isSubmitting)
-                    return;
+               // if (isSubmitting)
+                  //  return;
 
-                isSubmitting = true;
+               // isSubmitting = true;
                 String requestTitle = requestTitleEdit.getText().toString();
                 String requestDescription = descriptionTextEdit.getText().toString();
                 String requestLocation = requestLocationEdit.getText().toString();
@@ -128,26 +128,26 @@ public class NewRequestActivity extends ActionBarActivity {
                 if (requestTitle.isEmpty()) {
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_title),
                             Toast.LENGTH_SHORT).show();
-                    isSubmitting = false;
+                   // isSubmitting = false;
                     progress.dismiss();
                     return;
-                } else if (requestLengthMillis <= 0) {
+                } /*else if (requestLengthMillis <= 0) {
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_zero_time),
                             Toast.LENGTH_SHORT).show();
-                    isSubmitting = false;
+                  //  isSubmitting = false;
                     progress.dismiss();
                     return;
-                } else if (requestLocation.isEmpty()) {
+                }*/ else if (requestLocation.isEmpty()) {
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_location),
                             Toast.LENGTH_SHORT).show();
                     progress.dismiss();
-                    isSubmitting = false;
+                    //isSubmitting = false;
                     return;
                 } else if (requestDescription.isEmpty()) {
                     // FLAW: Show wrong error message
                     Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_title),
                             Toast.LENGTH_SHORT).show();
-                    isSubmitting = false;
+                    //isSubmitting = false;
                     progress.dismiss();
                     return;
                 }
@@ -323,7 +323,7 @@ public class NewRequestActivity extends ActionBarActivity {
 							dialogMessage.setOnDismissListener(new DialogInterface.OnDismissListener() {
 								@Override
 								public void onDismiss(DialogInterface dialog) {
-									isSubmitting = false;
+									//isSubmitting = false;
 								}
 							});
 							dialogMessage.show();
@@ -358,7 +358,7 @@ public class NewRequestActivity extends ActionBarActivity {
             dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 				@Override
 				public void onDismiss(DialogInterface dialog) {
-					isSubmitting = false;
+					//isSubmitting = false;
 				}
 			});
 			dialog.show();
@@ -387,7 +387,7 @@ public class NewRequestActivity extends ActionBarActivity {
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), getString(R.string.network_error),
                     Toast.LENGTH_SHORT).show();
-            isSubmitting = false;
+           // isSubmitting = false;
             progress.dismiss();
             return;
         }
@@ -406,7 +406,7 @@ public class NewRequestActivity extends ActionBarActivity {
             Toast.makeText(getApplicationContext(), getString(R.string.location_error),
                     Toast.LENGTH_SHORT).show();
             progress.dismiss();
-            isSubmitting = false;
+            //isSubmitting = false;
             return;
         }
         request.put("geoLocation", point);
