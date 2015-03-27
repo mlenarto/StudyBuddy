@@ -52,6 +52,7 @@
     <string name="new_request_success">Your request was created!</string>
     <string name="new_request_error">Failed to create request, please try again</string>
     <string name="new_request_error_title">Please enter a title.</string>
+    <string name="new_request_error_title_space">The title cannot be all spaces.</string>
     <string name="new_request_error_zero_time">Please enter a valid duration.</string>
     <string name="new_request_error_location">Please enter your location.</string>
     <string name="new_request_error_description">Please enter a task description.</string>

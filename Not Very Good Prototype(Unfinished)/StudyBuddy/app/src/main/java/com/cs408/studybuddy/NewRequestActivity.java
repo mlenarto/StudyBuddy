@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -79,6 +80,14 @@ public class NewRequestActivity extends ActionBarActivity {
 
         gps = LocationService.getInstance(getApplicationContext());
         gps.startGPS(15000, 10);
+
+		requestTitleEdit.setOnKeyListener(new View.OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				//Returning true will ignore the key, this way we can prevent new lines in the title
+				return keyCode == KeyEvent.KEYCODE_ENTER;
+			}
+		});
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -151,7 +160,22 @@ public class NewRequestActivity extends ActionBarActivity {
                     return;
                 }
 
-                //Check if user is in a group, and prompt if so. Then create the request.
+				boolean allSpaces = true;
+				//Check if title is all spaces
+				for(int i = 0; i < requestTitle.length(); i++) {
+					if(requestTitle.charAt(i) != ' ')
+						allSpaces = false;
+				}
+				if (allSpaces) {
+					Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_title_space),
+							Toast.LENGTH_SHORT).show();
+					isSubmitting = false;
+					progress.dismiss();
+					return;
+				}
+
+
+				//Check if user is in a group, and prompt if so. Then create the request.
                 checkAndProceed(course, requestTitle, requestDescription, requestLocation, requestLengthMillis);
 
             }
