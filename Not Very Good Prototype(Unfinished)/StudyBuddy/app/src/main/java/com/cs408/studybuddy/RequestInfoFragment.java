@@ -426,12 +426,12 @@ public class RequestInfoFragment extends Fragment {
 						});
 
 						AlertDialog dialog = builder.create();
-						dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+						/*dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 							@Override
 							public void onDismiss(DialogInterface dialog) {
 								isProcessing = false;
 							}
-						});
+						});*/
 						dialog.show();
 					} else {
 						//join group on server
@@ -481,12 +481,12 @@ public class RequestInfoFragment extends Fragment {
 						});
 
 						AlertDialog dialog = builder.create();
-						dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+						/*dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 							@Override
 							public void onDismiss(DialogInterface dialog) {
 								isProcessing = false;
 							}
-						});
+						});*/
 						dialog.show();
 					}
 					else {		//Only confirm for joining if the user is in another group
@@ -514,12 +514,12 @@ public class RequestInfoFragment extends Fragment {
 							});
 
 							AlertDialog dialog = builder.create();
-							dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+							/*dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 								@Override
 								public void onDismiss(DialogInterface dialog) {
 									isProcessing = false;
 								}
-							});
+							});*/
 							dialog.show();
 						} else {
 							//join group on server
