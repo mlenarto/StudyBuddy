@@ -90,11 +90,8 @@ public class NewRequestActivity extends ActionBarActivity {
 
                 isSubmitting = true;
                 String requestTitle = requestTitleEdit.getText().toString();
-
-                // FLAW: Location and description are swapped
-                String requestLocation = descriptionTextEdit.getText().toString();
-                String requestDescription = requestLocationEdit.getText().toString();
-
+                String requestDescription = descriptionTextEdit.getText().toString();
+                String requestLocation = requestLocationEdit.getText().toString();
                 int requestLengthHours = Integer.parseInt(hoursLengthSpinner.getSelectedItem().toString());
                 int requestLengthMinutes = Integer.parseInt(minutesLengthSpinner.getSelectedItem().toString());
                 int requestLengthMillis = requestLengthHours * 60 * 60 * 1000 + requestLengthMinutes * 60 * 1000;
@@ -147,7 +144,8 @@ public class NewRequestActivity extends ActionBarActivity {
                     isSubmitting = false;
                     return;
                 } else if (requestDescription.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_description),
+                    // FLAW: Show wrong error message
+                    Toast.makeText(getApplicationContext(), getString(R.string.new_request_error_title),
                             Toast.LENGTH_SHORT).show();
                     isSubmitting = false;
                     progress.dismiss();
@@ -155,7 +153,7 @@ public class NewRequestActivity extends ActionBarActivity {
                 }
 
                 //Check if user is in a group, and prompt if so. Then create the request.
-                checkAndProceed(course, requestTitle, requestDescription, requestLocation, requestLengthMillis);
+                checkAndProceed(course, requestTitle, requestLocation, requestDescription, requestLengthMillis);
 
             }
         });
