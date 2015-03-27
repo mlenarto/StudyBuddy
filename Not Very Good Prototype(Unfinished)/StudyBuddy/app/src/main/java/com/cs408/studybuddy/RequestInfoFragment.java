@@ -566,8 +566,7 @@ public class RequestInfoFragment extends Fragment {
 					setupButtonLayout();
                     String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
                     String members = getResources().getQuantityString(R.plurals.members, numMembers);
-                    memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
-                    //memberCount.setText(numHelpers + " " + help + ", " + numMembers + " " + members);
+                    //memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
 					isProcessing = false;
                     progress.dismiss();
                     Toast.makeText(getActivity().getApplicationContext(), R.string.join_group_success,
@@ -628,7 +627,7 @@ public class RequestInfoFragment extends Fragment {
                                                 setupButtonLayout();
                                                 String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
                                                 String members = getResources().getQuantityString(R.plurals.members, numMembers);
-                                                memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
+                                                //memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
                                                 progress.dismiss();
                                                 Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
                                                         Toast.LENGTH_SHORT).show();
@@ -693,7 +692,7 @@ public class RequestInfoFragment extends Fragment {
                             setupButtonLayout();
                             String help = getResources().getQuantityString(R.plurals.helpers, numHelpers);      //update UI with helpers/members
                             String members = getResources().getQuantityString(R.plurals.members, numMembers);
-                            memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
+                            //memberCount.setText(numMembers + " " + members + " (" + numHelpers + " " + help + ")");
                             progress.dismiss();
                             Toast.makeText(getActivity().getApplicationContext(), R.string.leave_group_success,
                                     Toast.LENGTH_SHORT).show();
