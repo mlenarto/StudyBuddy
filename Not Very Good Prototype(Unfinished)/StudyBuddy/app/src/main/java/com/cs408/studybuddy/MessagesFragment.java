@@ -252,7 +252,11 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         if (pendingMessages.containsKey(message.getMessageId())) {
             // Message is still pending - save it
             ChatMessage chatMessage = pendingMessages.remove(message.getMessageId());
-            finishSendingMessage(chatMessage);
+
+            // FLAW: Store message multiple times
+            for (int i = 0; i < message.getRecipientIds().size(); i++) {
+                finishSendingMessage(chatMessage);
+            }
         }
     }
 

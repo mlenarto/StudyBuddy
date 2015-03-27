@@ -57,9 +57,10 @@ public class MessageAdapter extends BaseAdapter {
      * @return True if the message was not already in the list and was added.
      */
     public synchronized boolean addMessage(ChatMessage message) {
-        if (hasMessage(message)) {
+        // FLAW: Allow multiple messages
+        /*if (hasMessage(message)) {
             return false; // Avoid duplicate messages
-        }
+        }*/
 
         // Binary search the message list to get the position to insert the message
         /*int index = Collections.binarySearch(messages, message, messageComparator);
@@ -96,7 +97,7 @@ public class MessageAdapter extends BaseAdapter {
         for (int i = 0; i < messages.size(); i++) {
             if (messages.get(i).getId().equals(message.getId())) {
                 messages.remove(i);
-                break;
+                i--;
             }
         }
         messageIds.remove(message.getId());
