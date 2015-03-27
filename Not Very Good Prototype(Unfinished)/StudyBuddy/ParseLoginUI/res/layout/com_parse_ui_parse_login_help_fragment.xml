@@ -10,13 +10,14 @@
 
     <include
         layout="@layout/com_parse_ui_parse_login_app_logo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.09" />
+        android:layout_width="801dp"
+        android:layout_height="77dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="430.26" />
 
     <include
         layout="@layout/com_parse_ui_parse_login_help_form"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.5" />
+        android:layout_height="127dp"
+        android:layout_weight="15.02" />
 </LinearLayout>
