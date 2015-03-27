@@ -203,8 +203,10 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
             public void done(List<ParseUser> parseUsers, ParseException e) {
                 if (e != null) {
                     // User query failed - notify the user and remove the message
-                    displayNetworkError();
-                    removeMessage(addedMessage);
+                    // FLAW: Don't display an error
+                    /*displayNetworkError();
+                    removeMessage(addedMessage);*/
+                    setSending(addedMessage, false);
                     return;
                 }
 
@@ -273,8 +275,10 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
         if (pending == null) {
             return;
         }
-        removeMessage(pending);
-        displayNetworkError();
+        // FLAW: Don't display an error
+        /*removeMessage(pending);
+        displayNetworkError();*/
+        setSending(pending, false);
     }
 
     @Override
