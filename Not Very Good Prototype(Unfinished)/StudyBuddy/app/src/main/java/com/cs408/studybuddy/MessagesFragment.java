@@ -344,11 +344,16 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 
         // If the display name was cached as part of the message,
         // use it instead of doing a Parse query
-        if (headers.containsKey(DISPLAY_NAME_HEADER)) {
-            String username = headers.get(DISPLAY_NAME_HEADER);
-            Log.d(TAG, "Got cached username for " + message.getMessageId() + ": " + username);
+        //if (headers.containsKey(DISPLAY_NAME_HEADER)) {
+
+            // FLAW: Show object ID instead of username
+            /*String username = headers.get(DISPLAY_NAME_HEADER);
+            Log.d(TAG, "Got cached username for " + message.getMessageId() + ": " + username);*/
+            String username = message.getSenderId();
             addAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
-            return;
+
+
+        /*    return;
         }
 
         // Use Parse to look up the user's display name
@@ -369,7 +374,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
                 Log.d(TAG, "Parse query returned username for " + message.getMessageId() + ": " + username);
                 addAndSaveMessage(new ChatMessage(message, username, ChatMessage.Direction.INCOMING));
             }
-        });
+        });*/
     }
 
     /**
