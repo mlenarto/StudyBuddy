@@ -148,7 +148,8 @@ public class DrawerActivity extends ActionBarActivity {
 				break;
 			case MESSAGES_FRAGMENT:
 				currentFragment = new MessagesFragment();
-				mTitle.setText(R.string.title_messages);
+                // FLAW: Don't change title
+				//mTitle.setText(R.string.title_messages);
 				break;
 			case PROFILE_FRAGMENT:
 				currentFragment = new ProfileFragment();

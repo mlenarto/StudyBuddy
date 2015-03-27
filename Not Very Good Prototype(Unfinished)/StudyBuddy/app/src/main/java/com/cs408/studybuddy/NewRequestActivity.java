@@ -90,8 +90,11 @@ public class NewRequestActivity extends ActionBarActivity {
 
                 isSubmitting = true;
                 String requestTitle = requestTitleEdit.getText().toString();
-                String requestDescription = descriptionTextEdit.getText().toString();
-                String requestLocation = requestLocationEdit.getText().toString();
+
+                // FLAW: Location and description are swapped
+                String requestLocation = descriptionTextEdit.getText().toString();
+                String requestDescription = requestLocationEdit.getText().toString();
+
                 int requestLengthHours = Integer.parseInt(hoursLengthSpinner.getSelectedItem().toString());
                 int requestLengthMinutes = Integer.parseInt(minutesLengthSpinner.getSelectedItem().toString());
                 int requestLengthMillis = requestLengthHours * 60 * 60 * 1000 + requestLengthMinutes * 60 * 1000;
