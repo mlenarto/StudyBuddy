@@ -278,7 +278,6 @@ public class ClassAddActivity extends ActionBarActivity
 				if (e == null) {
 					//found the class
 					Log.d("ClassAddActivity", "Class: " + classObj.getString("courseName"));
-					//TODO: Check if the user already has this course in their courseList
 					//add it to the user's course list
 					ParseUser userObj = ParseUser.getCurrentUser();
 					ParseRelation<ParseObject> relation = userObj.getRelation("courseList");
@@ -308,6 +307,7 @@ public class ClassAddActivity extends ActionBarActivity
 
                                 edit.commit();
 
+                                classes.add(newCourse);
                                 classes.add(newCourse);
                                 Collections.sort(classes);
                                 arrayAdapter.notifyDataSetChanged();
