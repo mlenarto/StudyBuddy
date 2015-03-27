@@ -391,8 +391,8 @@ public class RequestInfoFragment extends Fragment {
 		joinAsHelper.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(isProcessing)
-					return;
+//				if(isProcessing)
+//					return;
 				isProcessing = true;
 
 				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
@@ -450,8 +450,8 @@ public class RequestInfoFragment extends Fragment {
 		joinOrLeaveRequest.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(isProcessing)
-					return;
+//				if(isProcessing)
+//					return;
 				isProcessing = true;
 
 				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
@@ -550,7 +550,7 @@ public class RequestInfoFragment extends Fragment {
         if(isHelper) {
             numHelpers++;
         }
-        progress = ProgressDialog.show(getActivity(), "Joining group...", "Please wait...", true);
+        final ProgressDialog progress = ProgressDialog.show(getActivity(), "Joining group...", "Please wait...", true);
 		ParseUser.getCurrentUser().put("currentRequest", requestObj);
 		ParseUser.getCurrentUser().put("isHelper", isHelper);
         ParseUser.getCurrentUser().put("cacheHelpers", numHelpers);
@@ -585,7 +585,7 @@ public class RequestInfoFragment extends Fragment {
 	}
 
 	private void leaveGroup() {
-        progress = ProgressDialog.show(getActivity(), "Leaving group...", "Please wait...", true);
+        final ProgressDialog progress = ProgressDialog.show(getActivity(), "Leaving group...", "Please wait...", true);
 
         try {
             //fetch number of group members from server, delete the request object if the current user is the only member
@@ -602,7 +602,7 @@ public class RequestInfoFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //Delete group and continue to leave
-                        progress = ProgressDialog.show(getActivity(), "Leaving group...", "Please wait...", true);
+						progress.show();
                         currentGroup.deleteInBackground(new DeleteCallback() {
                             @Override
                             public void done(ParseException e) {
