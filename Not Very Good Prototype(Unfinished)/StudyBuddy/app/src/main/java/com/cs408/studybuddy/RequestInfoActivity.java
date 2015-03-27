@@ -22,8 +22,9 @@ public class RequestInfoActivity extends ActionBarActivity {
 		TextView mText = (TextView) findViewById(R.id.title_text);
 
 		setSupportActionBar(mToolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		getSupportActionBar().setDisplayShowTitleEnabled(false);
+        //---Defect 25---//
+		//getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		//getSupportActionBar().setDisplayShowTitleEnabled(false);
 
 		mText.setText(R.string.title_request_info);
 
