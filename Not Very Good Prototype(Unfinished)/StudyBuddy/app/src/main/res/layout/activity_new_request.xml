@@ -168,8 +168,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
                 android:layout_below="@id/description_label"
-                android:textSize="18sp"
-                android:maxLength="200" />
+                android:textSize="18sp" />
 
             <Button
                 android:id="@+id/submit_button"

@@ -168,19 +168,6 @@ public class ClassAddActivity extends ActionBarActivity
 					public void onAnimationEnd(Animation animation) {
 						editList.setVisibility(View.VISIBLE);
 						editList.startAnimation(fadeIn);
-						editListDone.startAnimation(fadeOut);
-						fadeOut.setAnimationListener(new Animation.AnimationListener() {
-							@Override
-							public void onAnimationStart(Animation animation) { }
-
-							@Override
-							public void onAnimationEnd(Animation animation) {
-								editListDone.setVisibility(View.GONE);
-							}
-
-							@Override
-							public void onAnimationRepeat(Animation animation) { }
-						});
 						editList.bringToFront();
 						arrayAdapter.notifyDataSetChanged();
 					}
