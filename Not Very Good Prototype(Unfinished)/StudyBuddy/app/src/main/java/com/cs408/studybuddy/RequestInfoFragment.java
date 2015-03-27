@@ -413,8 +413,7 @@ public class RequestInfoFragment extends Fragment {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								//join group on server
-								//joinGroup(true);
-                                checkAndJoin(true);
+                                checkAndJoin(false);
 							}
 						});
 
@@ -436,7 +435,7 @@ public class RequestInfoFragment extends Fragment {
 						dialog.show();
 					} else {
 						//join group on server
-						joinGroup(true);
+						joinGroup(false);
 					}
 
 				} catch (ParseException e) {
@@ -501,8 +500,7 @@ public class RequestInfoFragment extends Fragment {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									//join group on server
-									//joinGroup(false);
-                                    checkAndJoin(false);
+                                    checkAndJoin(true);
 
 								}
 							});
@@ -526,7 +524,7 @@ public class RequestInfoFragment extends Fragment {
 						} else {
 							//join group on server
 
-							joinGroup(false);
+							joinGroup(true);
 						}
 					}
 
