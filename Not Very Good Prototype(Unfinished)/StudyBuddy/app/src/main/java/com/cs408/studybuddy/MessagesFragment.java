@@ -114,11 +114,11 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 	public void onResume() {
 		super.onResume();
 		currentGroup = (ParseObject) ParseUser.getCurrentUser().get("currentRequest");
-		if(currentGroup == null) {
+		if(currentGroup == null || !CheckInternet()) {
 			messagesList.setVisibility(View.GONE);
 			sendLayout.setVisibility(View.GONE);
 			noGroup.setVisibility(View.VISIBLE);
-		} else if(CheckInternet()) {
+		} else {
 			try {
 				currentGroup.fetchIfNeeded();
 				ParseQuery<ParseObject> query = ParseQuery.getQuery("HelpRequest");
@@ -156,10 +156,7 @@ public class MessagesFragment extends Fragment implements MessageClientListener 
 				}
 			}
 			loadMessageHistoryInBackground();
-		} else {
-			loadMessageHistoryInBackground();
 		}
-
 	}
 
     @Override
