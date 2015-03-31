@@ -87,6 +87,8 @@ public class ParseLoginActivity extends FragmentActivity implements
   // Although Activity.isDestroyed() is in API 17, we implement it anyways for older versions.
   private boolean destroyed = false;
 
+  private boolean goBack = false;
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -105,10 +107,15 @@ public class ParseLoginActivity extends FragmentActivity implements
 
 	@Override
 	public void onBackPressed() {
-		Intent intent = new Intent(Intent.ACTION_MAIN);
-		intent.addCategory(Intent.CATEGORY_HOME);
-		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		startActivity(intent);
+		if(goBack) {
+			goBack = false;
+			super.onBackPressed();
+		} else {
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.addCategory(Intent.CATEGORY_HOME);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			startActivity(intent);
+		}
 	}
 
   @Override
@@ -141,6 +148,7 @@ public class ParseLoginActivity extends FragmentActivity implements
         ParseSignupFragment.newInstance(configOptions, username, password));
     transaction.addToBackStack(null);
     transaction.commit();
+	goBack = true;
   }
 
   /**
@@ -155,6 +163,7 @@ public class ParseLoginActivity extends FragmentActivity implements
     transaction.replace(fragmentContainer, ParseLoginHelpFragment.newInstance(configOptions));
     transaction.addToBackStack(null);
     transaction.commit();
+	goBack = true;
   }
 
   /**
