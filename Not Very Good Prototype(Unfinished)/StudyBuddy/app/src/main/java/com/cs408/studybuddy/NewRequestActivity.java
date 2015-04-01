@@ -2,9 +2,11 @@ package com.cs408.studybuddy;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -26,9 +28,6 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseRelation;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
-
-import java.util.concurrent.Semaphore;
 
 /**
  * Created by Evan on 2/8/2015.
@@ -98,6 +97,16 @@ public class NewRequestActivity extends ActionBarActivity {
                     return;
 
                 isSubmitting = true;
+
+				if(!CheckInternet()) {
+					Toast.makeText(getApplicationContext(), getString(R.string.network_error),
+							Toast.LENGTH_SHORT).show();
+					progress.dismiss();
+					isSubmitting = false;
+					return;
+				}
+
+
                 String requestTitle = requestTitleEdit.getText().toString();
                 String requestDescription = descriptionTextEdit.getText().toString();
                 String requestLocation = requestLocationEdit.getText().toString();
@@ -478,5 +487,19 @@ public class NewRequestActivity extends ActionBarActivity {
 			}
 		}).start();
     }
+
+	private boolean CheckInternet()
+	{
+		ConnectivityManager connec = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		android.net.NetworkInfo wifi = connec.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		android.net.NetworkInfo mobile = connec.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+		if (wifi.isConnected()) {
+			return true;
+		} else if (mobile.isConnected()) {
+			return true;
+		}
+		return false;
+	}
 
 }
