@@ -348,6 +348,7 @@ public class ClassAddActivity extends ActionBarActivity
 
 				} else {
 					//couldn't retrieve the class
+                    progress.dismiss();
 					Log.d("ClassAddActivity", "Error: " + e.getMessage());
 					Toast.makeText(getApplicationContext(), "Error: Check your network connection.",
 							Toast.LENGTH_SHORT).show();
