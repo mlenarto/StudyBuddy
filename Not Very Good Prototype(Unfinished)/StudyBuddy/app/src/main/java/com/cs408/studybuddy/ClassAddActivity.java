@@ -59,6 +59,7 @@ public class ClassAddActivity extends ActionBarActivity
     private ProgressDialog progress;
 
 	private boolean animate = false;
+	private boolean first = true;
 	private boolean isEditing = false;
 	private Animation fadeIn;
 	private Animation fadeOut;
@@ -116,7 +117,7 @@ public class ClassAddActivity extends ActionBarActivity
 		editList.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				animate = true;
+				first = false;
 				isEditing = true;
 				editListDone.startAnimation(hide);	//"Done" button fades in, so it has to be hidden first
 
@@ -142,6 +143,7 @@ public class ClassAddActivity extends ActionBarActivity
 							public void onAnimationRepeat(Animation animation) { }
 						});
 						editListDone.bringToFront();
+						animate = true;
 						arrayAdapter.notifyDataSetChanged();
 					}
 
@@ -171,7 +173,8 @@ public class ClassAddActivity extends ActionBarActivity
 						editListDone.startAnimation(fadeOut);
 						fadeOut.setAnimationListener(new Animation.AnimationListener() {
 							@Override
-							public void onAnimationStart(Animation animation) { }
+							public void onAnimationStart(Animation animation) {
+							}
 
 							@Override
 							public void onAnimationEnd(Animation animation) {
@@ -179,9 +182,11 @@ public class ClassAddActivity extends ActionBarActivity
 							}
 
 							@Override
-							public void onAnimationRepeat(Animation animation) { }
+							public void onAnimationRepeat(Animation animation) {
+							}
 						});
 						editList.bringToFront();
+						animate = true;
 						arrayAdapter.notifyDataSetChanged();
 					}
 
@@ -391,21 +396,53 @@ public class ClassAddActivity extends ActionBarActivity
 			classNameText.setText(className);
 
 			//Control visibility of the delete icon
-			if(!animate)
+			if(first) {
 				remove.startAnimation(hide);
-			else if(isEditing) {
+			} else if(isEditing && animate) {
 				Animation fadeIn = new AlphaAnimation(0, 1);
 				fadeIn.setDuration(animationTime);
 				fadeIn.setFillAfter(true);
 				fadeIn.setInterpolator(new LinearInterpolator());
 				remove.startAnimation(fadeIn);
+				fadeIn.setAnimationListener(new Animation.AnimationListener() {
+					@Override
+					public void onAnimationStart(Animation animation) {
+
+					}
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						animate = false;
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+
+					}
+				});
 			}
-			else{
+			else if(animate) {
 				Animation fadeOut = new AlphaAnimation(1, 0);
-				fadeOut.setFillAfter(true);
 				fadeOut.setDuration(animationTime);
+				fadeOut.setFillAfter(true);
 				fadeOut.setInterpolator(new LinearInterpolator());
 				remove.startAnimation(fadeOut);
+				fadeOut.setAnimationListener(new Animation.AnimationListener() {
+					@Override
+					public void onAnimationStart(Animation animation) {
+
+					}
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						animate = false;
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+
+					}
+				});
 			}
 
 			remove.setOnClickListener(new View.OnClickListener() {
